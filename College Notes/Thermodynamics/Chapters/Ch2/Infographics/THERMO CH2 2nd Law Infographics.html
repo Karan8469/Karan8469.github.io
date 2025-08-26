@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermodynamics Infographic: The Laws of Energy & Efficiency</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues -->
+    <!-- Application Structure Plan: The infographic follows a logical narrative flow, starting with the foundational laws, identifying their limitations, and progressively introducing more complex concepts like entropy, irreversibility, efficiency limits, practical properties, performance metrics, and now, problem-solving strategies. This top-to-bottom structure guides the user through the learning journey. Sections use a mix of text, custom diagrams, and interactive charts to tell a cohesive story. -->
+    <!-- Visualization & Content Choices: 
+        - 1st vs 2nd Law: Goal: Compare. Viz: Radar Chart. Justification: Effectively compares multiple facets of the two laws in a single view. Library: Chart.js.
+        - 1st Law Limitations: Goal: Inform. Viz: Styled HTML cards with icons. Justification: Clearly presents distinct limitations without chart overhead. Method: HTML/CSS.
+        - PMM1 vs PMM2: Goal: Compare/Organize. Viz: HTML/CSS diagram. Justification: A clear visual flow chart is the best way to distinguish these impossible concepts. Method: HTML/CSS.
+        - Irreversibility Causes: Goal: Compare. Viz: Bar Chart. Justification: Compares the relative impact of different causes of energy loss. Library: Chart.js.
+        - Carnot Efficiency: Goal: Relationships. Viz: Interactive sliders and a Line Chart. Justification: Allows users to explore the relationship between temperature and efficiency in a hands-on way. Library: Chart.js.
+        - Enthalpy: Goal: Inform. Viz: HTML/CSS diagram. Justification: Visualizes the components of enthalpy. Method: HTML/CSS.
+        - Specific Heats: Goal: Compare. Viz: Bar chart. Justification: Visually compares Cp and Cv values for different gases. Library: Chart.js.
+        - Ideal Gas Law: Goal: Inform. Viz: HTML/CSS diagram (P-V-T relationship). Justification: Provides a conceptual anchor for ideal gas behavior. Method: HTML/CSS.
+        - Isentropic Efficiency: Goal: Compare. Viz: T-s diagram (HTML/CSS/Chart.js - conceptual). Justification: Illustrates ideal vs. actual paths for devices. Library: Chart.js (conceptual plot).
+        - Exergy: Goal: Inform. Viz: HTML/CSS diagram. Justification: Visualizes the concept of useful work potential. Method: HTML/CSS.
+        - Numerical Problem Solving: Goal: Guide/Inform. Viz: Structured text and lists. Justification: Provides direct, actionable advice for exam preparation. Method: HTML/CSS.
+        - NO SVG/Mermaid: All diagrams and visuals are built with standard HTML/CSS and Chart.js Canvas rendering.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #C1DCE7;
+            color: #003F5C;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 45vh;
+            max-height: 400px;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 24px; height: 24px;
+            background: #003F5C;
+            cursor: pointer; border-radius: 50%;
+        }
+        .slider::-moz-range-thumb {
+            width: 24px; height: 24px;
+            background: #003F5C;
+            cursor: pointer; border-radius: 50%;
+        }
+        /* Style for plain text formulas */
+        .formula {
+            font-family: 'Courier New', monospace;
+            background-color: #e0e7eb;
+            padding: 0.2em 0.4em;
+            border-radius: 0.2em;
+            display: inline-block;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+            font-size: 1.1em;
+            color: #003F5C;
+        }
+        .diagram-box {
+            border: 2px solid #7FB2C5;
+            background-color: #F9FAFB;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            text-align: center;
+        }
+        .diagram-arrow {
+            font-size: 2rem;
+            color: #003F5C;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black text-[#003F5C] uppercase tracking-wide">Unlocking Thermodynamics</h1>
+            <p class="mt-4 text-xl md:text-2xl text-[#346A83] font-medium">A Visual Guide to the Laws of Energy & Efficiency</p>
+        </header>
+
+        <!-- Section 1: The Two Pillars -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">The Two Pillars of Thermodynamics</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">The First Law is the universe's accountant, tracking energy's <span class="font-bold">quantity</span>. The Second Law is the director, governing energy's <span class="font-bold">quality</span> and the <span class="font-bold">direction</span> of all natural processes. This chart compares their fundamental roles.</p>
+                <div class="chart-container">
+                    <canvas id="lawsComparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Why the 1st Law Isn't Enough -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">Why the 1st Law Isn't Enough</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-xl p-6 text-center">
+                    <div class="text-6xl mb-4">➡️</div>
+                    <h3 class="text-2xl font-bold mb-2">It Doesn't Show Direction</h3>
+                    <p class="text-[#346A83]">Heat always flows from a hot coffee cup to a cool room. The reverse never happens, but the 1st Law would allow it. It fails to specify the one-way street of natural processes.</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-xl p-6 text-center">
+                    <div class="text-6xl mb-4">💯</div>
+                    <h3 class="text-2xl font-bold mb-2">It Can't Define Efficiency</h3>
+                    <p class="text-[#346A83]">You can convert 100% of work into heat (like friction), but you can't convert 100% of heat from a single source into work. The 1st Law has no concept of this efficiency limit.</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-xl p-6 text-center">
+                    <div class="text-6xl mb-4">❓</div>
+                    <h3 class="text-2xl font-bold mb-2">It Can't Predict Feasibility</h3>
+                    <p class="text-[#346A83]">A process can perfectly conserve energy yet be impossible in reality. The 1st Law is a necessary condition for a process to occur, but it's not sufficient.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Impossible Machines -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">The Impossible Machines</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">The impossibility of certain hypothetical machines forms the very foundation of thermodynamics. Understanding what can't be done reveals what can.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                    <!-- Valid Engine -->
+                    <div class="border-4 border-[#7FB2C5] rounded-lg p-6">
+                        <h3 class="text-2xl font-bold text-center mb-4">Valid Heat Engine</h3>
+                        <p class="text-center text-[#346A83] mb-6">Produces work by taking heat from a hot source and <span class="font-bold">rejecting waste heat</span> to a cold sink. This is how all real heat engines operate.</p>
+                        <div class="text-center">
+                            <div class="bg-[#FFDDC1] p-2 rounded font-bold">HOT RESERVOIR (T<sub>H</sub>)</div>
+                            <div class="text-5xl font-thin my-2">↓</div>
+                            <div class="border-2 border-dashed border-[#003F5C] p-4 rounded-full bg-white inline-block">ENGINE</div>
+                            <div class="flex justify-around items-center mt-2">
+                                <div class="text-center">
+                                    <div class="text-4xl font-thin">↓</div>
+                                    <div class="font-bold">Q<sub>L</sub> (Waste Heat)</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-4xl font-thin">→</div>
+                                    <div class="font-bold">W (Work Out)</div>
+                                </div>
+                            </div>
+                            <div class="bg-[#C1DCE7] p-2 rounded font-bold mt-2">COLD RESERVOIR (T<sub>C</sub>)</div>
+                        </div>
+                    </div>
+                    <!-- Impossible Engines -->
+                    <div class="space-y-8">
+                        <div class="border-4 border-red-400 bg-red-50 rounded-lg p-6">
+                            <h3 class="text-2xl font-bold text-center mb-2 text-red-700">PMM of the 1st Kind (PMM1)</h3>
+                            <p class="text-center text-red-600 mb-4">IMPOSSIBLE: Violates the <span class="font-bold">1st Law</span> by creating energy from nothing.</p>
+                            <div class="border-2 border-dashed border-red-600 p-4 rounded-full bg-white inline-block">ENGINE</div>
+                            <div class="text-4xl font-thin inline-block mx-4">→</div>
+                            <div class="font-bold inline-block">W (Infinite Work)</div>
+                        </div>
+                        <div class="border-4 border-red-400 bg-red-50 rounded-lg p-6">
+                            <h3 class="text-2xl font-bold text-center mb-2 text-red-700">PMM of the 2nd Kind (PMM2)</h3>
+                            <p class="text-center text-red-600 mb-4">IMPOSSIBLE: Violates the <span class="font-bold">2nd Law</span> by converting heat from a single source into work with 100% efficiency.</p>
+                            <div class="bg-[#FFDDC1] p-2 rounded font-bold">SINGLE RESERVOIR</div>
+                            <div class="text-5xl font-thin my-2">↓</div>
+                            <div class="border-2 border-dashed border-red-600 p-4 rounded-full bg-white inline-block">ENGINE</div>
+                            <div class="text-4xl font-thin inline-block mx-4">→</div>
+                            <div class="font-bold inline-block">W = Q<sub>H</sub></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Sources of Imperfection -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Sources of Imperfection (Irreversibility)</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">All real-world processes are "irreversible," meaning they generate entropy and lose work potential. These are the primary culprits that reduce the efficiency of any real system.</p>
+                <div class="chart-container">
+                    <canvas id="irreversibilityChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: The Ultimate Speed Limit -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">The Ultimate Speed Limit: Carnot Efficiency</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">Sadi Carnot defined the absolute maximum efficiency any heat engine can achieve. This theoretical limit depends only on the temperatures of the hot and cold reservoirs. Use the sliders to see how they affect the limit.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <div class="mb-6">
+                            <label for="tempHot" class="block font-semibold mb-2">Hot Reservoir (T<sub>H</sub>): <span id="tHotValue" class="font-bold text-[#003F5C]"></span> K</label>
+                            <input type="range" id="tempHot" min="300" max="2000" value="800" class="w-full h-3 bg-[#7FB2C5] rounded-lg appearance-none cursor-pointer slider">
+                        </div>
+                        <div class="mb-6">
+                            <label for="tempCold" class="block font-semibold mb-2">Cold Reservoir (T<sub>C</sub>): <span id="tColdValue" class="font-bold text-[#003F5C]"></span> K</label>
+                            <input type="range" id="tempCold" min="1" max="600" value="300" class="w-full h-3 bg-[#7FB2C5] rounded-lg appearance-none cursor-pointer slider">
+                        </div>
+                        <div class="text-center bg-[#C1DCE7] p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold">Max Theoretical Efficiency (η<sub>Carnot</sub>)</h3>
+                            <p id="carnotEfficiencyValue" class="text-7xl font-black text-[#003F5C] my-2"></p>
+                            <p id="carnotFormula" class="text-[#346A83] font-mono"></p>
+                        </div>
+                    </div>
+                    <div class="chart-container h-[350px] max-h-[350px]">
+                        <canvas id="carnotEfficiencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Enthalpy -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Enthalpy (H): The "Total Heat" Property</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">Enthalpy is a thermodynamic property that combines internal energy with the product of pressure and volume. It's particularly useful for analyzing systems where flow work is involved, like in open systems (control volumes).</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Concept Overview</h3>
+                        <p class="text-[#346A83] mb-4">Enthalpy (H) represents the total energy of a thermodynamic system. It includes the internal energy (U), which is the energy contained within the system, plus the "flow work" (PV), which is the energy required to push fluid into or out of a control volume.</p>
+                        <p class="formula text-center">H = U + PV</p>
+                        <p class="text-sm text-center text-[#346A83]">(U = internal energy, P = pressure, V = volume)</p>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Real-world Analogy</h3>
+                        <p class="text-[#346A83]">Imagine a delivery truck (the fluid parcel) moving goods (internal energy) and also needing to pay tolls (flow work) to enter and exit different cities (control volume boundaries). Enthalpy is like the total cost associated with the goods and the tolls for that parcel.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Conceptual Flow & Usage</h3>
+                        <p class="text-[#346A83] mb-4">Enthalpy simplifies energy balance equations for open systems (like turbines, compressors, nozzles) where mass crosses the system boundary. For processes at constant pressure, the change in enthalpy often directly represents the heat transfer.</p>
+                        <div class="diagram-box">
+                            <div class="font-bold text-lg">System Energy</div>
+                            <div class="diagram-arrow">=</div>
+                            <div class="flex items-center space-x-2">
+                                <div class="font-bold text-lg">Internal Energy (U)</div>
+                                <div class="text-2xl">+</div>
+                                <div class="font-bold text-lg">Flow Work (PV)</div>
+                            </div>
+                            <div class="diagram-arrow">=</div>
+                            <div class="font-bold text-xl text-[#003F5C]">Enthalpy (H)</div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Common Misconceptions & Errors</h3>
+                        <p class="text-[#346A83]">A common misconception is equating enthalpy solely with "heat content." While it's related to heat, especially at constant pressure, it's a state property that includes flow work. Students often misapply enthalpy to closed systems or confuse it with internal energy, especially when pressure isn't constant.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 8: Specific Heats -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Specific Heats (C<sub>p</sub> & C<sub>v</sub>): How Substances Store Heat</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">Specific heats quantify how much energy a substance can store when its temperature changes. C<sub>v</sub> is for constant volume processes, and C<sub>p</sub> is for constant pressure processes, reflecting the additional work done at constant pressure.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Concept Overview</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-[#346A83]">
+                            <li><strong>Specific Heat at Constant Volume (C<sub>v</sub>):</strong> The energy required to raise the temperature of a unit mass of a substance by one degree Celsius (or Kelvin) while keeping its volume constant. This energy goes entirely into increasing the internal energy.</li>
+                            <li><strong>Specific Heat at Constant Pressure (C<sub>p</sub>):</strong> The energy required to raise the temperature of a unit mass of a substance by one degree Celsius (or Kelvin) while keeping its pressure constant. This energy increases internal energy and also accounts for the work done by the system against the surroundings as it expands.</li>
+                        </ul>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Real-world Analogy</h3>
+                        <p class="text-[#346A83]">Imagine trying to heat a balloon (constant pressure) versus a rigid metal container (constant volume). To heat the balloon, you need to add energy not only to raise its internal temperature but also to make it expand against the atmosphere. The rigid container only needs energy to raise its internal temperature. The balloon requires more energy for the same temperature rise, illustrating why C<sub>p</sub> is generally greater than C<sub>v</sub>.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Conceptual Flow & Visual Anchor</h3>
+                        <p class="text-[#346A83] mb-4">Specific heats are crucial for calculating changes in internal energy and enthalpy, especially for ideal gases. Their relationship is fundamental: C<sub>p</sub> = C<sub>v</sub> + R (where R is the specific gas constant).</p>
+                        <div class="chart-container h-[300px] max-h-[300px]">
+                            <canvas id="specificHeatsChart"></canvas>
+                        </div>
+                        <p class="text-center text-sm text-[#346A83] mt-2">Typical C<sub>p</sub> and C<sub>v</sub> values for common ideal gases (kJ/kg·K)</p>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Common Misconceptions & Errors</h3>
+                        <p class="text-[#346A83]">Students often confuse C<sub>p</sub> and C<sub>v</sub> or assume they are always constant for all substances and conditions (they vary with temperature for real gases). Another error is using the universal gas constant (R_u) instead of the specific gas constant (R) when applying relationships involving specific heats.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 9: Ideal Gas Law -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Ideal Gas Law: The Perfect Gas Rulebook</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">The Ideal Gas Law is a simple constitutive equation that describes the behavior of an "ideal gas," a hypothetical gas composed of randomly moving point particles that do not interact with each other except through elastic collisions. It's a powerful approximation for many real gases under typical conditions.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Concept Overview</h3>
+                        <p class="text-[#346A83] mb-4">The Ideal Gas Law relates the pressure (P), volume (V), temperature (T), and amount (n or m) of an ideal gas. It's expressed in two common forms:</p>
+                        <p class="formula text-center">PV = nRT_u</p>
+                        <p class="text-sm text-center text-[#346A83]">(n = moles, R_u = universal gas constant)</p>
+                        <p class="formula text-center">PV = mRT</p>
+                        <p class="text-sm text-center text-[#346A83]">(m = mass, R = specific gas constant for that gas)</p>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Real-world Analogy</h3>
+                        <p class="text-[#346A83]">Think of the Ideal Gas Law as a simplified "rulebook" for how gases behave in a perfect world. It's like a basic instruction manual that works well for most common situations, even if real gases have tiny imperfections (like molecules having actual size or weak attractions). For example, a bicycle tire pressure changes with temperature, which can be approximated by this law.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Conceptual Flow & Visual Anchor</h3>
+                        <p class="text-[#346A83] mb-4">This law is fundamental for analyzing gas compression, expansion, and heat transfer processes. It's often the starting point for many thermodynamic problem-solving scenarios involving gases.</p>
+                        <div class="diagram-box">
+                            <div class="font-bold text-xl text-[#003F5C]">P (Pressure)</div>
+                            <div class="diagram-arrow">↔</div>
+                            <div class="font-bold text-xl text-[#003F5C]">V (Volume)</div>
+                            <div class="diagram-arrow">↔</div>
+                            <div class="font-bold text-xl text-[#003F5C]">T (Absolute Temp)</div>
+                            <div class="diagram-arrow">↔</div>
+                            <div class="font-bold text-xl text-[#003F5C]">n/m (Amount)</div>
+                        </div>
+                        <p class="text-center text-sm text-[#346A83] mt-2">The Ideal Gas Law connects these four key properties.</p>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Common Misconceptions & Errors</h3>
+                        <p class="text-[#346A83]">The biggest error is applying the Ideal Gas Law to real gases at very high pressures or very low temperatures, where intermolecular forces and molecular volume become significant. Another common mistake is forgetting to use absolute temperature (Kelvin) in calculations, which is critical for this law.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 10: Isentropic Efficiency -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Isentropic Efficiency: Real vs. Ideal Performance</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">Isentropic efficiency is a critical performance parameter for steady-flow devices like turbines, compressors, and nozzles. It compares the actual performance of a device to its idealized, reversible (isentropic) performance under the same inlet and exit pressures.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Concept Overview</h3>
+                        <p class="text-[#346A83] mb-4">An isentropic process is a reversible adiabatic process (no heat transfer and no irreversibilities, meaning entropy remains constant). Isentropic efficiency quantifies how much the actual work output (for turbines/nozzles) or work input (for compressors/pumps) deviates from this ideal, frictionless, and perfectly insulated scenario.</p>
+                        <ul class="list-disc pl-5 space-y-2 text-[#346A83]">
+                            <li><strong>Turbine Isentropic Efficiency (η<sub>T</sub>):</strong> Ratio of actual work output to isentropic work output. <p class="formula">η_T = W_actual / W_isentropic</p></li>
+                            <li><strong>Compressor/Pump Isentropic Efficiency (η<sub>C</sub>):</strong> Ratio of isentropic work input to actual work input. <p class="formula">η_C = W_isentropic / W_actual</p></li>
+                        </ul>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Real-world Analogy</h3>
+                        <p class="text-[#346A83]">Imagine a perfectly frictionless slide (isentropic process) versus a real slide with some friction (actual process). Isentropic efficiency tells you how much of the ideal speed you actually achieve on the real slide. For a turbine, it's how much power you actually get compared to the maximum possible. For a compressor, it's how much less power you'd ideally need compared to what you actually use.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Conceptual Flow & Visual Anchor</h3>
+                        <p class="text-[#346A83] mb-4">Isentropic efficiency directly incorporates the effects of irreversibilities (like friction and heat transfer) into device performance. It's a practical measure that links the Second Law to real engineering applications.</p>
+                        <div class="chart-container h-[300px] max-h-[300px]">
+                            <canvas id="isentropicEfficiencyChart"></canvas>
+                        </div>
+                        <p class="text-center text-sm text-[#346A83] mt-2">Conceptual T-s diagram for a Turbine (1-2s is ideal, 1-2a is actual)</p>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Common Misconceptions & Errors</h3>
+                        <p class="text-[#346A83]">A common mistake is confusing isentropic efficiency with overall thermal efficiency. Isentropic efficiency is for a *component*, while thermal efficiency is for a *cycle*. Students also often forget that actual processes involve an increase in entropy, so the actual exit state will always have higher entropy than the isentropic exit state for expansion devices (and vice versa for compression devices).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 11: Exergy (Availability) -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Exergy (Availability): The True Work Potential</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">Exergy, also known as availability, is a thermodynamic property that represents the maximum theoretical useful work that can be obtained from a system as it interacts with its surroundings (the "dead state"). It's a powerful tool for quantifying the quality of energy and the true losses due to irreversibilities.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Concept Overview</h3>
+                        <p class="text-[#346A83] mb-4">Exergy accounts for both the quantity and quality of energy. It's the portion of energy that is "available" to do useful work, considering that the system must eventually reach equilibrium with its environment (the "dead state," denoted by subscript 0, e.g., T<sub>0</sub>, P<sub>0</sub>, S<sub>0</sub>).</p>
+                        <p class="formula text-center">Ex = (U - U_0) + P_0(V - V_0) - T_0(S - S_0) + KE + PE</p>
+                        <p class="text-sm text-center text-[#346A83]">(U = internal energy, P = pressure, V = volume, T = absolute temperature, S = entropy, KE = kinetic energy, PE = potential energy; subscript 0 denotes dead state properties)</p>
+                        <p class="text-[#346A83] mt-4">A key concept is **exergy destruction (I)**, which is the lost work potential due to irreversibilities. It is directly proportional to the entropy generated during a process.</p>
+                        <p class="formula text-center">I = T_0 * S_gen</p>
+                        <p class="text-sm text-center text-[#346A83]">(T_0 = dead state temperature, S_gen = entropy generated)</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Real-world Analogy & Flow</h3>
+                        <p class="text-[#346A83] mb-4">Imagine a fully charged battery (high exergy) versus a dead battery (zero exergy). Both contain energy, but only the charged one has the potential to do useful work. Exergy is like the "useful charge" of an energy form relative to its surroundings. It's crucial for identifying where the biggest energy quality losses occur in a system, guiding engineers to improve efficiency beyond what the First Law alone can show.</p>
+                        <div class="diagram-box">
+                            <div class="font-bold text-lg">Total Energy (1st Law)</div>
+                            <div class="diagram-arrow">≠</div>
+                            <div class="font-bold text-lg">Useful Work Potential (Exergy)</div>
+                            <div class="diagram-arrow">↓</div>
+                            <div class="font-bold text-xl text-[#003F5C]">Exergy Destruction (Irreversibility)</div>
+                        </div>
+                        <p class="text-center text-sm text-[#346A83] mt-2">Exergy quantifies the true work lost due to imperfections.</p>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Common Misconceptions & Errors</h3>
+                        <p class="text-[#346A83]">Students often confuse exergy with energy itself. While exergy is a form of energy, it's the *useful* portion, always relative to a reference environment. Another error is neglecting the "dead state" properties (T<sub>0</sub>, P<sub>0</sub>) which are essential for exergy calculations, as they define the baseline for useful work.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 12: Key Formulas for Numericals -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Key Formulas for Numericals</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">Here are the essential formulas you'll need to solve common thermodynamics problems. Remember to use consistent units, especially absolute temperatures (Kelvin) where required.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">First Law & Properties</h3>
+                        <ul class="list-disc pl-5 space-y-3 text-[#346A83]">
+                            <li><strong>Energy Balance (Closed System):</strong>
+                                <p class="formula">ΔU = Q - W</p>
+                                <p class="text-sm">(ΔU = change in internal energy, Q = heat transfer to system, W = work done by system)</p>
+                            </li>
+                            <li><strong>Energy Balance (Cyclic Process):</strong>
+                                <p class="formula">ΣQ = ΣW</p>
+                                <p class="text-sm">(Net heat transfer equals net work done for a cycle)</p>
+                            </li>
+                            <li><strong>Enthalpy Definition:</strong>
+                                <p class="formula">H = U + PV</p>
+                                <p class="text-sm">(H = enthalpy, U = internal energy, P = pressure, V = volume)</p>
+                            </li>
+                            <li><strong>Heat Transfer (Constant Specific Heat):</strong>
+                                <p class="formula">Q = mcΔT</p>
+                                <p class="text-sm">(m = mass, c = specific heat, ΔT = temperature change)</p>
+                            </li>
+                            <li><strong>Heat Transfer (Phase Change):</strong>
+                                <p class="formula">Q = mL</p>
+                                <p class="text-sm">(L = latent heat of fusion/vaporization)</p>
+                            </li>
+                            <li><strong>Work Done (Constant Pressure):</strong>
+                                <p class="formula">W = PΔV</p>
+                                <p class="text-sm">(P = pressure, ΔV = change in volume)</p>
+                            </li>
+                            <li><strong>Ideal Gas Law:</strong>
+                                <p class="formula">PV = nRT_u  OR  PV = mRT</p>
+                                <p class="text-sm">(P = pressure, V = volume, n = moles, R_u = universal gas constant, m = mass, R = specific gas constant, T = absolute temperature)</p>
+                            </li>
+                            <li><strong>Specific Heat Relation (Ideal Gas):</strong>
+                                <p class="formula">R = C_p - C_v</p>
+                                <p class="text-sm">(R = specific gas constant, C_p = specific heat at constant pressure, C_v = specific heat at constant volume)</p>
+                            </li>
+                            <li><strong>Specific Heat Ratio:</strong>
+                                <p class="formula">k = C_p / C_v</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Second Law & Efficiency</h3>
+                        <ul class="list-disc pl-5 space-y-3 text-[#346A83]">
+                            <li><strong>Entropy Change (Reversible Process):</strong>
+                                <p class="formula">ΔS = ∫ (δQ_rev / T)</p>
+                                <p class="text-sm">(ΔS = change in entropy, δQ_rev = reversible heat transfer, T = absolute temperature)</p>
+                            </li>
+                            <li><strong>Entropy Generation (Irreversibility):</strong>
+                                <p class="formula">ΔS_universe = ΔS_system + ΔS_surroundings >= 0</p>
+                                <p class="text-sm">(For irreversible processes, ΔS_universe > 0; for reversible, ΔS_universe = 0)</p>
+                            </li>
+                            <li><strong>Thermal Efficiency of Heat Engine:</strong>
+                                <p class="formula">η = W_net,out / Q_H = 1 - (Q_L / Q_H)</p>
+                                <p class="text-sm">(W_net,out = net work output, Q_H = heat input from hot reservoir, Q_L = heat rejected to cold reservoir)</p>
+                            </li>
+                            <li><strong>Carnot Efficiency (Maximum):</strong>
+                                <p class="formula">η_Carnot = 1 - (T_C / T_H)</p>
+                                <p class="text-sm">(T_C = absolute temperature of cold reservoir, T_H = absolute temperature of hot reservoir)</p>
+                            </li>
+                            <li><strong>Coefficient of Performance (Refrigerator):</strong>
+                                <p class="formula">COP_R = Q_L / W_net,in</p>
+                                <p class="text-sm">(W_net,in = net work input)</p>
+                            </li>
+                            <li><strong>Coefficient of Performance (Heat Pump):</strong>
+                                <p class="formula">COP_HP = Q_H / W_net,in</p>
+                                <p class="text-sm">(Note: COP_HP = COP_R + 1)</p>
+                            </li>
+                            <li><strong>Isentropic Efficiency (Turbine):</strong>
+                                <p class="formula">η_T = W_actual / W_isentropic</p>
+                                <p class="text-sm">(W_actual = actual work output, W_isentropic = ideal isentropic work output)</p>
+                            </li>
+                            <li><strong>Isentropic Efficiency (Compressor/Pump):</strong>
+                                <p class="formula">η_C = W_isentropic / W_actual</p>
+                                <p class="text-sm">(W_isentropic = ideal isentropic work input, W_actual = actual work input)</p>
+                            </li>
+                            <li><strong>Exergy (Non-flow):</strong>
+                                <p class="formula">Ex = (U - U_0) + P_0(V - V_0) - T_0(S - S_0)</p>
+                                <p class="text-sm">(Subscript 0 denotes dead state properties)</p>
+                            </li>
+                            <li><strong>Exergy Destruction:</strong>
+                                <p class="formula">I = T_0 * S_gen</p>
+                                <p class="text-sm">(T_0 = dead state temperature, S_gen = entropy generated)</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 13: Tackling Numerical Problems -->
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">Tackling Numerical Problems: A Strategic Approach</h2>
+                <p class="text-center text-lg text-[#346A83] max-w-3xl mx-auto mb-8">Solving numerical problems is where theoretical understanding meets practical application. A systematic approach can help you navigate complex problems and avoid common pitfalls in exams.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">How to Approach a Numerical Problem</h3>
+                        <ul class="list-decimal pl-5 space-y-3 text-[#346A83]">
+                            <li><strong>1. Understand the Problem:</strong> Read the problem statement carefully. Identify what is given (knowns) and what needs to be found (unknowns). Visualize the system and the process.</li>
+                            <li><strong>2. Draw a Diagram:</strong> Sketch the system (e.g., control volume, piston-cylinder) and indicate all energy transfers (heat, work) and mass flows (if open system). Label states and properties clearly.</li>
+                            <li><strong>3. State Assumptions and Approximations:</strong> Clearly list any assumptions (e.g., steady-state, ideal gas, negligible kinetic/potential energy changes, reversible process) that simplify the problem.</li>
+                            <li><strong>4. Apply Relevant Laws & Principles:</strong> Determine which thermodynamic laws (1st Law, 2nd Law) and property relations (Ideal Gas Law, specific heats, property tables) are applicable. Write down the general equations.</li>
+                            <li><strong>5. Simplify and Substitute:</strong> Simplify the general equations based on your assumptions. Substitute known values and properties. Pay close attention to units!</li>
+                            <li><strong>6. Solve for Unknowns:</strong> Perform the calculations. Keep track of intermediate results.</li>
+                            <li><strong>7. Check Your Answer:</strong> Does the answer make physical sense? Is the magnitude reasonable? Are the units correct? Does it violate any thermodynamic laws (e.g., efficiency > 100%)?</li>
+                        </ul>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Real-world Analogy</h3>
+                        <p class="text-[#346A83]">Think of solving a numerical problem like diagnosing a car issue. First, you understand the symptoms (problem statement). Then, you open the hood and look at the engine (diagram). You make educated guesses about what might be wrong (assumptions). You use your knowledge of car mechanics (thermodynamic laws) to narrow down the possibilities. You test components (calculations) and finally, you check if the car runs properly (check your answer for physical sense).</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4">Common Mistakes in Numericals</h3>
+                        <ul class="list-disc pl-5 space-y-3 text-[#346A83]">
+                            <li><strong>Unit Inconsistency:</strong> Mixing units (e.g., kPa with MPa, Celsius with Kelvin) without proper conversion. ALWAYS convert temperatures to Kelvin for formulas involving ratios or absolute values.</li>
+                            <li><strong>Sign Conventions:</strong> Confusing positive/negative signs for heat (Q) and work (W). Standard convention: Q *to* system is positive, W *by* system is positive.</li>
+                            <li><strong>Incorrect Formula Application:</strong> Using a formula for a closed system when it's an open system, or applying ideal gas relations to real gases outside their valid range.</li>
+                            <li><strong>Property Table Errors:</strong> Misreading values from steam tables or refrigerant tables (e.g., using saturated liquid properties for superheated vapor).</li>
+                            <li><strong>Neglecting Irreversibilities:</strong> Assuming processes are reversible (e.g., isentropic) when they are clearly irreversible in a real-world context. This leads to over-optimistic results.</li>
+                            <li><strong>Misinterpreting "State" vs. "Process":</strong> Confusing properties that depend only on the state (U, H, S) with quantities that depend on the path (Q, W).</li>
+                            <li><strong>Algebraic Errors:</strong> Simple mathematical mistakes during calculation. Double-check your arithmetic!</li>
+                            <li><strong>Not Checking Physical Sense:</strong> Getting an efficiency greater than 100% or a negative absolute temperature and not recognizing it as an error.</li>
+                        </ul>
+                        <h3 class="text-2xl font-bold text-[#003F5C] mb-4 mt-6">Conceptual Flow</h3>
+                        <p class="text-[#346A83]">This section builds directly on the "Key Formulas" by providing the practical framework for applying those formulas. It bridges the gap between theoretical knowledge and successful problem-solving, which is essential for mastering thermodynamics and performing well in exams. It emphasizes that understanding *why* a formula is used and *what* common pitfalls exist is just as important as knowing the formula itself.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tooltipTitleCallback = function(tooltipItems) {
+        const item = tooltipItems[0];
+        let label = item.chart.data.labels[item.dataIndex];
+        if (Array.isArray(label)) {
+            return label.join(' ');
+        }
+        return label;
+    };
+
+    const wrapLabel = (label) => {
+        const maxLength = 16;
+        if (label.length <= maxLength) return label;
+        const words = label.split(' ');
+        let lines = [];
+        let currentLine = '';
+        words.forEach(word => {
+            if ((currentLine + word).length > maxLength) {
+                lines.push(currentLine.trim());
+                currentLine = '';
+            }
+            currentLine += word + ' ';
+        });
+        lines.push(currentLine.trim());
+        return lines;
+    };
+
+    // Chart 1: Laws Comparison
+    const ctxLaws = document.getElementById('lawsComparisonChart').getContext('2d');
+    new Chart(ctxLaws, {
+        type: 'radar',
+        data: {
+            labels: ['Energy Aspect', 'Process Direction', 'Efficiency Limits', 'Key Concept', 'Violation'],
+            datasets: [{
+                label: '1st Law',
+                data: [5, 1, 1, 4, 3],
+                backgroundColor: 'rgba(0, 63, 92, 0.2)',
+                borderColor: '#003F5C',
+                pointBackgroundColor: '#003F5C',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#003F5C',
+                borderWidth: 3
+            }, {
+                label: '2nd Law',
+                data: [3, 5, 5, 5, 4],
+                backgroundColor: 'rgba(127, 178, 197, 0.4)',
+                borderColor: '#7FB2C5',
+                pointBackgroundColor: '#7FB2C5',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#7FB2C5',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                    pointLabels: { font: { size: 14, weight: 'bold' }, color: '#003F5C' },
+                    suggestedMin: 0,
+                    suggestedMax: 5,
+                    ticks: { display: false, stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { labels: { font: { size: 14 } } },
+                tooltip: { callbacks: { title: tooltipTitleCallback } }
+            }
+        }
+    });
+
+    // Chart 2: Irreversibility
+    const ctxIrreversibility = document.getElementById('irreversibilityChart').getContext('2d');
+    const irreversibilityLabels = [
+        'Friction & Dissipation', 
+        wrapLabel('Heat Transfer Across Finite Temp. Difference'), 
+        'Unrestrained Expansion', 
+        'Mixing of Substances'
+    ];
+    new Chart(ctxIrreversibility, {
+        type: 'bar',
+        data: {
+            labels: irreversibilityLabels,
+            datasets: [{
+                label: 'Contribution to Lost Work (%)',
+                data: [45, 30, 15, 10],
+                backgroundColor: ['#003F5C', '#346A83', '#7FB2C5', '#C1DCE7'],
+                borderColor: '#FFFFFF',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { display: false },
+                    ticks: {
+                        callback: function(value) { return value + '%' },
+                        font: { size: 12, weight: '500' }
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { font: { size: 14, weight: '500' }, color: '#003F5C' }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { title: tooltipTitleCallback } }
+            }
+        }
+    });
+
+    // Chart 3: Carnot Efficiency
+    const tHotSlider = document.getElementById('tempHot');
+    const tColdSlider = document.getElementById('tempCold');
+    const tHotValue = document.getElementById('tHotValue');
+    const tColdValue = document.getElementById('tColdValue');
+    const efficiencyValue = document.getElementById('carnotEfficiencyValue');
+    const formulaText = document.getElementById('carnotFormula');
+    const ctxCarnot = document.getElementById('carnotEfficiencyChart').getContext('2d');
+    let carnotChart;
+
+    function createCarnotChart() {
+        carnotChart = new Chart(ctxCarnot, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Carnot Efficiency',
+                    data: [],
+                    fill: true,
+                    backgroundColor: 'rgba(0, 63, 92, 0.1)',
+                    borderColor: '#003F5C',
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Hot Reservoir Temperature (TH)', font: { weight: 'bold' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'Max Efficiency (%)', font: { weight: 'bold' } },
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: function(value) { return value + '%' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+    }
+
+    function updateCarnotCalculator() {
+        const tH = parseFloat(tHotSlider.value);
+        let tC = parseFloat(tColdSlider.value);
+
+        if (tC >= tH) {
+            tC = tH - 1;
+            tColdSlider.value = tC;
+        }
+
+        tHotValue.textContent = tH.toFixed(0);
+        tColdValue.textContent = tC.toFixed(0);
+
+        const efficiency = 1 - (tC / tH);
+        efficiencyValue.textContent = (efficiency * 100).toFixed(1) + '%';
+        formulaText.textContent = `η = 1 - (${tC.toFixed(0)}K / ${tH.toFixed(0)}K)`;
+
+        // Update chart data
+        const labels = [];
+        const data = [];
+        for (let tempH = tC + 1; tempH <= 2000; tempH += 50) {
+            labels.push(tempH);
+            data.push((1 - (tC / tempH)) * 100);
+        }
+        carnotChart.data.labels = labels;
+        carnotChart.data.datasets[0].data = data;
+        carnotChart.update();
+    }
+    
+    createCarnotChart();
+    tHotSlider.addEventListener('input', updateCarnotCalculator);
+    tColdSlider.addEventListener('input', updateCarnotCalculator);
+    updateCarnotCalculator();
+
+
+    // Chart for Specific Heats
+    const ctxSpecificHeats = document.getElementById('specificHeatsChart').getContext('2d');
+    new Chart(ctxSpecificHeats, {
+        type: 'bar',
+        data: {
+            labels: ['Air', 'Helium', 'CO2'],
+            datasets: [
+                {
+                    label: 'C_p (kJ/kg·K)',
+                    data: [1.005, 5.193, 0.846],
+                    backgroundColor: '#003F5C',
+                    borderColor: '#FFFFFF',
+                    borderWidth: 1
+                },
+                {
+                    label: 'C_v (kJ/kg·K)',
+                    data: [0.718, 3.116, 0.657],
+                    backgroundColor: '#7FB2C5',
+                    borderColor: '#FFFFFF',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Specific Heat (kJ/kg·K)' }
+                },
+                y: {
+                    title: { display: true, text: 'Substance' }
+                }
+            },
+            plugins: {
+                tooltip: { callbacks: { title: tooltipTitleCallback } }
+            }
+        }
+    });
+
+    // Chart for Isentropic Efficiency (conceptual T-s diagram)
+    const ctxIsentropic = document.getElementById('isentropicEfficiencyChart').getContext('2d');
+    new Chart(ctxIsentropic, {
+        type: 'line',
+        data: {
+            labels: ['1', '2s', '2a'],
+            datasets: [{
+                label: 'Turbine Process',
+                data: [
+                    {x: 1, y: 500}, // Inlet state 1
+                    {x: 1, y: 200}, // Isentropic exit 2s (same entropy)
+                    {x: 1.5, y: 250} // Actual exit 2a (higher entropy, higher temp than 2s)
+                ],
+                fill: false,
+                borderColor: '#003F5C',
+                tension: 0.1,
+                pointRadius: 5,
+                pointBackgroundColor: '#003F5C',
+                showLine: true
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'Entropy (s)' },
+                    min: 0.5,
+                    max: 2.0,
+                    ticks: { display: false }
+                },
+                y: {
+                    title: { display: true, text: 'Temperature (T)' },
+                    beginAtZero: false,
+                    min: 150,
+                    max: 550,
+                    ticks: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            const label = item.label;
+                            if (label === '1') return 'Inlet State (1)';
+                            if (label === '2s') return 'Isentropic Exit (2s)';
+                            if (label === '2a') return 'Actual Exit (2a)';
+                            return label;
+                        },
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `T: ${context.parsed.y}K`;
+                            }
+                            if (context.parsed.x !== null) {
+                                label += ` S: ${context.parsed.x.toFixed(1)}`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>

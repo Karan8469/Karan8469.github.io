@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Story of Energy: A Thermodynamics Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+            processEscapes: true
+          }
+        });
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #E1F5C4; }
+        .bg-brand-yellow { background-color: #F9D423; }
+        .bg-brand-orange { background-color: #FC913A; }
+        .bg-brand-red { background-color: #FF4E50; }
+        .text-brand-red { color: #FF4E50; }
+        .border-brand-red { border-color: #FF4E50; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center my-12">
+            <h1 class="text-5xl md:text-7xl font-bold text-brand-red">The Story of Energy</h1>
+            <p class="mt-4 text-xl text-gray-700">An infographic on the fundamental principles of thermodynamics.</p>
+        </header>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-2">What is Thermodynamics?</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Thermodynamics is the science of energy and its transformations. It helps us understand how heat and work interact to change the state of matter, from engines to biological systems.</p>
+            <div class="flex justify-center items-center gap-6">
+                <div class="text-7xl">💡</div>
+                <div class="text-xl text-gray-700 max-w-sm text-left">It's the study of how energy moves and changes forms.</div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-2">It All Starts with a System</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">To understand energy, we must first define what we're studying. Thermodynamics requires us to draw a line between our area of focus (the system) and everything else (the surroundings).</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-b-8 border-brand-yellow">
+                    <div class="text-5xl mb-3">🎯</div>
+                    <h3 class="text-2xl font-bold">System</h3>
+                    <p class="mt-2 text-gray-600">The specific part of the universe we choose to study.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-b-8 border-brand-orange">
+                    <div class="text-5xl mb-3">⛶</div>
+                    <h3 class="text-2xl font-bold">Boundary</h3>
+                    <p class="mt-2 text-gray-600">The real or imaginary line separating the system from its surroundings.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-b-8 border-brand-red">
+                    <div class="text-5xl mb-3">🌍</div>
+                    <h3 class="text-2xl font-bold">Surroundings</h3>
+                    <p class="mt-2 text-gray-600">Everything outside the system that can interact with it.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-2">Classifying Systems</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Systems are defined by what their boundary allows to pass through: mass and energy. This chart compares the three fundamental types.</p>
+            <div class="chart-container">
+                <canvas id="systemTypesChart"></canvas>
+            </div>
+            <p class="text-center mt-4 text-sm text-gray-500">Most real-world applications, from engines to ecosystems, are open systems, constantly exchanging both mass and energy.</p>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8">The Anatomy of Energy</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">The total energy of a system (E) is a sum of its parts. It's divided into energy we see at a large scale (Macroscopic) and energy hidden at the molecular level (Microscopic).</p>
+            <div class="p-6 bg-white rounded-2xl shadow-xl">
+                <div class="text-center">
+                    <div class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-xl text-2xl">Total Energy (E)</div>
+                    <div class="w-full h-8 flex justify-center">
+                        <div class="w-1 bg-gray-300"></div>
+                    </div>
+                    <div class="flex justify-center gap-4">
+                        <div class="w-1/2 h-8 flex justify-end">
+                            <div class="w-full border-t-4 border-r-4 border-gray-300 rounded-tr-2xl h-full"></div>
+                        </div>
+                        <div class="w-1/2 h-8 flex justify-start">
+                            <div class="w-full border-t-4 border-l-4 border-gray-300 rounded-tl-2xl h-full"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-[-2px]">
+                        <div class="text-center">
+                            <div class="inline-block bg-brand-orange text-white font-bold py-2 px-5 rounded-xl text-xl">Macroscopic</div>
+                            <p class="text-sm text-gray-500 mt-2">Energy of the system as a whole.</p>
+                            <div class="mt-4 space-y-3">
+                                <div class="bg-gray-100 p-3 rounded-lg">Kinetic Energy (Motion)</div>
+                                <div class="bg-gray-100 p-3 rounded-lg">Potential Energy (Position)</div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="inline-block bg-brand-yellow text-gray-800 font-bold py-2 px-5 rounded-xl text-xl">Microscopic (Internal)</div>
+                            <p class="text-sm text-gray-500 mt-2">Energy of molecular activity.</p>
+                            <div class="mt-4 space-y-3">
+                                <div class="bg-gray-100 p-3 rounded-lg">Sensible (Temperature)</div>
+                                <div class="bg-gray-100 p-3 rounded-lg">Latent (Phase Change)</div>
+                                <div class="bg-gray-100 p-3 rounded-lg">Chemical & Nuclear</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8">Energy on the Move</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">A system doesn't "have" heat or work. They are the two ways energy crosses the boundary—energy in transit.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+                    <h3 class="text-3xl font-bold text-brand-orange">Heat (Q)</h3>
+                    <p class="font-semibold text-gray-500 mt-1">Driven by Temperature Difference</p>
+                    <div class="text-7xl font-bold my-6 text-brand-orange">🔥</div>
+                    <p class="text-gray-600">Disorganized energy transfer. A process with zero heat transfer is called <span class="font-bold">Adiabatic</span>.</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+                    <h3 class="text-3xl font-bold text-brand-red">Work (W)</h3>
+                    <p class="font-semibold text-gray-500 mt-1">Driven by Force over a Distance</p>
+                    <div class="text-7xl font-bold my-6 text-brand-red">⚙️</div>
+                    <p class="text-gray-600">Organized energy transfer that can be harnessed to perform a task, like moving a piston.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-2">The Rules of the Game: State vs. Path</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">This is the most crucial concept. A <span class="font-bold text-brand-red">State Property</span> (like Internal Energy, ΔU) only cares about the start and end points. A <span class="font-bold text-brand-orange">Path Function</span> (like Heat and Work) depends on the journey taken. Interact with the chart to see how!</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="chart-container h-64 md:h-auto">
+                    <canvas id="stateVsPathChart"></canvas>
+                    <div id="deltaU-display" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-gray-500 text-sm">ΔU</span>
+                        <span class="text-5xl font-bold text-gray-800">50</span>
+                        <span class="text-gray-500 text-sm">Joules</span>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <label for="heat-slider" class="block font-semibold mb-1 text-brand-orange">Heat (Q): <span id="heat-value" class="font-bold">100</span> J</label>
+                        <input id="heat-slider" type="range" min="0" max="200" value="100" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer" style="accent-color: #FC913A;">
+                        <p class="text-xs text-gray-500 mt-1">Slide to change the heat added.</p>
+                    </div>
+                    <div>
+                        <label for="work-slider" class="block font-semibold mb-1 text-brand-red">Work (W): <span id="work-value" class="font-bold">50</span> J</label>
+                        <input id="work-slider" type="range" min="0" max="150" value="50" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer" style="accent-color: #FF4E50;">
+                         <p class="text-xs text-gray-500 mt-1">Slide to change the work done.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center mt-6 font-semibold text-gray-700">Notice: No matter how you vary the Heat and Work, the change in Internal Energy (ΔU) for this process remains constant. That's the power of a state property!</p>
+        </section>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-2">Sign Conventions: The Language of Energy Transfer</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">To consistently apply the First Law, we use clear rules for positive and negative energy transfers. Think of it like credits and debits in an energy account.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
+                <div>
+                    <h3 class="text-2xl font-bold text-brand-orange mb-4">Heat (Q)</h3>
+                    <div class="flex flex-col items-center justify-center gap-4">
+                        <div class="p-4 bg-green-100 rounded-lg shadow-sm w-4/5">
+                            <span class="text-5xl">➕</span>
+                            <p class="text-lg font-semibold text-green-700">Heat In</p>
+                            <p class="text-sm text-gray-600">System Gains Energy</p>
+                        </div>
+                        <div class="text-4xl text-gray-400">↔</div>
+                        <div class="p-4 bg-red-100 rounded-lg shadow-sm w-4/5">
+                            <span class="text-5xl">➖</span>
+                            <p class="text-lg font-semibold text-red-700">Heat Out</p>
+                            <p class="text-sm text-gray-600">System Loses Energy</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-brand-red mb-4">Work (W)</h3>
+                    <div class="flex flex-col items-center justify-center gap-4">
+                        <div class="p-4 bg-red-100 rounded-lg shadow-sm w-4/5">
+                            <span class="text-5xl">➕</span>
+                            <p class="text-lg font-semibold text-red-700">Work By System</p>
+                            <p class="text-sm text-gray-600">System Expends Energy</p>
+                        </div>
+                        <div class="text-4xl text-gray-400">↔</div>
+                        <div class="p-4 bg-green-100 rounded-lg shadow-sm w-4/5">
+                            <span class="text-5xl">➖</span>
+                            <p class="text-lg font-semibold text-green-700">Work On System</p>
+                            <p class="text-sm text-gray-600">System Gains Energy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="my-16 text-center">
+            <h2 class="text-4xl font-bold mb-4">The First Law of Thermodynamics</h2>
+            <div class="bg-white p-8 rounded-2xl shadow-xl inline-block">
+                 <p class="text-4xl md:text-5xl font-bold font-mono text-gray-800">ΔU = Q - W</p>
+            </div>
+            <p class="mt-6 text-lg text-gray-600 max-w-3xl mx-auto">This simple equation is the culmination of everything. It's the law of <span class="font-bold text-brand-red">Energy Conservation</span>: the change in a system's internal energy must be perfectly accounted for by the energy that crosses its boundary as heat or work.</p>
+        </footer>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-8">Key Formulas for Numericals</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Here are some essential formulas for quantifying energy and its transformations in thermodynamic problems.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-6 bg-gray-50 rounded-lg shadow-md border-b-4 border-brand-orange">
+                    <h3 class="text-xl font-bold mb-2">Kinetic Energy</h3>
+                    <p class="text-gray-700 mb-2">Energy due to motion.</p>
+                    <div class="text-3xl font-mono text-gray-800 text-center py-2">
+                        $$KE = \frac{1}{2}mv^2$$
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Where: $m$ is mass, $v$ is velocity</p>
+                </div>
+                <div class="p-6 bg-gray-50 rounded-lg shadow-md border-b-4 border-brand-red">
+                    <h3 class="text-xl font-bold mb-2">Potential Energy</h3>
+                    <p class="text-gray-700 mb-2">Energy due to position.</p>
+                    <div class="text-3xl font-mono text-gray-800 text-center py-2">
+                        $$PE = mgz$$
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Where: $m$ is mass, $g$ is gravitational acceleration, $z$ is elevation</p>
+                </div>
+                <div class="p-6 bg-gray-50 rounded-lg shadow-md border-b-4 border-brand-yellow">
+                    <h3 class="text-xl font-bold mb-2">First Law of Thermodynamics</h3>
+                    <p class="text-gray-700 mb-2">Energy conservation for a closed system.</p>
+                    <div class="text-3xl font-mono text-gray-800 text-center py-2">
+                        $$\Delta U = Q - W$$
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Where: $\Delta U$ is change in internal energy, $Q$ is heat transfer, $W$ is work done</p>
+                </div>
+                <div class="p-6 bg-gray-50 rounded-lg shadow-md border-b-4 border-brand-orange">
+                    <h3 class="text-xl font-bold mb-2">Boundary Work (Constant Pressure)</h3>
+                    <p class="text-gray-700 mb-2">Work done by expansion/compression at constant pressure.</p>
+                    <div class="text-3xl font-mono text-gray-800 text-center py-2">
+                        $$W = P\Delta V$$
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Where: $P$ is pressure, $\Delta V$ is change in volume</p>
+                </div>
+                <div class="p-6 bg-gray-50 rounded-lg shadow-md border-b-4 border-brand-red">
+                    <h3 class="text-xl font-bold mb-2">Sensible Heat Transfer</h3>
+                    <p class="text-gray-700 mb-2">Heat transfer causing temperature change without phase change.</p>
+                    <div class="text-3xl font-mono text-gray-800 text-center py-2">
+                        $$Q = mc\Delta T$$
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Where: $m$ is mass, $c$ is specific heat, $\Delta T$ is change in temperature</p>
+                </div>
+                <div class="p-6 bg-gray-50 rounded-lg shadow-md border-b-4 border-brand-yellow">
+                    <h3 class="text-xl font-bold mb-2">Latent Heat Transfer</h3>
+                    <p class="text-gray-700 mb-2">Heat transfer causing phase change at constant temperature.</p>
+                    <div class="text-3xl font-mono text-gray-800 text-center py-2">
+                        $$Q = mL$$
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Where: $m$ is mass, $L$ is latent heat of fusion/vaporization</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-8">Tackling Numerical Problems & Common Mistakes</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Solving thermodynamics problems requires a systematic approach and an awareness of common pitfalls. Here's a guide to help you succeed.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-2xl font-bold text-brand-orange mb-4">How to Approach Numerical Problems</h3>
+                    <ul class="list-none space-y-4 text-gray-700">
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">1️⃣</span>
+                            <div>
+                                <strong class="font-semibold">Understand the Problem:</strong> Read carefully to grasp the scenario, what's given, and what needs to be found.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">2️⃣</span>
+                            <div>
+                                <strong class="font-semibold">Identify the System:</strong> Determine if it's an open, closed, or isolated system. This dictates which conservation laws apply.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">3️⃣</span>
+                            <div>
+                                <strong class="font-semibold">Draw a Diagram:</strong> A simple sketch helps visualize the system, boundaries, and energy transfers.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">4️⃣</span>
+                            <div>
+                                <strong class="font-semibold">List Knowns & Unknowns:</strong> Clearly write down all given values with units, and what you need to calculate.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">5️⃣</span>
+                            <div>
+                                <strong class="font-semibold">Choose Formulas:</strong> Select the appropriate thermodynamic laws and equations based on the system type and given information.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">6️⃣</span>
+                            <div>
+                                <strong class="font-semibold">Pay Attention to Units:</strong> Ensure consistency (e.g., all SI units) and perform necessary conversions.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">7️⃣</span>
+                            <div>
+                                <strong class="font-semibold">Apply Sign Conventions:</strong> Correctly assign positive or negative signs to heat and work based on energy flow relative to the system.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-red text-2xl mr-3">8️⃣</span>
+                            <div>
+                                <strong class="font-semibold">Solve & Review:</strong> Perform calculations carefully. Finally, check if your answer makes physical sense in the context of the problem.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-bold text-brand-red mb-4">Common Mistakes to Avoid</h3>
+                    <ul class="list-none space-y-4 text-gray-700">
+                        <li class="flex items-start">
+                            <span class="text-brand-orange text-2xl mr-3">❌</span>
+                            <div>
+                                <strong class="font-semibold">Incorrect System Definition:</strong> Misidentifying open/closed/isolated systems leads to wrong energy balances.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-orange text-2xl mr-3">❌</span>
+                            <div>
+                                <strong class="font-semibold">Ignoring Sign Conventions:</strong> A common error that flips the direction of energy transfer, leading to incorrect results.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-orange text-2xl mr-3">❌</span>
+                            <div>
+                                <strong class="font-semibold">Unit Inconsistencies:</strong> Mixing units (e.g., kPa and atm) without conversion is a frequent source of error.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-orange text-2xl mr-3">❌</span>
+                            <div>
+                                <strong class="font-semibold">Confusing State vs. Path Functions:</strong> Treating Q or W as properties, or assuming ΔU depends on path.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-orange text-2xl mr-3">❌</span>
+                            <div>
+                                <strong class="font-semibold">Algebraic Errors:</strong> Simple mathematical mistakes can derail an otherwise correct setup. Double-check your arithmetic.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-brand-orange text-2xl mr-3">❌</span>
+                            <div>
+                                <strong class="font-semibold">Not Checking Assumptions:</strong> Forgetting to verify if ideal gas law, constant specific heats, etc., are applicable.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8">Common Thermodynamic Processes</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Many real-world processes can be simplified by assuming one property is held constant. These ideal processes are key to analyzing thermodynamic cycles.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="text-5xl mb-3">🌡️</div>
+                    <h3 class="text-xl font-bold">Isothermal</h3>
+                    <p class="font-semibold text-gray-500">Constant Temperature</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="text-5xl mb-3">💨</div>
+                    <h3 class="text-xl font-bold">Isobaric</h3>
+                    <p class="font-semibold text-gray-500">Constant Pressure</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="text-5xl mb-3">📦</div>
+                    <h3 class="text-xl font-bold">Isochoric</h3>
+                    <p class="font-semibold text-gray-500">Constant Volume</p>
+                </div>
+                 <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="text-5xl mb-3">🚫🔥</div>
+                    <h3 class="text-xl font-bold">Adiabatic</h3>
+                    <p class="font-semibold text-gray-500">No Heat Transfer</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-2">The Second Law: The Arrow of Time</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">While the First Law says energy is conserved, the Second Law tells us how it spreads. It introduces <span class="font-bold">Entropy (S)</span>, a measure of disorder or randomness. The entropy of an isolated system always increases over time.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div class="text-center p-4">
+                    <h4 class="text-2xl font-bold text-brand-orange">Low Entropy</h4>
+                    <p class="text-sm text-gray-500">Ordered State</p>
+                    <div class="mt-4 h-24 bg-gray-100 rounded-lg p-2 grid grid-cols-4 gap-2">
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full"></div>
+                    </div>
+                </div>
+                <div class="text-center text-7xl font-bold text-gray-400">→</div>
+                <div class="text-center p-4">
+                    <h4 class="text-2xl font-bold text-brand-red">High Entropy</h4>
+                    <p class="text-sm text-gray-500">Disordered State</p>
+                    <div class="mt-4 h-24 bg-gray-100 rounded-lg p-2 relative">
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 20%; left: 30%;"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 50%; left: 10%;"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 80%; left: 40%;"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 10%; left: 80%;"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 60%; left: 75%;"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 35%; left: 55%;"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 70%; left: 90%;"></div>
+                        <div class="w-4 h-4 bg-brand-red rounded-full absolute" style="top: 5%; left: 5%;"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center mt-6 text-gray-600">This is why heat spontaneously flows from hot to cold, and why a shuffled deck of cards is unlikely to sort itself. The universe tends towards chaos.</p>
+        </section>
+
+        <section class="my-16 bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center mb-2">Thermodynamics in the Real World</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">The principles of thermodynamics are not just theoretical; they are fundamental to countless technologies and natural phenomena around us.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-center">
+                <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div class="text-5xl mb-3">🚗</div>
+                    <h3 class="text-xl font-bold">Engines & Power Plants</h3>
+                    <p class="text-gray-600 text-sm">Converting heat into work to power vehicles and generate electricity.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div class="text-5xl mb-3">❄️</div>
+                    <h3 class="text-xl font-bold">Refrigeration & HVAC</h3>
+                    <p class="text-gray-600 text-sm">Moving heat from cold spaces to warm ones for cooling and heating.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div class="text-5xl mb-3">🧬</div>
+                    <h3 class="text-xl font-bold">Biological Systems</h3>
+                    <p class="text-gray-600 text-sm">Understanding energy metabolism in living organisms.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div class="text-5xl mb-3">🧪</div>
+                    <h3 class="text-xl font-bold">Chemical Reactions</h3>
+                    <p class="text-gray-600 text-sm">Predicting reaction spontaneity and energy changes.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div class="text-5xl mb-3">⚡</div>
+                    <h3 class="text-xl font-bold">Renewable Energy</h3>
+                    <p class="text-gray-600 text-sm">Designing solar panels, geothermal systems, and wind turbines.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div class="text-5xl mb-3">🌌</div>
+                    <h3 class="text-xl font-bold">Cosmology</h3>
+                    <p class="text-gray-600 text-sm">Understanding the fate of the universe and black holes.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapLabel = (label) => {
+                if (label.length <= 16) return label;
+                const words = label.split(' ');
+                const lines = [];
+                let currentLine = '';
+                for (const word of words) {
+                    if ((currentLine + ' ' + word).trim().length > 16) {
+                        lines.push(currentLine.trim());
+                        currentLine = word;
+                    } else {
+                        currentLine = (currentLine + ' ' + word).trim();
+                    }
+                }
+                if (currentLine) lines.push(currentLine.trim());
+                return lines;
+            };
+
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+
+            const systemTypesCtx = document.getElementById('systemTypesChart').getContext('2d');
+            new Chart(systemTypesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Isolated System', 'Closed System', 'Open System'],
+                    datasets: [
+                        {
+                            label: 'Mass Transfer',
+                            data: [0, 0, 1],
+                            backgroundColor: '#FC913A',
+                            borderColor: '#FC913A',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Energy Transfer',
+                            data: [0, 1, 1],
+                            backgroundColor: '#FF4E50',
+                            borderColor: '#FF4E50',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value === 0) return 'No';
+                                    if (value === 1) return 'Yes';
+                                    return null;
+                                },
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: tooltipTitleCallback
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
+            const stateVsPathCtx = document.getElementById('stateVsPathChart').getContext('2d');
+            const heatSlider = document.getElementById('heat-slider');
+            const workSlider = document.getElementById('work-slider');
+            const heatValueSpan = document.getElementById('heat-value');
+            const workValueSpan = document.getElementById('work-value');
+            const deltaUDisplay = document.getElementById('deltaU-display').querySelector('span:nth-child(2)');
+            const FIXED_DELTA_U = 50;
+
+            const stateVsPathChart = new Chart(stateVsPathCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Heat (Q)', 'Work (W)'],
+                    datasets: [{
+                        data: [100, 50],
+                        backgroundColor: ['#FC913A', '#FF4E50'],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                title: tooltipTitleCallback
+                            }
+                        }
+                    }
+                }
+            });
+
+            function updateStateChart() {
+                const q = parseFloat(heatSlider.value);
+                const newW = q - FIXED_DELTA_U;
+                workSlider.value = newW;
+
+                heatValueSpan.textContent = q.toFixed(0);
+                workValueSpan.textContent = newW.toFixed(0);
+                deltaUDisplay.textContent = FIXED_DELTA_U.toFixed(0);
+
+                stateVsPathChart.data.datasets[0].data = [q, newW];
+                stateVsPathChart.update();
+            }
+
+            function updateStateChartFromWork() {
+                 const w = parseFloat(workSlider.value);
+                 const newQ = w + FIXED_DELTA_U;
+                 heatSlider.value = newQ;
+
+                 heatValueSpan.textContent = newQ.toFixed(0);
+                 workValueSpan.textContent = w.toFixed(0);
+                 deltaUDisplay.textContent = FIXED_DELTA_U.toFixed(0);
+
+                 stateVsPathChart.data.datasets[0].data = [newQ, w];
+                 stateVsPathChart.update();
+            }
+
+
+
+            heatSlider.addEventListener('input', updateStateChart);
+            workSlider.addEventListener('input', updateStateChartFromWork);
+
+            // Manually trigger MathJax typesetting after all other DOM manipulations
+            if (typeof MathJax !== 'undefined') {
+                setTimeout(() => {
+                    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+                }, 100); 
+            }
+        });
+    </script>
+</body>
+</html>
