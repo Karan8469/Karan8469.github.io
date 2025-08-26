@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solidification & Alloy Theory: An Interactive Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Energetic & Playful (Adapted for Professional Context) -->
+    <!-- Application Structure Plan: A multi-section, single-page application is designed to facilitate non-linear exploration of the complex subject matter. The structure includes: 1) A 'Hero' section to introduce the topic. 2) A 'Solidification' section with an interactive Chart.js visualization to compare pure metal vs. alloy cooling curves, making the abstract concept of thermal arrest vs. freezing range tangible. 3) A 'Microstructure' section featuring a custom Canvas animation of nucleation and growth, providing a dynamic visual explanation that is more effective than static diagrams. 4) A 'Phase Diagrams' section with a hands-on Lever Rule calculator and a dynamic Canvas visualizer to connect theory with practical application. 5) A 'Glossary' section with a live search filter for quick reference. This thematic, interactive structure is chosen to break down dense information into digestible, engaging modules, promoting better understanding and retention for the target engineering audience. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Cooling curves for pure metals vs. alloys. -> Goal: Compare. -> Viz: Interactive Line Chart (Chart.js/Canvas). -> Interaction: Buttons to toggle datasets. -> Justification: Dynamically showing the difference between a thermal arrest and a freezing range is more impactful and memorable than static images.
+        - Report Info: Nucleation and growth process. -> Goal: Explain a dynamic process. -> Viz: Custom Canvas animation. -> Interaction: Start/Reset buttons. -> Justification: Animation is superior for demonstrating a time-based physical process like grain growth, making it intuitive.
+        - Report Info: Factors influencing microstructure. -> Goal: Inform/Summarize. -> Viz: Interactive Cards (HTML/CSS). -> Interaction: Hover to reveal details. -> Justification: Provides a quick, scannable overview while allowing users to drill down for more information without cluttering the UI.
+        - Report Info: Lever Rule formula. -> Goal: Allow practical application. -> Viz: HTML form calculator + Custom Canvas visualizer. -> Interaction: Real-time calculation and visual update based on user input. -> Justification: Transforms a theoretical formula into a hands-on tool, reinforcing learning through practice and immediate visual feedback.
+        - Report Info: Key terminology. -> Goal: Organize/Inform. -> Viz: Filterable List (HTML/JS). -> Interaction: Live search input. -> Justification: Provides an efficient, on-demand reference tool.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F8F8F8;
+            color: #0B2447;
+        }
+        .nav-link.active {
+            color: #F4A261;
+            font-weight: 600;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        .simulation-canvas {
+            background-color: #A5C9CA;
+            border-radius: 0.5rem;
+            width: 100%;
+            height: 100%;
+        }
+        .card-flip {
+            perspective: 1000px;
+        }
+        .card-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flip:hover .card-flip-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-[#0B2447]">Solidification Science</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#solidification" class="nav-link text-gray-600 hover:text-[#F4A261] transition-colors">Solidification</a>
+                <a href="#microstructure" class="nav-link text-gray-600 hover:text-[#F4A261] transition-colors">Microstructure</a>
+                <a href="#phasediagrams" class="nav-link text-gray-600 hover:text-[#F4A261] transition-colors">Phase Diagrams</a>
+                <a href="#glossary" class="nav-link text-gray-600 hover:text-[#F4A261] transition-colors">Glossary</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="bg-[#0B2447] text-white text-center py-20 px-6">
+            <h2 class="text-4xl md:text-5xl font-bold">The Engineer's Guide to Solidification</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-300">From molten metal to final component, discover the science that dictates material strength, performance, and reliability. This interactive guide makes complex alloy theory digestible and engaging.</p>
+        </section>
+
+        <section id="solidification" class="py-20 px-6 bg-white">
+            <div class="container mx-auto text-center">
+                <h3 class="text-3xl font-bold text-[#0B2447]">Pure Metals vs. Alloys: A Tale of Two Freezes</h3>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">The most fundamental difference in solidification lies in how pure metals and alloys cool. A pure metal freezes at a single temperature, while an alloy freezes over a temperature range. This interactive chart visualizes the process.</p>
+                <div class="mt-12 chart-container">
+                    <canvas id="coolingCurveChart"></canvas>
+                </div>
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button id="pureMetalBtn" class="px-6 py-2 bg-[#576CBC] text-white font-semibold rounded-full shadow-lg hover:bg-[#394867] transition-all transform hover:scale-105">Pure Metal</button>
+                    <button id="alloyBtn" class="px-6 py-2 bg-[#F4A261] text-white font-semibold rounded-full shadow-lg hover:bg-[#E76F51] transition-all transform hover:scale-105">Alloy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="microstructure" class="py-20 px-6">
+            <div class="container mx-auto text-center">
+                <h3 class="text-3xl font-bold text-[#0B2447]">The Birth of a Microstructure</h3>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">Solidification isn't just cooling; it's a two-step atomic dance of <span class="font-semibold text-[#576CBC]">nucleation</span> (forming initial crystal seeds) and <span class="font-semibold text-[#F4A261]">growth</span> (expanding those seeds). This simulation shows how grains form and grow to create the final solid.</p>
+                <div class="mt-12 grid md:grid-cols-2 gap-8 items-center">
+                    <div class="h-80 chart-container p-0">
+                        <canvas id="microstructureCanvas" class="simulation-canvas"></canvas>
+                    </div>
+                    <div>
+                        <h4 class="text-2xl font-semibold mb-4">Factors in Your Control</h4>
+                        <p class="mb-6 text-gray-600">Engineers can manipulate these factors to design the final microstructure and its properties. Flip the cards to learn more.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="card-flip h-32"><div class="card-flip-inner"><div class="card-front bg-white shadow-lg"><h5 class="font-bold text-lg">Cooling Rate</h5></div><div class="card-back bg-[#576CBC] text-white"><p class="text-sm">Faster cooling = finer grains and higher strength.</p></div></div></div>
+                            <div class="card-flip h-32"><div class="card-flip-inner"><div class="card-front bg-white shadow-lg"><h5 class="font-bold text-lg">Supercooling</h5></div><div class="card-back bg-[#576CBC] text-white"><p class="text-sm">More undercooling = higher nucleation rate, finer grains.</p></div></div></div>
+                            <div class="card-flip h-32"><div class="card-flip-inner"><div class="card-front bg-white shadow-lg"><h5 class="font-bold text-lg">Inoculants</h5></div><div class="card-back bg-[#576CBC] text-white"><p class="text-sm">"Controlled impurities" that promote nucleation for a uniform structure.</p></div></div></div>
+                            <div class="card-flip h-32"><div class="card-flip-inner"><div class="card-front bg-white shadow-lg"><h5 class="font-bold text-lg">Composition</h5></div><div class="card-back bg-[#576CBC] text-white"><p class="text-sm">Determines freezing range and dendritic growth.</p></div></div></div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="mt-8 flex justify-center space-x-4">
+                    <button id="startMicrostructureBtn" class="px-6 py-2 bg-[#576CBC] text-white font-semibold rounded-full shadow-lg hover:bg-[#394867] transition-all transform hover:scale-105">Start Simulation</button>
+                    <button id="resetMicrostructureBtn" class="px-6 py-2 bg-gray-500 text-white font-semibold rounded-full shadow-lg hover:bg-gray-600 transition-all transform hover:scale-105">Reset</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="phasediagrams" class="py-20 px-6 bg-white">
+            <div class="container mx-auto text-center">
+                <h3 class="text-3xl font-bold text-[#0B2447]">Reading the Map: Phase Diagrams & The Lever Rule</h3>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">Phase diagrams are the engineer's map to an alloy's behavior. The Lever Rule is the tool used to calculate the precise amount of each phase present in a two-phase region. Try it yourself!</p>
+                <div class="mt-12 grid md:grid-cols-5 gap-8 items-center">
+                    <div class="md:col-span-3 h-80 chart-container p-0">
+                        <canvas id="leverRuleCanvas" class="simulation-canvas"></canvas>
+                    </div>
+                    <div class="md:col-span-2 bg-gray-50 p-6 rounded-lg shadow-inner">
+                        <h4 class="text-xl font-semibold mb-4">Lever Rule Calculator</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="compL" class="block text-sm font-medium text-gray-700">Liquid Comp. (Cₗ)</label>
+                                <input type="number" id="compL" value="20" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#F4A261] focus:border-[#F4A261]">
+                            </div>
+                            <div>
+                                <label for="compO" class="block text-sm font-medium text-gray-700">Overall Comp. (Cₒ)</label>
+                                <input type="number" id="compO" value="45" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#F4A261] focus:border-[#F4A261]">
+                            </div>
+                            <div>
+                                <label for="compA" class="block text-sm font-medium text-gray-700">Solid Comp. (Cₐ)</label>
+                                <input type="number" id="compA" value="80" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#F4A261] focus:border-[#F4A261]">
+                            </div>
+                        </div>
+                        <div id="leverResult" class="mt-6 text-left space-y-2 hidden">
+                            <p class="font-semibold">Wt% Liquid: <span id="liquidPercent" class="text-[#576CBC] font-bold text-lg"></span></p>
+                            <p class="font-semibold">Wt% Solid: <span id="solidPercent" class="text-[#F4A261] font-bold text-lg"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="glossary" class="py-20 px-6">
+            <div class="container mx-auto">
+                <div class="text-center mb-12">
+                     <h3 class="text-3xl font-bold text-[#0B2447]">Quick Reference Glossary</h3>
+                     <p class="mt-4 max-w-2xl mx-auto text-gray-600">Need a refresher? Search for key terms from the guide.</p>
+                     <input type="text" id="glossarySearch" placeholder="Search for a term (e.g., Dendrite)..." class="mt-6 w-full max-w-lg mx-auto px-4 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F4A261]">
+                </div>
+                <div id="glossaryList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                        });
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px" });
+
+            document.querySelectorAll('main section').forEach(section => {
+                observer.observe(section);
+            });
+
+            const coolingCtx = document.getElementById('coolingCurveChart').getContext('2d');
+            let coolingCurveChart;
+            const pureMetalData = { labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], datasets: [{ label: 'Pure Metal', data: [1700, 1620, 1538, 1538, 1538, 1538, 1538, 1450, 1350, 1250, 1150], borderColor: '#576CBC', borderWidth: 3, tension: 0.1, pointRadius: 0 }] };
+            const alloyData = { labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], datasets: [{ label: 'Alloy', data: [1700, 1620, 1550, 1500, 1460, 1420, 1380, 1340, 1300, 1250, 1200], borderColor: '#F4A261', borderWidth: 3, tension: 0.1, pointRadius: 0 }] };
+            const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: 'Temperature (°C)' } }, x: { title: { display: true, text: 'Time (arbitrary units)' } } } };
+            
+            function createChart(data) {
+                if (coolingCurveChart) coolingCurveChart.destroy();
+                coolingCurveChart = new Chart(coolingCtx, { type: 'line', data: data, options: chartOptions });
+            }
+            document.getElementById('pureMetalBtn').addEventListener('click', () => createChart(pureMetalData));
+            document.getElementById('alloyBtn').addEventListener('click', () => createChart(alloyData));
+            createChart(pureMetalData);
+
+            const mCanvas = document.getElementById('microstructureCanvas');
+            const mCtx = mCanvas.getContext('2d');
+            let mAnimationId;
+            let grains = [];
+            
+            function initMicrostructure() {
+                const container = mCanvas.parentElement;
+                mCanvas.width = container.clientWidth;
+                mCanvas.height = container.clientHeight;
+                grains = [];
+                mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height);
+                mCtx.fillStyle = '#0B2447';
+                mCtx.font = '16px Poppins';
+                mCtx.textAlign = 'center';
+                mCtx.fillText('Click Start to Simulate', mCanvas.width / 2, mCanvas.height / 2);
+            }
+
+            function animateMicrostructure() {
+                if (Math.random() < 0.1 && grains.length < 100) {
+                    grains.push({ x: Math.random() * mCanvas.width, y: Math.random() * mCanvas.height, size: 1, color: `hsl(${200 + Math.random() * 40}, 50%, 60%)` });
+                }
+                grains.forEach(g => {
+                    g.size += 0.2;
+                    mCtx.beginPath();
+                    mCtx.fillStyle = g.color;
+                    mCtx.arc(g.x, g.y, g.size, 0, 2 * Math.PI);
+                    mCtx.fill();
+                });
+                const totalArea = grains.reduce((sum, g) => sum + Math.PI * g.size * g.size, 0);
+                if (totalArea < mCanvas.width * mCanvas.height * 1.5) {
+                    mAnimationId = requestAnimationFrame(animateMicrostructure);
+                }
+            }
+            document.getElementById('startMicrostructureBtn').addEventListener('click', () => {
+                cancelAnimationFrame(mAnimationId);
+                initMicrostructure();
+                animateMicrostructure();
+            });
+            document.getElementById('resetMicrostructureBtn').addEventListener('click', () => {
+                cancelAnimationFrame(mAnimationId);
+                initMicrostructure();
+            });
+            initMicrostructure();
+
+            const lCanvas = document.getElementById('leverRuleCanvas');
+            const lCtx = lCanvas.getContext('2d');
+            const inputs = ['compL', 'compO', 'compA'].map(id => document.getElementById(id));
+            const resultDiv = document.getElementById('leverResult');
+            const liquidEl = document.getElementById('liquidPercent');
+            const solidEl = document.getElementById('solidPercent');
+
+            function drawLeverRule() {
+                const container = lCanvas.parentElement;
+                lCanvas.width = container.clientWidth;
+                lCanvas.height = container.clientHeight;
+                const [cL, cO, cA] = inputs.map(i => parseFloat(i.value));
+                if (isNaN(cL) || isNaN(cO) || isNaN(cA) || cA <= cL) {
+                    lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
+                    return;
+                }
+                
+                const margin = 40;
+                const tieLineY = lCanvas.height / 2;
+                const compToX = (comp) => margin + ((comp - 0) / (100 - 0)) * (lCanvas.width - 2 * margin);
+                
+                lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
+                lCtx.font = '12px Poppins';
+                lCtx.textAlign = 'center';
+
+                lCtx.beginPath();
+                lCtx.moveTo(compToX(cL), tieLineY);
+                lCtx.lineTo(compToX(cA), tieLineY);
+                lCtx.strokeStyle = '#0B2447';
+                lCtx.lineWidth = 2;
+                lCtx.stroke();
+                
+                const drawPoint = (comp, label, color, yOffset) => {
+                    const x = compToX(comp);
+                    lCtx.beginPath();
+                    lCtx.arc(x, tieLineY, 6, 0, 2 * Math.PI);
+                    lCtx.fillStyle = color;
+                    lCtx.fill();
+                    lCtx.fillStyle = '#0B2447';
+                    lCtx.fillText(label, x, tieLineY + yOffset);
+                };
+                
+                drawPoint(cL, 'Cₗ', '#576CBC', -20);
+                drawPoint(cA, 'Cₐ', '#F4A261', -20);
+                drawPoint(cO, 'Cₒ', '#394867', 30);
+                
+                const totalLength = cA - cL;
+                const liquidFraction = (cA - cO) / totalLength;
+                const solidFraction = (cO - cL) / totalLength;
+
+                if (cO >= cL && cO <= cA && totalLength > 0) {
+                    resultDiv.classList.remove('hidden');
+                    liquidEl.textContent = (liquidFraction * 100).toFixed(1) + '%';
+                    solidEl.textContent = (solidFraction * 100).toFixed(1) + '%';
+                } else {
+                    resultDiv.classList.add('hidden');
+                }
+            }
+            inputs.forEach(input => input.addEventListener('input', drawLeverRule));
+            drawLeverRule();
+            
+            const glossaryData = [
+                { term: 'Dendrite', def: 'A tree-like crystal structure common in the solidification of alloys.' },
+                { term: 'Eutectic Reaction', def: 'A transformation where a liquid phase solidifies into two different solid phases at a single temperature.' },
+                { term: 'Nucleation', def: 'The initial process that occurs in the formation of a new phase, like a crystal from a liquid.' },
+                { term: 'Solid Solution', def: 'A solid-state solution of one or more solutes in a solvent, forming a single crystal structure.' },
+                { term: 'Intermetallic', def: 'A compound of two or more metals with an ordered crystal structure and fixed stoichiometry.' },
+                { term: 'Lever Rule', def: 'A rule used to determine the weight fractions of each phase in a two-phase region of a phase diagram.' },
+                { term: 'Microstructure', def: 'The fine-scale structure of a material, visible under a microscope.' },
+                { term: 'Phase Diagram', def: 'A graphical map showing the equilibrium phases of a material at different temperatures and compositions.' },
+                { term: 'Supercooling', def: 'The process of cooling a liquid below its freezing point without it becoming solid.' }
+            ];
+            
+            const glossaryList = document.getElementById('glossaryList');
+            const glossarySearch = document.getElementById('glossarySearch');
+            
+            function renderGlossary(filter = '') {
+                glossaryList.innerHTML = '';
+                const filteredData = glossaryData.filter(item => item.term.toLowerCase().includes(filter.toLowerCase()));
+                if (filteredData.length === 0) {
+                    glossaryList.innerHTML = `<p class="text-center text-gray-500 col-span-full">No terms found.</p>`;
+                    return;
+                }
+                filteredData.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-6 rounded-lg shadow-md';
+                    card.innerHTML = `<h5 class="font-bold text-lg text-[#0B2447]">${item.term}</h5><p class="mt-2 text-gray-600">${item.def}</p>`;
+                    glossaryList.appendChild(card);
+                });
+            }
+            
+            glossarySearch.addEventListener('input', (e) => renderGlossary(e.target.value));
+            renderGlossary();
+            
+            window.addEventListener('resize', () => {
+                initMicrostructure();
+                drawLeverRule();
+            });
+        });
+    </script>
+</body>
+</html>

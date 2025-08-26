@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Science of Solidification: An Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues -->
+    <!-- Application Structure Plan: The infographic is structured as a single, scrollable narrative that guides the user from high-level concepts to specific details. It starts with the core process of solidification, moves to the microscopic mechanisms of crystallization, explains the types of alloys and the rules governing them, introduces common phase diagram types, discusses practical tools like the Lever Rule, and concludes with common solidification defects. This linear, story-driven approach is ideal for an infographic, making complex, interconnected topics easy to follow in a logical sequence. -->
+    <!-- Visualization & Content Choices: 
+        - Solidification Intro: Goal -> Inform. Viz -> Large text statistic on undercooling. Justification -> Grabs attention with a key concept. Method -> HTML/CSS.
+        - Cooling Curves: Goal -> Compare. Viz -> Chart.js Line Chart. Justification -> Clearly shows the difference between pure metal and alloy solidification. Method -> Chart.js.
+        - Nucleation: Goal -> Compare. Viz -> HTML/CSS diagram. Justification -> Visually contrasts the energy barrier for homogeneous vs. heterogeneous nucleation. Method -> HTML/CSS.
+        - Crystal Growth: Goal -> Organize. Viz -> HTML/CSS Flowchart. Justification -> Breaks down the process from nucleus to grain structure simply. Method -> HTML/CSS.
+        - Hume-Rothery Rules: Goal -> Compare. Viz -> Chart.js Bar Chart. Justification -> Quantifies the atomic size rule for different alloy pairs, making an abstract rule concrete. Method -> Chart.js.
+        - Alloy Types: Goal -> Organize. Viz -> HTML/CSS Table. Justification -> A clear, direct comparison of solid solutions and intermetallic compounds. Method -> HTML/CSS.
+        - Phase Diagram Types: Goal -> Inform/Organize. Viz -> HTML/CSS text/simple diagrams. Justification -> Introduces key reactions beyond basic liquidus/solidus. Method -> HTML/CSS.
+        - Lever Rule: Goal -> Inform. Viz -> HTML/CSS diagram. Justification -> A simplified visual guide explaining the concept of a tie-line and its segments for the formula. Method -> HTML/CSS.
+        - Solidification Defects: Goal -> Inform. Viz -> HTML/CSS text with Unicode icons. Justification -> Highlights practical challenges and their visual representation. Method -> HTML/CSS.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F2F2F2;
+            color: #1a202c;
+        }
+        .section-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .stat-number {
+            color: #005CB9;
+        }
+        .flow-arrow {
+            font-size: 2.5rem;
+            line-height: 1;
+            color: #90C3FF;
+        }
+        .defect-icon {
+            font-size: 2rem;
+            line-height: 1;
+            color: #FF4500; /* Orange-Red for defects */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#00449E] mb-3">The Science of Solidification</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">A visual guide to how liquid metal becomes a solid, shaping the properties of everything from engine blocks to electronics.</p>
+        </header>
+
+        <section class="section-card">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-[#00449E] mb-6">The Journey from Liquid to Solid</h2>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2">Why Does It Happen?</h3>
+                    <p class="text-gray-700 mb-4">Solidification is a phase transformation driven by a reduction in free energy. For it to begin, the liquid must be cooled below its freezing point. This is called <strong class="text-[#005CB9]">undercooling</strong>.</p>
+                    <div class="bg-[#90C3FF]/20 p-6 rounded-lg text-center">
+                        <p class="text-lg font-semibold text-[#00449E]">Greater undercooling provides a stronger driving force for solidification, leading to a finer, stronger final grain structure.</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-center">Pure Metals vs. Alloys</h3>
+                    <p class="text-gray-700 mb-4 text-center">A cooling curve plots temperature vs. time. It reveals a key difference: pure metals freeze at one temperature, while alloys freeze over a range.</p>
+                    <div class="chart-container">
+                        <canvas id="coolingCurveChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section-card">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-[#00449E] mb-8">How Crystals Are Born: Nucleation & Growth</h2>
+            <div class="grid md:grid-cols-2 gap-12 items-start">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-center">Stage 1: Nucleation</h3>
+                    <p class="text-gray-700 mb-4">Nucleation is the birth of tiny, stable solid particles (nuclei). In the real world, this almost always happens on existing surfaces like impurities or mold walls, a process called <strong class="text-[#005CB9]">heterogeneous nucleation</strong> because it requires much less energy.</p>
+                    <div class="bg-white border-2 border-dashed border-gray-300 p-4 rounded-lg">
+                        <div class="flex justify-around items-end text-center">
+                            <div>
+                                <p class="font-semibold">Homogeneous</p>
+                                <div class="w-20 h-32 bg-[#418FDE] rounded-t-full mt-2 relative">
+                                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 font-bold text-lg text-[#00449E]">High Energy</span>
+                                </div>
+                                <p class="text-sm mt-1">Rare, requires extreme undercooling</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Heterogeneous</p>
+                                <div class="w-20 h-16 bg-[#418FDE] rounded-t-full mt-2 relative">
+                                     <span class="absolute -top-6 left-1/2 -translate-x-1/2 font-bold text-lg text-[#00449E]">Low Energy</span>
+                                </div>
+                                <div class="w-24 h-2 bg-gray-600 -mt-1 mx-auto rounded"></div>
+                                <p class="text-sm mt-1">Common, uses existing surfaces</p>
+                            </div>
+                        </div>
+                        <p class="text-center font-semibold mt-4">Energy Barrier to Form a Nucleus</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-center">Stage 2: Growth</h3>
+                    <p class="text-gray-700 mb-4">Once nuclei form, they grow. In alloys, this often creates branching, tree-like structures called <strong class="text-[#005CB9]">dendrites</strong>. These eventually meet to form the final grain structure.</p>
+                    <div class="text-center space-y-2">
+                        <div class="p-4 bg-[#90C3FF]/20 rounded-lg inline-block">
+                            <p class="text-2xl font-bold">⚛️</p>
+                            <p class="font-semibold">Nucleus</p>
+                        </div>
+                        <p class="flow-arrow font-bold">↓</p>
+                        <div class="p-4 bg-[#90C3FF]/20 rounded-lg inline-block">
+                            <p class="text-2xl font-bold">🌿</p>
+                            <p class="font-semibold">Dendritic Growth</p>
+                        </div>
+                        <p class="flow-arrow font-bold">↓</p>
+                        <div class="p-4 bg-[#90C3FF]/20 rounded-lg inline-block">
+                            <p class="text-2xl font-bold">🧱</p>
+                            <p class="font-semibold">Grain Structure</p>
+                        </div>
+                    </div>
+                     <div class="mt-6 text-center bg-blue-100 p-4 rounded-lg">
+                        <p class="text-2xl md:text-3xl font-extrabold stat-number">Faster Cooling</p>
+                        <p class="text-lg font-semibold text-[#00449E]">= Finer Grains & Stronger Material</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-[#00449E] mb-8">The Rules of the Mix: Alloys & Solubility</h2>
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Predicting Solubility: Hume-Rothery Rules</h3>
+                    <p class="text-gray-700 mb-4">Will two metals mix? The most important factor is atomic size. For good solubility, the atomic radii should differ by <strong class="text-[#005CB9]">less than 15%</strong>.</p>
+                    <div class="chart-container">
+                        <canvas id="atomicSizeChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Two Main Alloy Types</h3>
+                    <p class="text-gray-700 mb-4">How atoms arrange themselves determines the alloy type.</p>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="p-3 border-b-2 border-[#005CB9] font-bold text-[#00449E]">Feature</th>
+                                <th class="p-3 border-b-2 border-[#005CB9] font-bold text-[#00449E]">Solid Solutions</th>
+                                <th class="p-3 border-b-2 border-[#005CB9] font-bold text-[#00449E]">Intermetallics</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-blue-50">
+                                <td class="p-3 border-b border-blue-200 font-semibold">Arrangement</td>
+                                <td class="p-3 border-b border-blue-200">Random</td>
+                                <td class="p-3 border-b border-blue-200">Ordered</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 border-b border-blue-200 font-semibold">Composition</td>
+                                <td class="p-3 border-b border-blue-200">Variable Range</td>
+                                <td class="p-3 border-b border-blue-200">Fixed Ratio</td>
+                            </tr>
+                            <tr class="bg-blue-50">
+                                <td class="p-3 border-b border-blue-200 font-semibold">Key Trait</td>
+                                <td class="p-3 border-b border-blue-200">Strengthens & Toughens</td>
+                                <td class="p-3 border-b border-blue-200">High Temp Strength</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-[#00449E] mb-6">Phase Diagrams: Maps of Material Behavior</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Phase diagrams are essential "maps" for engineers, showing the stable phases of an alloy at different temperatures and compositions. They are built from cooling curve data and predict microstructure.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-3">Eutectic Reaction</h3>
+                    <p class="text-gray-700 mb-4">A liquid phase transforms into two solid phases simultaneously upon cooling at a specific temperature and composition. This results in a fine, lamellar (layered) microstructure.</p>
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <p class="text-lg font-bold text-[#00449E]">Liquid → Solid α + Solid β</p>
+                        <p class="text-sm text-gray-600 mt-1">Occurs at a single temperature (eutectic point)</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-3">Peritectic Reaction</h3>
+                    <p class="text-gray-700 mb-4">A liquid phase reacts with one solid phase to form a new, different solid phase upon cooling. This reaction is often kinetically sluggish and can lead to cored structures.</p>
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <p class="text-lg font-bold text-[#00449E]">Liquid + Solid α → Solid β</p>
+                        <p class="text-sm text-gray-600 mt-1">Often results in incomplete transformation</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-[#00449E] mb-6">The Engineer's Toolkit: The Lever Rule</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">In a two-phase region of a phase diagram (where liquid and solid coexist), the Lever Rule is a formula used to calculate the exact percentage of each phase. It's essential for predicting material properties.</p>
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+                <h3 class="text-xl font-semibold text-center mb-4">Understanding the Lever Rule Concept</h3>
+                <div class="relative w-full max-w-lg mx-auto mb-8">
+                    <div class="h-1 bg-gray-400 w-full"></div>
+                    <div class="absolute top-1/2 -translate-y-1/2 h-4 w-1 bg-gray-600" style="left: 10%;"></div>
+                    <div class="absolute top-1/2 -translate-y-1/2 h-4 w-1 bg-gray-600" style="left: 90%;"></div>
+                    <div class="absolute top-1/2 -translate-y-1/2 h-8 w-1 bg-[#005CB9]" style="left: 50%;"></div>
+                    
+                    <p class="absolute -bottom-6 text-sm font-semibold" style="left: 10%; transform: translateX(-50%);">C<sub>S</sub></p>
+                    <p class="absolute -bottom-6 text-sm font-semibold" style="left: 90%; transform: translateX(-50%);">C<sub>L</sub></p>
+                    <p class="absolute -bottom-12 text-sm font-bold text-[#005CB9]" style="left: 50%; transform: translateX(-50%);">C<sub>0</sub></p>
+
+                    <p class="absolute top-6 left-[10%] text-sm font-bold text-[#005CB9]">Liquid Arm (C<sub>L</sub> - C<sub>0</sub>)</p>
+                    <p class="absolute top-6 right-[10%] text-sm font-bold text-gray-600">Solid Arm (C<sub>0</sub> - C<sub>S</sub>)</p>
+                </div>
+                <div class="mt-12 text-center bg-white p-4 rounded-lg shadow-inner">
+                    <p class="font-mono text-lg font-bold text-gray-800">
+                        % Solid Phase = <span class="text-[#005CB9]">(C<sub>L</sub> - C<sub>0</sub>)</span> / <span class="text-gray-600">(C<sub>L</sub> - C<sub>S</sub>)</span>
+                    </p>
+                    <p class="font-mono text-lg font-bold text-gray-800 mt-2">
+                        % Liquid Phase = <span class="text-[#005CB9]">(C<sub>0</sub> - C<sub>S</sub>)</span> / <span class="text-gray-600">(C<sub>L</sub> - C<sub>S</sub>)</span>
+                    </p>
+                    <p class="text-sm text-gray-500 mt-4">
+                        C<sub>S</sub> = Composition of Solid Phase, C<sub>L</sub> = Composition of Liquid Phase, C<sub>0</sub> = Overall Alloy Composition
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-[#00449E] mb-6">Common Solidification Defects</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Despite careful control, solidification can lead to defects that compromise material integrity. Understanding these is crucial for quality control in manufacturing.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-blue-50 p-6 rounded-lg text-center">
+                    <p class="defect-icon mb-2">🕳️</p>
+                    <h3 class="text-xl font-semibold mb-2">Porosity (Gas & Shrinkage)</h3>
+                    <p class="text-gray-700 text-sm">Voids caused by trapped gases or insufficient liquid feeding to compensate for volume contraction during solidification.</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg text-center">
+                    <p class="defect-icon mb-2">🧪</p>
+                    <h3 class="text-xl font-semibold mb-2">Segregation</h3>
+                    <p class="text-gray-700 text-sm">Non-uniform distribution of alloying elements, leading to variations in properties within the same casting. Often due to rapid cooling or wide freezing range.</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg text-center">
+                    <p class="defect-icon mb-2">💔</p>
+                    <h3 class="text-xl font-semibold mb-2">Hot Tearing (Hot Cracking)</h3>
+                    <p class="text-gray-700 text-sm">Cracks that form in the solidifying metal when it is still partially liquid and unable to withstand tensile stresses from thermal contraction.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapLabel = (label) => {
+                const maxLen = 16;
+                if (label.length <= maxLen) return label;
+                const words = label.split(' ');
+                let lines = [];
+                let currentLine = '';
+                for (const word of words) {
+                    if ((currentLine + word).length > maxLen) {
+                        lines.push(currentLine.trim());
+                        currentLine = '';
+                    }
+                    currentLine += word + ' ';
+                }
+                lines.push(currentLine.trim());
+                return lines;
+            };
+            
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                } else {
+                    return label;
+                }
+            };
+
+            const coolingCurveCtx = document.getElementById('coolingCurveChart').getContext('2d');
+            new Chart(coolingCurveCtx, {
+                type: 'line',
+                data: {
+                    labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                    datasets: [{
+                        label: 'Pure Metal',
+                        data: [120, 110, 100, 90, 80, 80, 80, 70, 60, 50],
+                        borderColor: '#005CB9',
+                        backgroundColor: 'rgba(0, 92, 185, 0.1)',
+                        fill: false,
+                        tension: 0.1
+                    }, {
+                        label: 'Alloy',
+                        data: [120, 108, 98, 92, 88, 84, 80, 75, 68, 60],
+                        borderColor: '#418FDE',
+                        backgroundColor: 'rgba(65, 143, 222, 0.1)',
+                        fill: false,
+                        tension: 0.1,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { title: { display: true, text: 'Temperature (°C)' } }, x: { title: { display: true, text: 'Time (min)' } } },
+                    plugins: { tooltip: { callbacks: { title: tooltipTitleCallback } } }
+                }
+            });
+
+            const atomicSizeCtx = document.getElementById('atomicSizeChart').getContext('2d');
+            new Chart(atomicSizeCtx, {
+                type: 'bar',
+                data: {
+                    labels: [wrapLabel('Copper-Nickel (Cu-Ni)'), wrapLabel('Copper-Silver (Cu-Ag)')],
+                    datasets: [{
+                        label: 'Atomic Radii Difference (%)',
+                        data: [2.3, 12.5],
+                        backgroundColor: ['#418FDE', '#005CB9'],
+                        borderColor: ['#005CB9', '#00449E'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, max: 20, title: { display: true, text: 'Difference (%)' } } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: 15,
+                                    xMax: 15,
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: { content: '15% Limit', enabled: true, position: 'start' }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
