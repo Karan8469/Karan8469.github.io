@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: The World of Crystalline Materials</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: The infographic follows a linear narrative designed for learning, starting from the foundational concepts and building up to more complex topics. The flow is: 1. Hook/Intro: Defines crystalline solids. 2. The Blueprint: Explains Unit Cells & Bravais Lattices. 3. Packing Efficiency: Visually compares structures using a bar chart for APF. 4. Metallic Structures: A detailed comparison of SC, BCC, FCC, and HCP. 5. Phase Diagrams: Introduces phase diagrams as a tool for understanding alloy behavior. 6. Heat Treatment: Explains how thermal processes manipulate microstructure and properties. 7. Crystal Language: A flowchart-style explanation of Miller Indices. 8. The Reality of Imperfections: Categorizes defects and explains their impact. 9. Strengthening: Shows the practical application of solute strengthening. 10. Mechanical Testing: Explains how material properties are characterized through stress-strain curves. 11. Microstructural Evolution: Discusses recrystallization and grain growth. This structure tells a coherent story, making the material easier to digest for a student, now with expanded coverage of key material science topics. -->
+    <!-- Visualization & Content Choices: 1. APF Comparison: Data -> APF values for SC, BCC, FCC, HCP. Goal -> Compare. Viz -> Bar Chart. Justification -> A bar chart is the most effective way to visually compare these key quantitative values. Library -> Chart.js (Canvas). 2. Phase Diagram Concept: Data -> Eutectic phase diagram illustration. Goal -> Inform/Organize. Viz -> Simplified HTML/CSS diagram. Justification -> Visually explains phase regions and transformations without requiring complex interactive plotting for an infographic. Method -> HTML/CSS with Tailwind. 3. Heat Treatment Process: Data -> Steps for common heat treatments. Goal -> Organize/Show a process. Viz -> HTML/CSS sequence/flow. Justification -> Clearly outlines the steps and outcomes of thermal processing. Method -> HTML/CSS with Tailwind. 4. Miller Indices Process: Data -> Steps to find Miller Indices. Goal -> Organize/Show a process. Viz -> Flowchart using styled HTML/CSS. Justification -> A visual flowchart is more intuitive and easier to follow than a simple text list for a multi-step process. Method -> HTML/CSS with Tailwind. 5. Defect Types: Data -> Categories of crystal defects. Goal -> Organize/Inform. Viz -> Icon-based grid layout. Justification -> Using simple Unicode icons and cards makes the information scannable and visually separates the concepts. Method -> HTML/CSS with Tailwind. 6. Stress-Strain Curve: Data -> Typical stress-strain curve points. Goal -> Inform/Explain. Viz -> Line Chart. Justification -> The most direct way to visualize mechanical properties like yield strength and ductility. Library -> Chart.js (Canvas). 7. Recrystallization/Grain Growth: Data -> Conceptual changes in grains. Goal -> Inform/Explain. Viz -> HTML/CSS conceptual diagrams. Justification -> Simple visual progression to show microstructural evolution. Method -> HTML/CSS with Tailwind. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F0F4F8;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #FF6B6B, #4D96FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        .phase-diagram-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column-reverse;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .phase-region {
+            position: absolute;
+            opacity: 0.7;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .liquid-phase { background-color: #4D96FF; top: 0; left: 0; width: 100%; height: 50%; }
+        .alpha-phase { background-color: #FF6B6B; bottom: 0; left: 0; width: 50%; height: 50%; }
+        .beta-phase { background-color: #FFD166; bottom: 0; right: 0; width: 50%; height: 50%; }
+        .alpha-liquid-phase { background-color: rgba(77, 150, 255, 0.5); top: 0; left: 0; width: 50%; height: 50%; }
+        .beta-liquid-phase { background-color: rgba(255, 107, 107, 0.5); top: 0; right: 0; width: 50%; height: 50%; }
+        .eutectic-point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #333;
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
+            bottom: 50%; /* Adjust based on actual diagram */
+            left: 50%; /* Adjust based on actual diagram */
+            z-index: 10;
+        }
+        .axis-label {
+            position: absolute;
+            font-size: 0.8rem;
+            color: #555;
+        }
+        .x-axis-label { bottom: -25px; left: 50%; transform: translateX(-50%); }
+        .y-axis-label { left: -35px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+
+        .flow-step {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            position: relative;
+        }
+        .flow-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: #a0a0a0;
+            margin: 0.5rem 0;
+        }
+        .grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .grid-item .icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            color: #4D96FF; /* Primary color for icons */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center my-12">
+            <h1 class="text-4xl md:text-6xl font-extrabold gradient-text">The Engineer's Guide to Crystalline Materials</h1>
+            <p class="mt-4 text-lg md:text-xl text-gray-600">From the invisible atomic blueprint to the strength of steel, discover the secrets hidden in crystal structures.</p>
+        </header>
+
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">What's Inside a Crystal? The Blueprint</h2>
+                <p class="mt-2 text-gray-600">At the heart of every crystalline material is a perfectly repeating pattern.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-2xl font-bold text-[#FF6B6B]">Unit Cell: The Building Block</h3>
+                    <p class="mt-2">Think of it as the single LEGO brick. It's the smallest repeating unit that contains the entire atomic recipe of the crystal. By stacking this block over and over, you build the entire material.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-2xl font-bold text-[#4D96FF]">Bravais Lattice: The Grid</h3>
+                    <p class="mt-2">This is the invisible, abstract scaffolding that tells the unit cells where to go. It's a perfect grid of points in space, ensuring the pattern is consistent everywhere. There are only 14 unique types!</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Packing It In: Efficiency Matters</h2>
+                <p class="mt-2 text-gray-600">How tightly atoms are packed determines a material's properties, like its density and ductility.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-center mb-4">Atomic Packing Factor (APF) Compared</h3>
+                <p class="text-center text-gray-600 mb-6">APF is the percentage of space in a unit cell filled by atoms. Higher APF often means a more ductile material.</p>
+                <div class="chart-container">
+                    <canvas id="apfChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Meet the Metallic Structures</h2>
+                <p class="mt-2 text-gray-600">Most metals use one of these three efficient arrangements.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 text-center">
+                    <h3 class="text-2xl font-bold text-[#FF6B6B]">BCC</h3>
+                    <p class="font-semibold text-gray-600">Body-Centered Cubic</p>
+                    <p class="text-5xl font-extrabold my-4">68%</p>
+                    <p class="font-semibold">Packing Factor</p>
+                    <p class="mt-4"><strong>Strong & Hard</strong>, but less ductile. Think Iron & Tungsten.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-2xl border-2 border-[#4D96FF] text-center transform scale-105">
+                     <h3 class="text-3xl font-bold text-[#4D96FF]">FCC</h3>
+                    <p class="font-semibold text-gray-600">Face-Centered Cubic</p>
+                    <p class="text-6xl font-extrabold my-4">74%</p>
+                    <p class="font-semibold">Max Packing Factor</p>
+                    <p class="mt-4"><strong>Highly Ductile & Malleable</strong>. Think Copper & Aluminum.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 text-center">
+                     <h3 class="text-2xl font-bold text-[#FFD166]">HCP</h3>
+                    <p class="font-semibold text-gray-600">Hexagonal Close-Packed</p>
+                    <p class="text-5xl font-extrabold my-4">74%</p>
+                    <p class="font-semibold">Max Packing Factor</p>
+                    <p class="mt-4"><strong>Strong & Lightweight</strong>, but often brittle. Think Titanium & Zinc.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Phase Diagrams: The Material Map</h2>
+                <p class="mt-2 text-gray-600">Phase diagrams are essential tools for engineers, showing how different phases (solid, liquid, or mixtures) form in alloys at various temperatures and compositions. They are critical for predicting microstructure and designing heat treatments.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-center mb-4 text-[#FF6B6B]">Binary Eutectic System (Conceptual)</h3>
+                <p class="text-center text-gray-600 mb-6">This simplified diagram shows how two metals (A and B) combine. The "eutectic point" is where the liquid transforms directly into two solid phases upon cooling.</p>
+                <div class="phase-diagram-container">
+                    <div class="phase-region liquid-phase" style="height: 40%; top: 0; width: 100%;">Liquid</div>
+                    <div class="phase-region alpha-liquid-phase" style="height: 30%; top: 40%; width: 50%; left: 0;">α + Liquid</div>
+                    <div class="phase-region beta-liquid-phase" style="height: 30%; top: 40%; width: 50%; right: 0;">β + Liquid</div>
+                    <div class="phase-region alpha-phase" style="height: 30%; bottom: 0; width: 45%; left: 0;">α (Solid Solution)</div>
+                    <div class="phase-region beta-phase" style="height: 30%; bottom: 0; width: 45%; right: 0;">β (Solid Solution)</div>
+                    <div class="phase-region" style="background-color: rgba(128, 0, 128, 0.7); height: 30%; bottom: 0; width: 10%; left: 45%;">α + β</div>
+                    <div class="eutectic-point" style="bottom: 30%; left: 50%;"></div>
+                    <span class="axis-label x-axis-label">Composition (Weight % B)</span>
+                    <span class="axis-label y-axis-label">Temperature (°C)</span>
+                </div>
+                <p class="mt-8 text-center text-gray-600">Understanding these regions helps predict the final microstructure and properties of an alloy after solidification or heat treatment.</p>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Heat Treatment: Sculpting Properties with Heat</h2>
+                <p class="mt-2 text-gray-600">Heat treatment processes involve controlled heating and cooling to alter a material's microstructure, thereby changing its mechanical properties like strength, hardness, and ductility.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-center mb-6 text-[#4D96FF]">Common Heat Treatment Processes</h3>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="flow-step">
+                        <h4 class="font-bold text-lg text-[#FF6B6B]">Annealing</h4>
+                        <p class="text-sm text-gray-600 mt-1">Heat to high temp, slow cool. Reduces hardness, increases ductility, relieves internal stresses.</p>
+                    </div>
+                    <div class="flow-step">
+                        <h4 class="font-bold text-lg text-[#FFD166]">Normalizing</h4>
+                        <p class="text-sm text-gray-600 mt-1">Heat above critical temp, air cool. Refines grain size, improves strength and uniformity.</p>
+                    </div>
+                    <div class="flow-step">
+                        <h4 class="font-bold text-lg text-[#4D96FF]">Hardening (Quenching)</h4>
+                        <p class="text-sm text-gray-600 mt-1">Heat, then rapid cool. Increases hardness and strength, but also brittleness.</p>
+                    </div>
+                    <div class="flow-step md:col-span-2 lg:col-span-1">
+                        <h4 class="font-bold text-lg text-[#FF6B6B]">Tempering</h4>
+                        <p class="text-sm text-gray-600 mt-1">Reheat hardened material to lower temp, then cool. Reduces brittleness, improves toughness, sacrifices some hardness.</p>
+                    </div>
+                    <div class="flow-step lg:col-span-2">
+                        <h4 class="font-bold text-lg text-[#FFD166]">Process Annealing / Stress Relieving</h4>
+                        <p class="text-sm text-gray-600 mt-1">Lower temp annealing to relieve stresses and restore ductility after cold working, without recrystallization.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">The Language of Crystals</h2>
+                <p class="mt-2 text-gray-600">How do we describe specific directions and planes? With Miller Indices.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#4D96FF]">Directions [uvw]</h3>
+                        <div class="mt-4 space-y-4">
+                            <div class="flex items-center">
+                                <span class="text-2xl font-bold text-[#4D96FF] mr-4">1</span>
+                                <p>Find coordinates of a vector.</p>
+                            </div>
+                            <div class="text-3xl text-center text-gray-300">↓</div>
+                            <div class="flex items-center">
+                                <span class="text-2xl font-bold text-[#4D96FF] mr-4">2</span>
+                                <p>Clear fractions & reduce to lowest integers.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#FF6B6B]">Planes (hkl)</h3>
+                         <div class="mt-4 space-y-4">
+                            <div class="flex items-center">
+                                <span class="text-2xl font-bold text-[#FF6B6B] mr-4">1</span>
+                                <p>Find where the plane intercepts the axes.</p>
+                            </div>
+                            <div class="text-3xl text-center text-gray-300">↓</div>
+                            <div class="flex items-center">
+                                <span class="text-2xl font-bold text-[#FF6B6B] mr-4">2</span>
+                                <p>Take reciprocals & clear fractions. <strong>Do not reduce!</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                    <h4 class="text-xl font-bold">Why does this matter?</h4>
+                    <p class="mt-2 text-gray-600">This language defines <strong>Slip Systems</strong>—the highways for atomic movement. More slip systems = more ductility!</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">The Reality: Perfect Crystals Don't Exist</h2>
+                <p class="mt-2 text-gray-600">Real materials are full of imperfections, and these defects are what make them interesting!</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <p class="text-4xl">📍</p>
+                    <h4 class="font-bold mt-2">Point Defects</h4>
+                    <p class="text-sm text-gray-600">Missing or extra atoms.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <p class="text-4xl">〰️</p>
+                    <h4 class="font-bold mt-2">Line Defects</h4>
+                    <p class="text-sm text-gray-600">(Dislocations) The key to ductility.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <p class="text-4xl">🧱</p>
+                    <h4 class="font-bold mt-2">Planar Defects</h4>
+                    <p class="text-sm text-gray-600">(Grain Boundaries) Affect strength.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <p class="text-4xl">⚫</p>
+                    <h4 class="font-bold mt-2">Volume Defects</h4>
+                    <p class="text-sm text-gray-600">Voids or foreign particles.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <div class="bg-white p-8 rounded-xl shadow-2xl border border-gray-200 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Harnessing Flaws: Solute Strengthening</h2>
+                <p class="mt-4 text-lg text-gray-600">We can intentionally add impurity atoms (solutes) to a metal. These "flaws" act like roadblocks for dislocations, making the material much stronger and harder.</p>
+                <p class="mt-6 text-2xl font-bold gradient-text">This is how we make steel from iron!</p>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Mechanical Testing: The Stress-Strain Story</h2>
+                <p class="mt-2 text-gray-600">The stress-strain curve is a fundamental fingerprint of a material's mechanical behavior, revealing its strength, ductility, and toughness under load.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-center mb-4 text-[#FF6B6B]">Typical Stress-Strain Curve</h3>
+                <div class="chart-container">
+                    <canvas id="stressStrainChart"></canvas>
+                </div>
+                <div class="mt-6 text-gray-700 text-sm">
+                    <p><strong>Elastic Region:</strong> Material deforms reversibly (like a rubber band). Stress is proportional to strain (Hooke's Law).</p>
+                    <p><strong>Yield Strength (σ<sub>y</sub>):</strong> The point at which plastic (permanent) deformation begins.</p>
+                    <p><strong>Tensile Strength (σ<sub>UTS</sub>):</strong> The maximum stress the material can withstand before necking begins.</p>
+                    <p><strong>Fracture Point:</strong> The point at which the material breaks.</p>
+                    <p><strong>Ductility:</strong> Measured by percent elongation or reduction in area. A material's ability to deform plastically before fracture.</p>
+                    <p><strong>Toughness:</strong> The area under the stress-strain curve, representing the energy absorbed before fracture.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Microstructural Evolution: Recrystallization & Grain Growth</h2>
+                <p class="mt-2 text-gray-600">After deformation or at high temperatures, a material's internal structure can change, impacting its properties.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-center mb-6 text-[#FFD166]">Grain Dynamics</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="grid-item">
+                        <p class="icon">🔨</p>
+                        <h4 class="font-bold text-lg">Cold Worked</h4>
+                        <p class="text-sm text-gray-600">Deformed grains, high dislocation density, increased strength/hardness.</p>
+                        <div class="w-full h-24 border border-gray-300 mt-4 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gray-200 opacity-70"></div>
+                            <div class="absolute inset-0 flex flex-wrap">
+                                <div class="w-1/2 h-1/2 border-r border-b border-gray-400"></div>
+                                <div class="w-1/2 h-1/2 border-b border-gray-400"></div>
+                                <div class="w-1/2 h-1/2 border-r border-gray-400"></div>
+                                <div class="w-1/2 h-1/2"></div>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center text-xs text-gray-600 font-semibold">Elongated Grains</div>
+                        </div>
+                    </div>
+                    <div class="text-center text-3xl text-gray-400">➡️</div>
+                    <div class="grid-item">
+                        <p class="icon">🔥</p>
+                        <h4 class="font-bold text-lg">Recrystallization</h4>
+                        <p class="text-sm text-gray-600">New, strain-free grains form, reducing strength, increasing ductility.</p>
+                        <div class="w-full h-24 border border-gray-300 mt-4 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gray-200 opacity-70"></div>
+                            <div class="absolute inset-0 flex flex-wrap">
+                                <div class="w-1/3 h-1/3 border-r border-b border-gray-400"></div>
+                                <div class="w-1/3 h-1/3 border-r border-b border-gray-400"></div>
+                                <div class="w-1/3 h-1/3 border-b border-gray-400"></div>
+                                <div class="w-1/3 h-1/3 border-r border-b border-gray-400"></div>
+                                <div class="w-1/3 h-1/3 border-r border-b border-gray-400"></div>
+                                <div class="w-1/3 h-1/3 border-b border-gray-400"></div>
+                                <div class="w-1/3 h-1/3 border-r border-gray-400"></div>
+                                <div class="w-1/3 h-1/3 border-r border-gray-400"></div>
+                                <div class="w-1/3 h-1/3"></div>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center text-xs text-gray-600 font-semibold">New Grains</div>
+                        </div>
+                    </div>
+                    <div class="text-center text-3xl text-gray-400">➡️</div>
+                    <div class="grid-item md:col-span-3 lg:col-span-1">
+                        <p class="icon">📈</p>
+                        <h4 class="font-bold text-lg">Grain Growth</h4>
+                        <p class="text-sm text-gray-600">Grains continue to grow, reducing grain boundary area, potentially lowering strength.</p>
+                        <div class="w-full h-24 border border-gray-300 mt-4 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gray-200 opacity-70"></div>
+                            <div class="absolute inset-0 flex flex-wrap">
+                                <div class="w-1/2 h-full border-r border-gray-400"></div>
+                                <div class="w-1/2 h-full"></div>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs text-gray-600 font-semibold">Larger Grains</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apfData = {
+                labels: [
+                    'Simple Cubic (SC)',
+                    ['Body-Centered', 'Cubic (BCC)'],
+                    ['Face-Centered', 'Cubic (FCC)'],
+                    ['Hexagonal', 'Close-Packed (HCP)']
+                ],
+                values: [0.52, 0.68, 0.74, 0.74]
+            };
+
+            const apfCtx = document.getElementById('apfChart').getContext('2d');
+            new Chart(apfCtx, {
+                type: 'bar',
+                data: {
+                    labels: apfData.labels,
+                    datasets: [{
+                        label: 'Atomic Packing Factor',
+                        data: apfData.values,
+                        backgroundColor: [
+                            '#FFD166',
+                            '#FF6B6B',
+                            '#4D96FF',
+                            '#4D96FF'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 0.8,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value * 100 + '%';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                },
+                                label: function(context) {
+                                    let label = 'APF: ';
+                                    if (context.parsed.x !== null) {
+                                        label += (context.parsed.x * 100).toFixed(1) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Stress-Strain Chart Data
+            const stressStrainCtx = document.getElementById('stressStrainChart').getContext('2d');
+            new Chart(stressStrainCtx, {
+                type: 'line',
+                data: {
+                    labels: ['0%', '2%', '4%', '6%', '8%', '10%', '12%', '14%', '16%', '18%', '20%'],
+                    datasets: [{
+                        label: 'Stress-Strain Curve',
+                        data: [0, 50, 100, 105, 110, 115, 110, 100, 90, 80, 70], // Example data
+                        borderColor: '#4D96FF',
+                        backgroundColor: 'rgba(77, 150, 255, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Strain (%)'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Stress (MPa)'
+                            },
+                            grid: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                },
+                                label: function(context) {
+                                    let label = 'Stress: ';
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(0) + ' MPa';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
