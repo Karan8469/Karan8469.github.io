@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Solidification & Alloy Theory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .section-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .simulation-canvas {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #f8fafc;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #4338ca;
+        }
+        .nav-link {
+             padding: 0.5rem 1rem;
+             border-radius: 0.375rem;
+             transition: background-color 0.3s, color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+        .card-flip { perspective: 1000px; }
+        .card-flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .card-flip:hover .card-flip-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem; border-radius: 0.75rem; }
+        .card-back { transform: rotateY(180deg); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-indigo-600">Solidification & Alloy Theory</h1>
+            <nav class="hidden md:flex space-x-1 flex-wrap" id="desktop-nav">
+                <!-- Nav links will be injected here by JS -->
+            </nav>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                    <!-- Options will be injected here by JS -->
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+
+        <!-- 1. Introduction -->
+        <section id="introduction" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">1. Why Solidification and Alloys Matter</h2>
+            <p class="mb-4">Solidification is the crucial process where a liquid metal transforms into a solid. This isn't just simple freezing; it's an atomic-level dance that builds the material's internal structure, or <strong class="text-indigo-600">microstructure</strong>. This structure dictates everything about the final component: its strength, flexibility, and lifespan. Understanding this allows engineers to design and create materials with specific, predictable properties, from engine blocks to advanced aerospace parts.</p>
+            <div class="bg-indigo-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-lg mb-2">Analogy: Baking a Cake 🎂</h4>
+                <p>Think of molten metal as cake batter. The ingredients are the alloy's composition. The baking temperature and time are like the cooling rate. Just as these factors determine if a cake is fluffy or dense, controlling solidification determines if a metal part is strong or brittle.</p>
+            </div>
+        </section>
+
+        <!-- 2. Solidification of Pure Metals vs. Alloys -->
+        <section id="solidification-types" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">2. Solidification: Pure Metals vs. Alloys</h2>
+            <p class="mb-4">Pure metals and alloys solidify in fundamentally different ways, leading to distinct microstructures.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-2">Pure Metals</h3>
+                    <p>Solidify at a <strong class="text-indigo-600">single, constant temperature</strong>. The solid-liquid interface is typically a flat, planar front. This results in a structure of large, elongated <strong class="text-indigo-600">columnar grains</strong>.</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-2">Alloys</h3>
+                    <p>Solidify over a <strong class="text-indigo-600">range of temperatures</strong>. This creates a "mushy zone" where tree-like solid crystals, called <strong class="text-indigo-600">dendrites</strong>, grow into the remaining liquid. This occurs due to <strong class="text-indigo-500">constitutional supercooling</strong>, where solute rejection at the interface makes the liquid ahead of it unstable.</p>
+                </div>
+            </div>
+            <div class="mt-8">
+                <h4 class="text-xl font-semibold mb-2 text-center">Solidification Simulation</h4>
+                <div class="grid md:grid-cols-2 gap-4 items-center">
+                    <div>
+                        <p class="text-center font-medium">Pure Metal (Planar Growth)</p>
+                        <canvas id="pureMetalCanvas" width="400" height="300" class="simulation-canvas mx-auto"></canvas>
+                    </div>
+                    <div>
+                        <p class="text-center font-medium">Alloy (Dendritic Growth)</p>
+                        <canvas id="alloyCanvas" width="400" height="300" class="simulation-canvas mx-auto"></canvas>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button id="startSolidification" class="btn">Start & Reset Simulation</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Crystallization: Nucleation and Growth -->
+        <section id="crystallization" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">3. Crystallization: Nucleation & Growth</h2>
+            <p class="mb-4">Solidification happens in two steps: <strong class="text-indigo-600">Nucleation</strong> (forming the first tiny, stable crystals) and <strong class="text-indigo-600">Growth</strong> (adding more atoms to those crystals).</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-2">Homogeneous Nucleation</h3>
+                    <p>Occurs spontaneously in a pure liquid. It's difficult and requires significant <strong class="text-indigo-600">undercooling</strong> (cooling below the freezing point) to overcome a high energy barrier.</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-2">Heterogeneous Nucleation</h3>
+                    <p>The common, easier way. Nuclei form on existing surfaces like mold walls or impurities. These sites lower the energy barrier, so less undercooling is needed. This is key to controlling grain size.</p>
+                </div>
+            </div>
+             <div class="mt-8">
+                <h4 class="text-xl font-semibold mb-2 text-center">Nucleation Simulation</h4>
+                <p class="text-center text-sm text-gray-600 mb-4">Watch atoms (gray) cluster. Only clusters that reach the <strong class="text-orange-500">critical radius (r*)</strong> become stable nuclei (blue) and grow.</p>
+                <canvas id="nucleationCanvas" width="600" height="300" class="simulation-canvas mx-auto"></canvas>
+                <div class="text-center mt-4 space-x-2">
+                    <button id="nucleationPlay" class="btn bg-green-600 hover:bg-green-700">Play</button>
+                    <button id="nucleationPause" class="btn bg-yellow-500 hover:bg-yellow-600">Pause</button>
+                    <button id="nucleationReset" class="btn bg-red-600 hover:bg-red-700">Reset</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 4. Factors Influencing Solidification -->
+        <section id="factors" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">4. Factors Influencing Solidification</h2>
+            <p class="mb-6">Engineers can control the final microstructure by manipulating several key factors. Hover over the cards to learn more.</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="card-flip h-40"><div class="card-flip-inner"><div class="card-front bg-indigo-100 shadow-lg"><h5 class="font-bold text-lg text-center">Cooling Rate</h5></div><div class="card-back bg-indigo-600 text-white"><p class="text-sm text-center">Faster cooling = finer grains and higher strength.</p></div></div></div>
+                <div class="card-flip h-40"><div class="card-flip-inner"><div class="card-front bg-indigo-100 shadow-lg"><h5 class="font-bold text-lg text-center">Inoculants</h5></div><div class="card-back bg-indigo-600 text-white"><p class="text-sm text-center">"Controlled impurities" that promote heterogeneous nucleation for a uniform structure.</p></div></div></div>
+                <div class="card-flip h-40"><div class="card-flip-inner"><div class="card-front bg-indigo-100 shadow-lg"><h5 class="font-bold text-lg text-center">Temp. Gradient</h5></div><div class="card-back bg-indigo-600 text-white"><p class="text-sm text-center">High gradient promotes directional, columnar grains. Low gradient favors equiaxed grains.</p></div></div></div>
+                <div class="card-flip h-40"><div class="card-flip-inner"><div class="card-front bg-indigo-100 shadow-lg"><h5 class="font-bold text-lg text-center">Composition</h5></div><div class="card-back bg-indigo-600 text-white"><p class="text-sm text-center">Determines freezing range and dendritic growth tendency.</p></div></div></div>
+            </div>
+        </section>
+
+        <!-- 5. Solid Solutions vs. Intermetallic Compounds -->
+        <section id="phases" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">5. Solid Solutions vs. Intermetallic Compounds</h2>
+            <p class="mb-4">When metals mix, they form different solid phases:</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-2 text-blue-800">Solid Solutions</h3>
+                    <p class="text-sm">A random, homogeneous mix of atoms. The crystal structure is the same as the parent metal. They are typically ductile and form when elements are chemically similar. The lattice distortion they cause is the basis for <strong class="text-blue-700">solid solution strengthening</strong>.</p>
+                    <div class="mt-4 p-4 bg-white rounded-lg border h-40 flex items-center justify-center">
+                        <div class="grid grid-cols-4 gap-2">
+                            <!-- Row 1 -->
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-blue-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <!-- Row 2 -->
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-blue-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <!-- Row 3 -->
+                            <div class="w-6 h-6 bg-blue-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-blue-400 rounded-full"></div>
+                            <!-- Row 4 -->
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 text-sm text-gray-500">Visual: A random mix of atoms.</p>
+                </div>
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-2 text-green-800">Intermetallic Compounds</h3>
+                    <p class="text-sm">Highly ordered structures with a fixed chemical ratio and a unique crystal lattice. They are strong, hard, but often brittle. They form when elements are chemically dissimilar, creating strong, specific bonds.</p>
+                    <div class="mt-4 p-4 bg-white rounded-lg border h-40 flex items-center justify-center">
+                        <div class="grid grid-cols-4 gap-2">
+                            <!-- Row 1 -->
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <!-- Row 2 -->
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <!-- Row 3 -->
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <!-- Row 4 -->
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-green-400 rounded-full"></div>
+                            <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 text-sm text-gray-500">Visual: An ordered, repeating pattern.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Hume-Rothery Rules -->
+        <section id="hume-rothery" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">6. Hume-Rothery "Compatibility" Rules</h2>
+            <p class="text-gray-600 text-center mb-6">These are four guidelines that predict whether two metals will form a substitutional solid solution. Think of it as a compatibility checklist for atoms. Select a pair of elements to see how they measure up!</p>
+            <div class="flex justify-center space-x-4 mb-8">
+                <button id="hrCuNiBtn" class="btn">Check Cu-Ni (Copper-Nickel)</button>
+                <button id="hrMgSnBtn" class="btn bg-gray-400 hover:bg-gray-500">Check Mg-Sn (Magnesium-Tin)</button>
+            </div>
+            <div id="hr-results" class="max-w-2xl mx-auto">
+                 <!-- HR Results will be populated by JS -->
+            </div>
+        </section>
+
+        <!-- 7. Cooling Curves & Phase Reactions -->
+        <section id="cooling-curves" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">7. Cooling Curves & Phase Reactions</h2>
+            <p class="mb-4">A cooling curve plots temperature vs. time, revealing a material's thermal "fingerprint". The data from these curves is used to construct phase diagrams, which map out an alloy's behavior.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <canvas id="coolingCurveCanvas" width="500" height="400" class="mx-auto"></canvas>
+                </div>
+                <div>
+                     <h3 class="text-2xl font-semibold mb-3">Key Phase Diagram Reactions</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h4 class="font-bold text-blue-800">Eutectic Reaction</h4>
+                        <p class="text-sm">A liquid phase transforms into two solid phases simultaneously at a single temperature.</p>
+                        <p class="font-mono mt-1 text-blue-900">Liquid → Solid α + Solid β</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-green-800">Peritectic Reaction</h4>
+                        <p class="text-sm">A liquid phase reacts with a solid phase to form a new, different solid phase.</p>
+                        <p class="font-mono mt-1 text-green-900">Liquid + Solid α → Solid β</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Lever Rule -->
+        <section id="lever-rule" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">8. The Lever Rule</h2>
+            <p class="mb-4">The Lever Rule is a tool used on phase diagrams to calculate the exact amount of each phase (e.g., liquid and solid) present in a two-phase region at equilibrium. It works like a teeter-totter, where the overall composition is the fulcrum.</p>
+            <div class="bg-gray-100 p-6 rounded-lg">
+                <h4 class="text-xl font-semibold mb-4 text-center">Interactive Lever Rule Calculator</h4>
+                <canvas id="leverRuleCanvas" width="600" height="300" class="mx-auto block"></canvas>
+                <div class="mt-4">
+                    <label for="compositionSlider" class="block mb-2 font-medium">Overall Composition (%B): <span id="compositionValue">60</span>%</label>
+                    <input type="range" id="compositionSlider" min="30" max="90" value="60" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div id="leverRuleResults" class="mt-4 text-center font-mono p-4 bg-white rounded-md shadow-inner">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Solidification Defects -->
+        <section id="defects" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">9. Common Solidification Defects</h2>
+            <p class="mb-6">Imperfect solidification can lead to defects that compromise a component's integrity. Understanding them is crucial for quality control.</p>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-red-50 p-6 rounded-lg border border-red-200">
+                    <h3 class="text-xl font-semibold mb-2 text-red-800">Porosity (Gas & Shrinkage)</h3>
+                    <p class="text-sm text-red-700">Voids caused by trapped gases or insufficient liquid metal to compensate for volume contraction during solidification.</p>
+                </div>
+                <div class="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+                    <h3 class="text-xl font-semibold mb-2 text-yellow-800">Segregation</h3>
+                    <p class="text-sm text-yellow-700">Non-uniform distribution of alloying elements, leading to variations in properties. Often caused by rapid cooling.</p>
+                </div>
+                <div class="bg-orange-50 p-6 rounded-lg border border-orange-200">
+                    <h3 class="text-xl font-semibold mb-2 text-orange-800">Hot Tearing</h3>
+                    <p class="text-sm text-orange-700">Cracks that form when the semi-solid material is too weak to withstand thermal contraction stresses.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Common Pitfalls -->
+        <section id="pitfalls" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">10. Common Pitfalls & Misconceptions</h2>
+            <p class="mb-6">Navigating alloy theory can be tricky. Here are some common points of confusion to watch out for.</p>
+            <div class="space-y-6">
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">Solidification & Cooling</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                        <li><strong class="text-red-600">Mistake:</strong> Assuming all metals freeze at a single temperature.</li>
+                        <li><strong>Correction:</strong> Only pure metals and specific eutectic alloys do. Most engineering alloys solidify over a temperature range, which is critical to their processing and properties.</li>
+                        <li><strong class="text-red-600">Mistake:</strong> Thinking solidification starts exactly at the melting point.</li>
+                        <li><strong>Correction:</strong> A certain amount of undercooling is almost always required to provide the energy needed to form stable nuclei.</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">Hume-Rothery & Alloy Rules</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                        <li><strong class="text-red-600">Mistake:</strong> Treating the Hume-Rothery rules as absolute laws.</li>
+                        <li><strong>Correction:</strong> They are excellent empirical guidelines, but exceptions exist. They predict the *likelihood* of solid solution, not a guaranteed outcome.</li>
+                        <li><strong class="text-red-600">Mistake:</strong> Believing impurities are always bad.</li>
+                        <li><strong>Correction:</strong> While some are harmful, others (like inoculants) are intentionally added to refine the grain structure and improve mechanical properties.</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">Lever Rule Application</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                        <li><strong class="text-red-600">Mistake:</strong> Using the wrong lever arm. This is the most common error.</li>
+                        <li><strong>Correction:</strong> To find the fraction of a phase, use the length of the lever arm on the <strong class="underline">opposite side</strong> of the overall composition (the fulcrum), and divide by the total length of the tie-line.</li>
+                        <li><strong class="text-red-600">Mistake:</strong> Applying the rule in a single-phase region.</li>
+                        <li><strong>Correction:</strong> The Lever Rule is only valid in two-phase regions where a tie-line can connect the compositions of the two phases in equilibrium.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. Glossary -->
+        <section id="glossary" class="section-card">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">11. Glossary</h2>
+            <input type="text" id="glossarySearch" placeholder="Search for a term (e.g., Dendrite)..." class="w-full p-3 border border-gray-300 rounded-lg mb-6 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <div id="glossaryList" class="grid md:grid-cols-2 gap-4">
+                <!-- Glossary terms will be injected here -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Navigation ---
+            const sections = document.querySelectorAll('section');
+            const desktopNav = document.getElementById('desktop-nav');
+            const mobileNav = document.getElementById('mobile-nav');
+            
+            const sectionTitles = [
+                "Intro", "Solidification", "Crystallization", "Factors", "Phases",
+                "Hume-Rothery", "Cooling Curves", "Lever Rule", "Defects", "Pitfalls", "Glossary"
+            ];
+
+            sections.forEach((section, index) => {
+                const title = sectionTitles[index];
+                const id = section.id;
+                
+                const link = document.createElement('a');
+                link.href = `#${id}`;
+                link.textContent = title;
+                link.className = 'nav-link text-sm';
+                desktopNav.appendChild(link);
+
+                const option = document.createElement('option');
+                option.value = `#${id}`;
+                option.textContent = section.querySelector('h2').textContent;
+                mobileNav.appendChild(option);
+            });
+
+            mobileNav.addEventListener('change', () => { window.location.href = mobileNav.value; });
+
+            const navLinks = desktopNav.querySelectorAll('.nav-link');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' });
+            sections.forEach(section => observer.observe(section));
+
+            // --- Simulation 1: Solidification ---
+            const pureMetalCanvas = document.getElementById('pureMetalCanvas');
+            const alloyCanvas = document.getElementById('alloyCanvas');
+            const startSolidificationBtn = document.getElementById('startSolidification');
+            const pmCtx = pureMetalCanvas.getContext('2d');
+            const aCtx = alloyCanvas.getContext('2d');
+            let solidificationAnimationId;
+
+            function drawSolidification() {
+                let progress = 0;
+                const speed = 0.5;
+                function animate() {
+                    progress += speed;
+                    pmCtx.clearRect(0, 0, pureMetalCanvas.width, pureMetalCanvas.height);
+                    pmCtx.fillStyle = '#60a5fa'; pmCtx.fillRect(0, 0, progress, pureMetalCanvas.height);
+                    pmCtx.fillStyle = '#dbeafe'; pmCtx.fillRect(progress, 0, pureMetalCanvas.width - progress, pureMetalCanvas.height);
+                    aCtx.clearRect(0, 0, alloyCanvas.width, alloyCanvas.height);
+                    aCtx.fillStyle = '#dbeafe'; aCtx.fillRect(0, 0, alloyCanvas.width, alloyCanvas.height);
+                    drawDendrites(aCtx, progress);
+                    if (progress < pureMetalCanvas.width) { solidificationAnimationId = requestAnimationFrame(animate); }
+                }
+                animate();
+            }
+            function drawDendrites(ctx, progress) {
+                const origins = [{ x: 0, y: 50 }, { x: 0, y: 150 }, { x: 0, y: 250 }];
+                ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2;
+                origins.forEach(o => {
+                    for (let i = 0; i < 6; i++) {
+                        drawBranch(ctx, o.x, o.y, i * (Math.PI / 3), Math.min(progress / 2, 80), 4);
+                    }
+                });
+            }
+            function drawBranch(ctx, x, y, angle, length, level) {
+                if (level < 0 || length < 2) return;
+                ctx.beginPath(); ctx.moveTo(x, y);
+                const endX = x + length * Math.cos(angle); const endY = y + length * Math.sin(angle);
+                ctx.lineTo(endX, endY); ctx.stroke();
+                drawBranch(ctx, endX, endY, angle - Math.PI / 4, length * 0.6, level - 1);
+                drawBranch(ctx, endX, endY, angle + Math.PI / 4, length * 0.6, level - 1);
+            }
+            startSolidificationBtn.addEventListener('click', () => {
+                cancelAnimationFrame(solidificationAnimationId);
+                drawSolidification();
+            });
+
+            // --- Simulation 2: Nucleation (Enhanced) ---
+            const nCanvas = document.getElementById('nucleationCanvas');
+            const nCtx = nCanvas.getContext('2d');
+            let nAnimationId, nPaused = true;
+            let atoms = [], nuclei = [];
+            const criticalRadius = 12;
+
+            function initNucleation() {
+                nPaused = true;
+                cancelAnimationFrame(nAnimationId);
+                atoms = [];
+                nuclei = [];
+                for (let i = 0; i < 200; i++) {
+                    atoms.push({
+                        x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height,
+                        vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5
+                    });
+                }
+                drawNucleationFrame();
+            }
+
+            function drawNucleationFrame() {
+                nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
+                atoms.forEach(a => {
+                    nCtx.beginPath(); nCtx.arc(a.x, a.y, 2, 0, Math.PI * 2);
+                    nCtx.fillStyle = '#9ca3af'; nCtx.fill();
+                });
+                nuclei.forEach(n => {
+                    nCtx.beginPath(); nCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                    nCtx.fillStyle = n.r < criticalRadius ? 'rgba(239, 68, 68, 0.7)' : 'rgba(59, 130, 246, 0.7)';
+                    nCtx.fill();
+                    if (n.r < criticalRadius) {
+                        nCtx.beginPath(); nCtx.arc(n.x, n.y, criticalRadius, 0, Math.PI * 2);
+                        nCtx.strokeStyle = 'orange'; nCtx.setLineDash([3, 3]); nCtx.stroke(); nCtx.setLineDash([]);
+                    }
+                });
+            }
+
+            function animateNucleation() {
+                if (nPaused) return;
+                atoms.forEach(a => {
+                    a.x += a.vx; a.y += a.vy;
+                    if (a.x < 0 || a.x > nCanvas.width) a.vx *= -1;
+                    if (a.y < 0 || a.y > nCanvas.height) a.vy *= -1;
+                });
+
+                if (Math.random() < 0.02 && nuclei.length < 15) {
+                    nuclei.push({
+                        x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height,
+                        r: 2, stable: false
+                    });
+                }
+
+                nuclei.forEach((n, i) => {
+                    if (!n.stable) {
+                        n.r += 0.1;
+                        if (n.r >= criticalRadius) n.stable = true;
+                        if (Math.random() < 0.01 && !n.stable) nuclei.splice(i, 1); // Redissolve
+                    } else {
+                        n.r += 0.05;
+                    }
+                });
+                drawNucleationFrame();
+                nAnimationId = requestAnimationFrame(animateNucleation);
+            }
+            document.getElementById('nucleationPlay').addEventListener('click', () => { if(nPaused){ nPaused = false; animateNucleation(); } });
+            document.getElementById('nucleationPause').addEventListener('click', () => { nPaused = true; });
+            document.getElementById('nucleationReset').addEventListener('click', initNucleation);
+            initNucleation();
+
+            // --- Hume-Rothery Interactive Section ---
+            const hrCuNiBtn = document.getElementById('hrCuNiBtn');
+            const hrMgSnBtn = document.getElementById('hrMgSnBtn');
+            const hrResultsEl = document.getElementById('hr-results');
+            
+            const hrData = {
+                CuNi: {
+                    title: "Result for Copper (Cu) - Nickel (Ni)",
+                    outcome: "High Solubility Expected (Forms a Solid Solution)",
+                    rules: [
+                        { name: "1. Atomic Size", value: "ΔR% ≈ 2.5%", pass: true, reason: "Radii are very similar (Cu: 128pm, Ni: 125pm), well within the <15% limit." },
+                        { name: "2. Crystal Structure", value: "Both FCC", pass: true, reason: "Both copper and nickel have a Face-Centered Cubic (FCC) structure." },
+                        { name: "3. Electronegativity", value: "ΔEN ≈ 0.01", pass: true, reason: "Electronegativities are nearly identical (Cu: 1.90, Ni: 1.91)." },
+                        { name: "4. Valency", value: "Similar", pass: true, reason: "Both are transition metals with similar valencies (+1, +2 for Cu; +2 for Ni)." }
+                    ]
+                },
+                MgSn: {
+                    title: "Result for Magnesium (Mg) - Tin (Sn)",
+                    outcome: "Limited Solubility Expected (Forms an Intermetallic Compound, Mg₂Sn)",
+                    rules: [
+                        { name: "1. Atomic Size", value: "ΔR% ≈ 12.5%", pass: true, reason: "Difference is acceptable (Mg: 160pm, Sn: 140pm), but close to the limit." },
+                        { name: "2. Crystal Structure", value: "Mg: HCP, Sn: BCT", pass: false, reason: "The crystal structures are different (Hexagonal Close-Packed vs. Body-Centered Tetragonal)." },
+                        { name: "3. Electronegativity", value: "ΔEN ≈ 0.65", pass: false, reason: "The difference is large (Mg: 1.31, Sn: 1.96), favoring compound formation." },
+                        { name: "4. Valency", value: "Mg: +2, Sn: +4", pass: false, reason: "The valencies are different, which discourages substitution." }
+                    ]
+                }
+            };
+
+            function updateHRules(type) {
+                const data = hrData[type];
+                let passCount = data.rules.filter(r => r.pass).length;
+                let outcomeColor = passCount >= 3 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100';
+
+                let rulesHtml = data.rules.map(rule => `
+                    <div class="flex items-start p-3 border-b last:border-b-0">
+                        <div class="mr-4 mt-1">
+                            ${rule.pass ? '<span class="text-green-500 text-2xl">✔</span>' : '<span class="text-red-500 text-2xl">✖</span>'}
+                        </div>
+                        <div>
+                            <h5 class="font-semibold">${rule.name}: <span class="${rule.pass ? 'text-green-700' : 'text-red-700'}">${rule.value}</span></h5>
+                            <p class="text-sm text-gray-600">${rule.reason}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                hrResultsEl.innerHTML = `
+                    <h4 class="text-xl font-bold text-center mb-2">${data.title}</h4>
+                    <div class="text-center mb-4 p-2 rounded-lg ${outcomeColor} font-semibold">${data.outcome}</div>
+                    <div class="border rounded-lg">${rulesHtml}</div>
+                `;
+                
+                if (type === 'CuNi') {
+                    hrCuNiBtn.classList.replace('bg-gray-400', 'bg-indigo-600');
+                    hrCuNiBtn.classList.replace('hover:bg-gray-500', 'hover:bg-indigo-700');
+                    hrMgSnBtn.classList.replace('bg-indigo-600', 'bg-gray-400');
+                    hrMgSnBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-gray-500');
+                } else {
+                    hrMgSnBtn.classList.replace('bg-gray-400', 'bg-indigo-600');
+                    hrMgSnBtn.classList.replace('hover:bg-gray-500', 'hover:bg-indigo-700');
+                    hrCuNiBtn.classList.replace('bg-indigo-600', 'bg-gray-400');
+                    hrCuNiBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-gray-500');
+                }
+            }
+            hrCuNiBtn.addEventListener('click', () => updateHRules('CuNi'));
+            hrMgSnBtn.addEventListener('click', () => updateHRules('MgSn'));
+            updateHRules('CuNi');
+
+
+            // --- Cooling Curve Chart ---
+            const ccCtx = document.getElementById('coolingCurveCanvas').getContext('2d');
+            function drawCoolingCurves() {
+                const w = 500, h = 400, padding = 50;
+                ccCtx.clearRect(0, 0, w, h); ccCtx.font = "12px Inter"; ccCtx.fillStyle = "#334155";
+                ccCtx.beginPath(); ccCtx.moveTo(padding, padding); ccCtx.lineTo(padding, h - padding); ccCtx.lineTo(w - padding, h - padding); ccCtx.stroke();
+                ccCtx.save(); ccCtx.translate(padding / 4, h / 2); ccCtx.rotate(-Math.PI / 2); ccCtx.textAlign = "center"; ccCtx.fillText("Temperature (°C)", 0, 0); ccCtx.restore();
+                ccCtx.textAlign = "center"; ccCtx.fillText("Time", w / 2, h - padding / 3);
+                ccCtx.strokeStyle = "#3b82f6"; ccCtx.lineWidth = 2; ccCtx.beginPath(); ccCtx.moveTo(padding, padding); ccCtx.lineTo(w * 0.3, h * 0.4); ccCtx.lineTo(w * 0.6, h * 0.4); ccCtx.lineTo(w - padding, h - padding); ccCtx.stroke();
+                ccCtx.fillStyle = "#3b82f6"; ccCtx.fillText("Pure Metal", w * 0.45, h * 0.35);
+                ccCtx.strokeStyle = "#10b981"; ccCtx.lineWidth = 2; ccCtx.beginPath(); ccCtx.moveTo(padding, padding); ccCtx.lineTo(w * 0.35, h * 0.45); ccCtx.lineTo(w * 0.7, h * 0.75); ccCtx.lineTo(w - padding, h - padding * 1.5); ccCtx.stroke();
+                ccCtx.fillStyle = "#10b981"; ccCtx.fillText("Alloy", w * 0.55, h * 0.55);
+            }
+            drawCoolingCurves();
+
+            // --- Lever Rule Interactive ---
+            const lCanvas = document.getElementById('leverRuleCanvas'), lCtx = lCanvas.getContext('2d');
+            const slider = document.getElementById('compositionSlider'), compValue = document.getElementById('compositionValue'), resultsDiv = document.getElementById('leverRuleResults');
+            function drawLeverRule() {
+                const w = 600, h = 300;
+                lCtx.clearRect(0, 0, w, h); lCtx.font = "14px Inter"; lCtx.fillStyle = "#1f2937";
+                lCtx.strokeStyle = "#9ca3af"; lCtx.lineWidth = 2;
+                lCtx.beginPath(); lCtx.moveTo(100, 50); lCtx.lineTo(400, 200); lCtx.stroke();
+                lCtx.beginPath(); lCtx.moveTo(200, 50); lCtx.lineTo(500, 200); lCtx.stroke();
+                lCtx.fillText("Liquid (L)", 200, 40); lCtx.fillText("Solid (α)", 400, 40); lCtx.fillText("L + α", 320, 100);
+                const tieLineStart = 150, tieLineEnd = 450, tieLineY = 125;
+                lCtx.strokeStyle = "#ef4444"; lCtx.lineWidth = 1.5; lCtx.beginPath(); lCtx.moveTo(tieLineStart, tieLineY); lCtx.lineTo(tieLineEnd, tieLineY); lCtx.stroke();
+                lCtx.beginPath(); lCtx.arc(tieLineStart, tieLineY, 4, 0, Math.PI * 2); lCtx.fillStyle = "#3b82f6"; lCtx.fill(); lCtx.fillText("CL", tieLineStart - 10, tieLineY + 20);
+                lCtx.beginPath(); lCtx.arc(tieLineEnd, tieLineY, 4, 0, Math.PI * 2); lCtx.fillStyle = "#10b981"; lCtx.fill(); lCtx.fillText("Cα", tieLineEnd - 10, tieLineY + 20);
+                const c_overall = slider.value, c_alpha = 90, c_liquid = 30;
+                const c_pos = tieLineStart + (tieLineEnd - tieLineStart) * (c_overall - c_liquid) / (c_alpha - c_liquid);
+                lCtx.beginPath(); lCtx.moveTo(c_pos, tieLineY - 10); lCtx.lineTo(c_pos - 10, tieLineY - 20); lCtx.lineTo(c_pos + 10, tieLineY - 20); lCtx.closePath();
+                lCtx.fillStyle = "#f97316"; lCtx.fill(); lCtx.fillText("Co", c_pos - 8, tieLineY - 25);
+                const fracL = ((c_alpha - c_overall) / (c_alpha - c_liquid)) * 100;
+                const fracS = ((c_overall - c_liquid) / (c_alpha - c_liquid)) * 100;
+                resultsDiv.innerHTML = `<p><span class="font-bold text-blue-600">Wt% L</span> = ${fracL.toFixed(1)}%</p><p><span class="font-bold text-green-600">Wt% α</span> = ${fracS.toFixed(1)}%</p>`;
+            }
+            slider.addEventListener('input', () => { compValue.textContent = slider.value; drawLeverRule(); });
+            drawLeverRule();
+
+            // --- Glossary ---
+            const glossaryData = [
+                { term: 'Alloy', def: 'A metal made by combining two or more metallic elements, especially to give greater strength or resistance to corrosion.' },
+                { term: 'Constitutional Supercooling', def: 'A phenomenon in alloy solidification where solute rejection at the interface creates a locally supercooled liquid region, promoting dendritic growth.' },
+                { term: 'Dendrite', def: 'A tree-like crystal structure common in the solidification of alloys.' },
+                { term: 'Eutectic Reaction', def: 'A transformation where a liquid phase solidifies into two different solid phases at a single temperature.' },
+                { term: 'Grain', def: 'An individual crystal within a polycrystalline metal.' },
+                { term: 'Hume-Rothery Rules', def: 'A set of guidelines that predict the likelihood of two elements forming a substitutional solid solution.' },
+                { term: 'Intermetallic', def: 'A compound of two or more metals with an ordered crystal structure and fixed stoichiometry.' },
+                { term: 'Lever Rule', def: 'A rule used to determine the weight fractions of each phase in a two-phase region of a phase diagram.' },
+                { term: 'Microstructure', def: 'The fine-scale structure of a material, visible under a microscope.' },
+                { term: 'Nucleation', def: 'The initial process that occurs in the formation of a new phase, like a crystal from a liquid.' },
+                { term: 'Peritectic Reaction', def: 'A reaction where a liquid and a solid phase react to form a new, different solid phase upon cooling.' },
+                { term: 'Phase Diagram', def: 'A graphical map showing the equilibrium phases of a material at different temperatures and compositions.' },
+                { term: 'Solid Solution', def: 'A solid-state solution of one or more solutes in a solvent, forming a single crystal structure.' },
+                { term: 'Supercooling (Undercooling)', def: 'The process of cooling a liquid below its freezing point without it becoming solid.' }
+            ];
+            const glossaryList = document.getElementById('glossaryList');
+            const glossarySearch = document.getElementById('glossarySearch');
+            function renderGlossary(filter = '') {
+                glossaryList.innerHTML = '';
+                const filtered = glossaryData.filter(item => item.term.toLowerCase().includes(filter.toLowerCase()));
+                filtered.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-gray-50 p-4 rounded-lg border';
+                    div.innerHTML = `<h4 class="font-semibold text-indigo-700">${item.term}</h4><p class="text-sm text-gray-600 mt-1">${item.def}</p>`;
+                    glossaryList.appendChild(div);
+                });
+            }
+            glossarySearch.addEventListener('input', (e) => renderGlossary(e.target.value));
+            renderGlossary();
+            
+            // Initial draws
+            drawSolidification();
+        });
+    </script>
+</body>
+</html>

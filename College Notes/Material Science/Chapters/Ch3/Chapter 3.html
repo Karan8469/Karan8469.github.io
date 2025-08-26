@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Solidification & Alloy Theory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Blue and Slate Accents -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation bar for easy access to different thematic sections. The structure is designed for non-linear exploration, starting with a high-level interactive diagram ("The Big Picture") that links to detailed sections. Each section uses interactive elements (charts, diagrams, calculators) to make abstract concepts tangible. This task-oriented, thematic structure is more engaging for learning than a linear text document, allowing students to explore topics based on interest or need, reinforcing the interconnectedness of the concepts. -->
+    <!-- Visualization & Content Choices: 
+        - The Big Picture: Report Info -> Interconnections of all topics. Goal -> Provide a mental map. Viz -> HTML/CSS flowchart. Interaction -> Click nodes to scroll to sections. Justification -> Establishes context and relationships upfront. Method -> HTML/CSS/JS.
+        - Cooling Curves: Report Info -> Solidification of pure metals vs. alloys. Goal -> Compare phase change behavior. Viz -> Chart.js Line Chart. Interaction -> Buttons to toggle between datasets. Justification -> Dynamic comparison is more effective than static images. Method -> Chart.js.
+        - Crystallization: Report Info -> Nucleation & Growth. Goal -> Visualize atomic processes. Viz -> CSS-animated diagrams. Interaction -> Buttons to trigger animations. Justification -> Animation makes abstract microscopic events understandable. Method -> HTML/CSS/JS.
+        - Alloy Types: Report Info -> Solid Solutions vs. Intermetallic Compounds. Goal -> Compare characteristics. Viz -> Side-by-side card layout. Interaction -> Click to reveal visual examples. Justification -> Direct comparison highlights key differences. Method -> HTML/CSS/JS.
+        - The Rules: Report Info -> Hume-Rothery & Lever Rules. Goal -> Apply principles practically. Viz -> Interactive calculators. Interaction -> Sliders and dropdowns to change inputs and see live results. Justification -> Hands-on application solidifies understanding of formulas/rules. Method -> HTML/JS/Chart.js.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #374151;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .active-link {
+            color: #3B82F6 !important;
+            border-bottom-color: #3B82F6 !important;
+        }
+        .interactive-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .interactive-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .concept-node {
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .concept-node:hover {
+            transform: scale(1.05);
+            background-color: #BFDBFE;
+        }
+        .arrow {
+            position: absolute;
+            background-color: #9CA3AF;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">Solidification & Alloys</h1>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="#overview" class="nav-link text-gray-600 hover:text-blue-500 border-b-2 border-transparent pb-1">Overview</a>
+                    <a href="#solidification" class="nav-link text-gray-600 hover:text-blue-500 border-b-2 border-transparent pb-1">Solidification</a>
+                    <a href="#crystallization" class="nav-link text-gray-600 hover:text-blue-500 border-b-2 border-transparent pb-1">Crystallization</a>
+                    <a href="#alloys" class="nav-link text-gray-600 hover:text-blue-500 border-b-2 border-transparent pb-1">Alloy Types</a>
+                    <a href="#rules" class="nav-link text-gray-600 hover:text-blue-500 border-b-2 border-transparent pb-1">The Rules</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+        
+        <section id="intro" class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">An Interactive Guide to Solidification</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+                From molten metal to finished product, the journey of solidification defines a material's strength, structure, and performance. This guide breaks down the core concepts of alloy theory into interactive, easy-to-digest modules.
+            </p>
+        </section>
+
+        <section id="overview" class="mb-20 scroll-mt-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-800">The Big Picture</h3>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Everything is connected. Click on a concept below to jump to its section and see how it fits into the larger framework of materials science.</p>
+            <div class="relative p-4 md:p-8 bg-gray-50 rounded-xl border border-gray-200">
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-8 items-center">
+                    <div data-target="solidification" class="concept-node text-center p-4 bg-white rounded-lg shadow-md border border-gray-200">
+                        <h4 class="font-bold text-blue-600">1. Solidification</h4>
+                        <p class="text-sm text-gray-500">The core process: liquid to solid.</p>
+                    </div>
+                    <div data-target="crystallization" class="concept-node text-center p-4 bg-white rounded-lg shadow-md border border-gray-200">
+                        <h4 class="font-bold text-blue-600">2. Crystallization</h4>
+                        <p class="text-sm text-gray-500">How crystals are born and grow.</p>
+                    </div>
+                    <div data-target="alloys" class="concept-node text-center p-4 bg-white rounded-lg shadow-md border border-gray-200">
+                        <h4 class="font-bold text-blue-600">3. Alloy Types</h4>
+                        <p class="text-sm text-gray-500">Mixing metals: solutions & compounds.</p>
+                    </div>
+                    <div class="col-span-1 md:col-span-3 text-center">
+                         <div data-target="rules" class="concept-node inline-block p-4 bg-white rounded-lg shadow-md border border-gray-200">
+                            <h4 class="font-bold text-blue-600">4. The Rules of Alloying</h4>
+                            <p class="text-sm text-gray-500">Predicting and quantifying phases.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solidification" class="mb-20 scroll-mt-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-800">Solidification Basics: Cooling Curves</h3>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                The way a material cools reveals its identity. A pure metal freezes at a single temperature, releasing latent heat of fusion and creating a "thermal arrest." An alloy, however, solidifies over a temperature range due to solute partitioning, forming a "mushy zone" where both liquid and solid coexist, which can lead to microporosity. Use the buttons below to see this difference visualized on a cooling curve.
+            </p>
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200">
+                <div class="chart-container mx-auto">
+                    <canvas id="coolingCurveChart"></canvas>
+                </div>
+                <div class="flex justify-center mt-6 space-x-4">
+                    <button id="pureMetalBtn" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">Pure Metal</button>
+                    <button id="alloyBtn" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition">Alloy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="crystallization" class="mb-20 scroll-mt-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-800">Crystallization: Nucleation & Growth</h3>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                Solidification happens in two stages: nucleation (the birth of tiny, stable solid particles) and growth (their expansion). This section visualizes these microscopic phenomena. Real-world solidification almost always uses existing surfaces (impurities, mold walls) in a process called heterogeneous nucleation, which requires less undercooling and is influenced by the contact angle between the solid and the substrate. A smaller grain size, generally desirable for improved strength and ductility, is achieved by promoting more nuclei.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="interactive-card bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">Nucleation Visualizer</h4>
+                    <p class="text-gray-600 mb-4">Watch as atoms cluster. Most clusters (embryos) are unstable and redissolve. Only those reaching a critical size become stable nuclei that can grow. Undercooling (cooling below the freezing point) is required to drive this process, as it decreases the critical nucleus size, making nucleation easier.</p>
+                    <div id="nucleation-animation-container" class="relative w-full h-48 bg-gray-100 rounded-lg border flex items-center justify-center overflow-hidden">
+                        <span class="text-gray-400">Click "Start" to visualize</span>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button id="startNucleation" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">Start Nucleation</button>
+                    </div>
+                </div>
+                <div class="interactive-card bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">Dendritic Growth</h4>
+                    <p class="text-gray-600 mb-4">In alloys, crystals often don't grow as simple spheres. They form complex, tree-like structures called dendrites. This morphology arises from constitutional supercooling and affects the final properties and element distribution. Slow cooling produces long dendrites, while fast cooling results in shorter, finer ones. Dendritic arms can also undergo coarsening, where smaller arms dissolve and larger ones grow.</p>
+                     <div id="dendrite-animation-container" class="relative w-full h-48 bg-gray-100 rounded-lg border flex items-center justify-center overflow-hidden">
+                        <span class="text-gray-400">Click "Grow" to visualize</span>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button id="startDendrite" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">Grow Dendrite</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mt-8">
+                <h4 class="font-bold text-xl mb-3 text-gray-800">Grain Structure & Shrinkage</h4>
+                <p class="text-gray-600 mb-4">As crystals grow, they impinge on neighbors, forming grains. Equiaxed grains (equal in all directions) form near cold mold walls due to rapid cooling, while columnar grains (long, thin) form with slower cooling and steep temperature gradients. A smaller grain size generally improves strength, fatigue resistance, and ductility by impeding dislocation motion.</p>
+                <p class="text-gray-600">Most materials contract during solidification (shrinkage) due to liquid contraction, volume reduction during phase change, and solid cooling. This can lead to defects like "pipes" (shrink cavities) and microporosity if not properly fed with liquid metal.</p>
+            </div>
+        </section>
+
+        <section id="alloys" class="mb-20 scroll-mt-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-800">Alloy Types: Solutions vs. Compounds</h3>
+             <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                Alloying is the art of mixing elements to create materials with superior properties. The way atoms arrange themselves determines the alloy type. Solid solutions are like a random blend, while intermetallic compounds have a strict, ordered structure.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="interactive-card bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">Solid Solutions</h4>
+                    <p class="text-gray-600 mb-4">Solute atoms are randomly distributed in the solvent's crystal lattice, either by replacing solvent atoms (substitutional) or fitting in the gaps (interstitial). This distortion of the crystal lattice impedes dislocation movement, which is the fundamental mechanism behind "solid solution strengthening," improving the material's strength and hardness.</p>
+                    <div class="p-4 bg-gray-100 rounded-lg border h-32 flex items-center justify-center space-x-1">
+                        <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-blue-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                    </div>
+                    <p class="text-center mt-2 text-sm text-gray-500">Visual: A random mix of atoms.</p>
+                </div>
+                <div class="interactive-card bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">Intermetallic Compounds</h4>
+                    <p class="text-gray-600 mb-4">Unlike solid solutions, intermetallic compounds have ordered atomic structures, meaning elements occupy specific positions in the crystal lattice. They exist at fixed stoichiometries ("line phases") and often exhibit high melting points, excellent thermal stability, and good mechanical properties, though they can sometimes be brittle.</p>
+                     <div class="p-4 bg-gray-100 rounded-lg border h-32 flex items-center justify-center space-x-1">
+                        <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-blue-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-blue-400 rounded-full"></div>
+                        <div class="w-6 h-6 bg-slate-400 rounded-full"></div>
+                    </div>
+                    <p class="text-center mt-2 text-sm text-gray-500">Visual: An ordered, repeating pattern.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="rules" class="scroll-mt-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-8 text-gray-800">The Rules: Predicting & Quantifying</h3>
+            <div class="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="interactive-card bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">Hume-Rothery Rules Calculator</h4>
+                    <p class="text-gray-600 mb-4">Will two metals form a solid solution? The Hume-Rothery rules give us a good prediction based on four factors. Select two elements and see how they stack up.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <label for="elementA" class="font-semibold w-24">Element A:</label>
+                            <select id="elementA" class="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="Cu">Copper (Cu)</option>
+                                <option value="Ni">Nickel (Ni)</option>
+                                <option value="Zn">Zinc (Zn)</option>
+                                <option value="Ag">Silver (Ag)</option>
+                            </select>
+                        </div>
+                         <div class="flex items-center space-x-4">
+                            <label for="elementB" class="font-semibold w-24">Element B:</label>
+                            <select id="elementB" class="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="Ni">Nickel (Ni)</option>
+                                <option value="Cu">Copper (Cu)</option>
+                                <option value="Zn">Zinc (Zn)</option>
+                                <option value="Ag">Silver (Ag)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="humeRotheryResults" class="mt-6 space-y-2"></div>
+                    <p class="text-sm text-gray-500 mt-4">
+                        *If atomic size difference is large, it leads to lattice distortions. If electronegativity difference is too high, intermetallic compounds are more likely. A metal with lower valency is more likely to dissolve in one with higher valency. Compound formation can also occur at specific electron/atom ratios.
+                    </p>
+                </div>
+
+                <div class="interactive-card bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">Lever Rule Interactive</h4>
+                    <p class="text-gray-600 mb-4">In a two-phase region of an alloy, how much is liquid and how much is solid? The Lever Rule lets us calculate the exact proportions. A "tie line" is drawn horizontally on the phase diagram at the temperature of interest. Drag the slider to change the overall alloy composition and see the calculation update live. This tool is crucial for predicting mechanical behavior, as properties depend heavily on phase proportions.</p>
+                    <div class="chart-container mx-auto mb-4">
+                        <canvas id="leverRuleChart"></canvas>
+                    </div>
+                    <div class="space-y-2">
+                         <label for="compositionSlider" class="font-semibold">Overall Composition (%B): <span id="compositionValue" class="font-bold text-blue-600">40</span>%</label>
+                        <input id="compositionSlider" type="range" min="20" max="80" value="40" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div id="leverRuleResults" class="mt-4 text-center font-mono bg-gray-50 p-4 rounded-lg border"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 mt-12 border-t border-gray-200">
+        <p class="text-gray-500">An interactive learning tool based on the principles of materials science.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            function updateActiveLink() {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active-link');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active-link');
+                    }
+                });
+            }
+            window.addEventListener('scroll', updateActiveLink);
+            updateActiveLink();
+
+            document.querySelectorAll('.concept-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    const targetId = node.getAttribute('data-target');
+                    document.getElementById(targetId).scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            const coolingCurveCtx = document.getElementById('coolingCurveChart').getContext('2d');
+            let coolingCurveChart;
+
+            const pureMetalData = {
+                labels: Array.from({ length: 11 }, (_, i) => `Time ${i}`),
+                datasets: [{
+                    label: 'Pure Metal Temperature',
+                    data: [120, 110, 100, 90, 80, 80, 80, 80, 70, 60, 50],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.1,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3B82F6',
+                }]
+            };
+
+            const alloyData = {
+                labels: Array.from({ length: 11 }, (_, i) => `Time ${i}`),
+                datasets: [{
+                    label: 'Alloy Temperature',
+                    data: [120, 110, 100, 95, 90, 85, 80, 75, 70, 60, 50],
+                    borderColor: '#6B7280',
+                    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                    fill: true,
+                    tension: 0.1,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#6B7280',
+                }]
+            };
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        title: { display: true, text: 'Temperature (°C)' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Time' }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + '°C';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            };
+            
+            function createCoolingChart(data) {
+                if (coolingCurveChart) {
+                    coolingCurveChart.destroy();
+                }
+                coolingCurveChart = new Chart(coolingCurveCtx, {
+                    type: 'line',
+                    data: data,
+                    options: chartOptions
+                });
+            }
+
+            document.getElementById('pureMetalBtn').addEventListener('click', () => createCoolingChart(pureMetalData));
+            document.getElementById('alloyBtn').addEventListener('click', () => createCoolingChart(alloyData));
+            createCoolingChart(pureMetalData);
+
+            document.getElementById('startNucleation').addEventListener('click', () => {
+                const container = document.getElementById('nucleation-animation-container');
+                container.innerHTML = '';
+                for (let i = 0; i < 20; i++) {
+                    const embryo = document.createElement('div');
+                    embryo.style.position = 'absolute';
+                    embryo.style.width = '10px';
+                    embryo.style.height = '10px';
+                    embryo.style.backgroundColor = '#9CA3AF';
+                    embryo.style.borderRadius = '50%';
+                    embryo.style.left = `${Math.random() * 95}%`;
+                    embryo.style.top = `${Math.random() * 90}%`;
+                    embryo.style.opacity = '0';
+                    embryo.style.animation = `fade-in 0.5s ease ${Math.random() * 2}s forwards`;
+                    container.appendChild(embryo);
+                }
+                const nucleus = document.createElement('div');
+                nucleus.style.position = 'absolute';
+                nucleus.style.width = '10px';
+                nucleus.style.height = '10px';
+                nucleus.style.backgroundColor = '#3B82F6';
+                nucleus.style.borderRadius = '50%';
+                nucleus.style.left = '45%';
+                nucleus.style.top = '45%';
+                nucleus.style.opacity = '0';
+                nucleus.style.animation = `grow 2s ease 2.5s forwards`;
+                nucleus.style.boxShadow = '0 0 15px #3B82F6';
+                container.appendChild(nucleus);
+
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    @keyframes fade-in {
+                        to { opacity: 1; }
+                    }
+                    @keyframes grow {
+                        0% { opacity: 1; transform: scale(1); }
+                        100% { opacity: 1; transform: scale(3); }
+                    }
+                `;
+                document.head.appendChild(style);
+            });
+            
+            document.getElementById('startDendrite').addEventListener('click', () => {
+                const container = document.getElementById('dendrite-animation-container');
+                container.innerHTML = '';
+                const dendriteHTML = `
+                    <div style="position: absolute; width: 4px; height: 100px; background: #3B82F6; top: 50%; left: 50%; transform-origin: top; transform: translate(-50%, -50%) rotate(0deg); animation: grow-main 1s forwards;"></div>
+                    <div style="position: absolute; width: 4px; height: 50px; background: #60A5FA; top: 90px; left: 50%; transform-origin: top; transform: translate(-50%, -50%) rotate(45deg); animation: grow-branch 1s 0.5s forwards;"></div>
+                    <div style="position: absolute; width: 4px; height: 50px; background: #60A5FA; top: 90px; left: 50%; transform-origin: top; transform: translate(-50%, -50%) rotate(-45deg); animation: grow-branch 1s 0.5s forwards;"></div>
+                    <div style="position: absolute; width: 4px; height: 40px; background: #93C5FD; top: 60px; left: 50%; transform-origin: top; transform: translate(-50%, -50%) rotate(60deg); animation: grow-branch 1s 0.8s forwards;"></div>
+                    <div style="position: absolute; width: 4px; height: 40px; background: #93C5FD; top: 60px; left: 50%; transform-origin: top; transform: translate(-50%, -50%) rotate(-60deg); animation: grow-branch 1s 0.8s forwards;"></div>
+                `;
+                container.innerHTML = dendriteHTML;
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    @keyframes grow-main { from { height: 0; } to { height: 100px; } }
+                    @keyframes grow-branch { from { height: 0; } to { height: 50px; } }
+                `;
+                document.head.appendChild(style);
+            });
+
+            const elementData = {
+                Cu: { radius: 128, structure: 'FCC', electronegativity: 1.90, valency: 2 },
+                Ni: { radius: 125, structure: 'FCC', electronegativity: 1.91, valency: 2 },
+                Zn: { radius: 137, structure: 'HCP', electronegativity: 1.65, valency: 2 },
+                Ag: { radius: 144, structure: 'FCC', electronegativity: 1.93, valency: 1 }
+            };
+
+            const elementASelect = document.getElementById('elementA');
+            const elementBSelect = document.getElementById('elementB');
+            const humeRotheryResults = document.getElementById('humeRotheryResults');
+
+            function checkHumeRothery() {
+                const elA = elementData[elementASelect.value];
+                const elB = elementData[elementBSelect.value];
+                let score = 0;
+                let resultsHTML = '';
+
+                const radiusDiff = Math.abs(elA.radius - elB.radius) / elA.radius * 100;
+                const radiusCheck = radiusDiff <= 15;
+                if (radiusCheck) score++;
+                resultsHTML += `<p>1. Atomic Size: Difference is ${radiusDiff.toFixed(1)}%. ${radiusCheck ? '✅ Favorable (< 15%)' : '❌ Unfavorable (> 15%)'}</p>`;
+
+                const structureCheck = elA.structure === elB.structure;
+                if (structureCheck) score++;
+                resultsHTML += `<p>2. Crystal Structure: ${elA.structure} vs ${elB.structure}. ${structureCheck ? '✅ Favorable (Same)' : '❌ Unfavorable (Different)'}</p>`;
+
+                const electronegativityDiff = Math.abs(elA.electronegativity - elB.electronegativity);
+                const electronegativityCheck = electronegativityDiff < 0.4;
+                if(electronegativityCheck) score++;
+                resultsHTML += `<p>3. Electronegativity: Difference is ${electronegativityDiff.toFixed(2)}. ${electronegativityCheck ? '✅ Favorable (Similar)' : '❌ Unfavorable (Different)'}</p>`;
+
+                const valencyCheck = elA.valency === elB.valency;
+                if (valencyCheck) score++;
+                resultsHTML += `<p>4. Valency: ${elA.valency} vs ${elB.valency}. ${valencyCheck ? '✅ Favorable (Same)' : '❌ Unfavorable (Different)'}</p>`;
+
+                let prediction = '';
+                if (score === 4) prediction = 'Excellent Solubility';
+                else if (score === 3) prediction = 'Good Solubility';
+                else if (score === 2) prediction = 'Limited Solubility';
+                else prediction = 'Poor Solubility / Compound Formation Likely';
+
+                humeRotheryResults.innerHTML = `<div class="bg-gray-50 p-4 rounded-lg border">${resultsHTML}<hr class="my-2"><p class="font-bold">Prediction: <span class="text-blue-600">${prediction}</span></p></div>`;
+            }
+            elementASelect.addEventListener('change', checkHumeRothery);
+            elementBSelect.addEventListener('change', checkHumeRothery);
+            checkHumeRothery();
+            
+            const leverRuleCtx = document.getElementById('leverRuleChart').getContext('2d');
+            const compositionSlider = document.getElementById('compositionSlider');
+            const compositionValue = document.getElementById('compositionValue');
+            const leverRuleResults = document.getElementById('leverRuleResults');
+            let leverRuleChart;
+
+            const liquidus = {x: 20, y: 100};
+            const solidus = {x: 80, y: 100};
+
+            function updateLeverRule() {
+                const overallComp = parseFloat(compositionSlider.value);
+                compositionValue.textContent = overallComp.toFixed(0);
+
+                const fractionSolid = (overallComp - liquidus.x) / (solidus.x - liquidus.x);
+                const fractionLiquid = (solidus.x - overallComp) / (solidus.x - liquidus.x);
+
+                leverRuleResults.innerHTML = `
+                    <p>Fraction Solid (α) = ${fractionSolid.toFixed(2) * 100}%</p>
+                    <p>Fraction Liquid (L) = ${fractionLiquid.toFixed(2) * 100}%</p>
+                `;
+
+                leverRuleChart.data.datasets[2].data = [{x: overallComp, y: 0}, {x: overallComp, y: 120}];
+                leverRuleChart.update('none');
+            }
+
+            leverRuleChart = new Chart(leverRuleCtx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Liquidus Line',
+                            data: [{x: 20, y: 100}, {x: 100, y: 120}],
+                            borderColor: '#F97316',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 0,
+                        },
+                        {
+                            label: 'Solidus Line',
+                            data: [{x: 0, y: 80}, {x: 80, y: 100}],
+                            borderColor: '#16A34A',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 0,
+                        },
+                        {
+                            label: 'Overall Composition',
+                            data: [{x: 40, y: 0}, {x: 40, y: 120}],
+                            borderColor: '#3B82F6',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                        },
+                        {
+                            label: 'Tie Line',
+                            data: [{x: liquidus.x, y: liquidus.y}, {x: solidus.x, y: solidus.y}],
+                            borderColor: '#6B7280',
+                            borderWidth: 2,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#6B7280',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            min: 0,
+                            max: 100,
+                            title: { display: true, text: 'Composition (%B)' }
+                        },
+                        y: {
+                            min: 50,
+                            max: 130,
+                            title: { display: true, text: 'Temperature' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    animation: {
+                        duration: 0
+                    }
+                }
+            });
+
+            compositionSlider.addEventListener('input', updateLeverRule);
+            updateLeverRule();
+
+        });
+    </script>
+</body>
+</html>
