@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Bending Theory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <!-- Chosen Palette: Slate & Sky -->
+    <!-- Application Structure Plan: The application is designed as a single-page interactive dashboard, not a linear report. It's broken into thematic, task-oriented sections: 'Fundamentals' for interactive definitions, 'Shear & Moment Diagrams' for dynamic visualization of internal forces, 'Shear Stress in Beams' for detailed explanation of transverse shear, 'Beam Deflection' for calculation and understanding deformation, 'Stress Visualizer' for dynamic exploration of concepts, 'Section Modulus Calculator' for hands-on experimentation, 'Stress Concentration' for localized stress effects, 'Combined Loading' for complex scenarios, 'Bending Stresses in Levers' for practical application, 'Key Formulas' for quick reference, 'Exam Tips' for numerical problem-solving strategies, and 'Concept Map' for a high-level overview. This structure was chosen to facilitate non-linear learning and active engagement. Users can jump to the section most relevant to their needs, allowing them to either learn concepts sequentially, experiment with calculations, or review relationships between topics. This is more effective for student learning than a static, scrollable document as it encourages exploration and reinforces concepts through interaction. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Beam Types & Loads -> Goal: Inform/Organize -> Viz/Method: Interactive HTML cards with styled divs for diagrams -> Interaction: Click to reveal details -> Justification: Allows focused learning on one beam type at a time, more engaging than a list. -> Library: Vanilla JS, Tailwind CSS.
+        - Report Info: Shear Force & Bending Moment Diagrams -> Goal: Inform/Change/Relationships -> Viz/Method: Interactive beam diagram with two Canvas-based Chart.js line charts (SFD, BMD) -> Interaction: Sliders for load magnitude and position dynamically update the diagrams -> Justification: Visually demonstrates the derivative relationships between load, shear, and moment, a key conceptual leap. -> Library: Chart.js, Vanilla JS.
+        - Report Info: Shear Stress in Beams -> Goal: Inform/Relationships -> Viz/Method: Textual explanation with diagram descriptions -> Interaction: None, focuses on conceptual understanding -> Justification: Introduces a critical stress component often overlooked, complementing bending stress. -> Library: MathJax.
+        - Report Info: Beam Deflection Formulas -> Goal: Calculate/Experiment -> Viz/Method: HTML form inputs for parameters and calculated output -> Interaction: User inputs values for load, length, E, I to get max deflection -> Justification: Provides a practical tool for understanding deflection and the influence of material/geometric properties. -> Library: Vanilla JS, MathJax.
+        - Report Info: Bending Stress Distribution -> Goal: Inform/Relationships -> Viz/Method: Canvas-based Chart.js bar chart paired with a bending div -> Interaction: A slider controls the "load," which dynamically updates the chart and div's curvature -> Justification: Visually connects the abstract concept of stress to the tangible action of applying a load. -> Library: Chart.js, Vanilla JS.
+        - Report Info: Section Modulus Formulas -> Goal: Compare/Experiment -> Viz/Method: HTML form inputs with a Chart.js canvas for visualizing the cross-section -> Interaction: User selects a shape, inputs dimensions, and sees the Section Modulus and Moment of Inertia calculated in real-time, with the chart updating to reflect the shape -> Justification: Transforms passive formula reading into active, experimental learning. The most powerful tool for understanding why certain shapes are efficient. -> Library: Chart.js, Vanilla JS.
+        - Report Info: Stress Concentration -> Goal: Inform -> Viz/Method: Textual explanation with examples -> Interaction: None, focuses on conceptual understanding -> Justification: Highlights a crucial aspect of failure analysis beyond simple stress calculations. -> Library: MathJax.
+        - Report Info: Combined Loading -> Goal: Inform -> Viz/Method: Textual explanation of superposition -> Interaction: None, focuses on conceptual understanding -> Justification: Prepares students for more realistic engineering scenarios where multiple load types are present. -> Library: MathJax.
+        - Report Info: Bending Stresses in Levers -> Goal: Inform -> Viz/Method: Textual explanation with practical context -> Interaction: None, focuses on conceptual understanding -> Justification: Provides a direct application of bending theory to a common mechanical component. -> Library: MathJax.
+        - Report Info: Key Formulas -> Goal: Reference -> Viz/Method: Organized list of formulas with LaTeX rendering -> Interaction: Static reference -> Justification: Provides a quick, consolidated resource for numerical problem-solving. -> Library: MathJax.
+        - Report Info: Exam Tips -> Goal: Guide/Strategize -> Viz/Method: Structured text list -> Interaction: Static reference -> Justification: Directly addresses user's request for problem-solving strategies and common mistakes. -> Library: MathJax.
+        - Report Info: Concept Map -> Goal: Organize/Relationships -> Viz/Method: HTML/Tailwind using a vertical flow layout with explicit connectors and grouped concepts -> Interaction: Static visual reference -> Justification: Provides a clear, high-level summary of topic interconnectedness, addressing the user's request for a vertical hierarchy and ensuring correct text rendering and interrelationships. -> Library: Tailwind CSS, MathJax.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .concept-map-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem; /* Space between items */
+        }
+        .concept-item {
+            background-color: white;
+            border: 1px solid #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px; /* Limit width for readability in flow */
+            text-align: center;
+        }
+        .concept-connector {
+            font-size: 1.1rem; /* Smaller for more detailed labels */
+            font-weight: 600;
+            color: #64748b; /* slate-500 */
+            line-height: 1.2;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+        .concept-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem; /* Smaller gap within groups */
+            width: 100%;
+            max-width: 400px;
+        }
+        .concept-group-horizontal {
+            display: flex;
+            flex-direction: column; /* Default to column on small screens */
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 600px; /* Wider for horizontal grouping */
+        }
+        @media (min-width: 768px) {
+            .concept-group-horizontal {
+                flex-direction: row;
+                justify-content: center;
+            }
+            .concept-group-horizontal .concept-item {
+                flex: 1;
+            }
+            .concept-group-horizontal .concept-connector.horizontal {
+                display: block; /* Show horizontal connector */
+                transform: rotate(90deg); /* Rotate arrow for horizontal flow */
+                margin: 0 1rem;
+            }
+        }
+        .beam-diagram {
+            height: 60px;
+            width: 100%;
+            background-color: #f1f5f9; /* slate-100 */
+            border: 2px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            margin-top: 1rem;
+            position: relative;
+        }
+        .support-fixed {
+            width: 10px;
+            height: 100%;
+            background-color: #64748b; /* slate-500 */
+        }
+        .support-pin::before {
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 20px solid #64748b; /* slate-500 */
+        }
+        .support-roller::before {
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 20px solid #64748b; /* slate-500 */
+        }
+        .support-roller::after {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 4px;
+            background-color: #64748b; /* slate-500 */
+            border-radius: 2px;
+            margin-top: 2px;
+        }
+        .load-arrow {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #ef4444; /* red-500 */
+        }
+        .load-arrow::before {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: -2px;
+            width: 4px;
+            height: 20px;
+            background-color: #ef4444; /* red-500 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Specific styling for SFD/BMD beam */
+        #sfd-bmd-beam-container {
+            position: relative;
+            width: 100%;
+            height: 80px;
+            background-color: #f1f5f9;
+            border: 2px solid #cbd5e1;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            margin-top: 1rem;
+        }
+        #sfd-bmd-beam-container .support-pin, #sfd-bmd-beam-container .support-roller {
+            position: absolute;
+            bottom: -20px; /* Position below the beam */
+            transform: translateX(-50%);
+        }
+        #sfd-bmd-beam-container .support-pin { left: 10px; }
+        #sfd-bmd-beam-container .support-roller { right: 10px; }
+
+        #sfd-bmd-load-indicator {
+            position: absolute;
+            width: 4px;
+            height: 30px;
+            background-color: #ef4444;
+            top: -35px;
+            transform: translateX(-50%);
+        }
+        #sfd-bmd-load-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">The Interactive Guide to Bending Theory</h1>
+            <p class="mt-2 text-lg text-slate-600">An intuitive tool for Mechanical Engineering students.</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100 active" data-target="fundamentals">Fundamentals</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="sfd-bmd">Shear & Moment Diagrams</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="shear-stress">Shear Stress in Beams</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="deflection-calc">Beam Deflection</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="visualizer">Bending Stress Visualizer</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="calculator">Section Modulus Calculator</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="stress-concentration">Stress Concentration</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="combined-loading">Combined Loading</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="levers">Bending in Levers</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="key-formulas">Key Formulas</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="exam-tips">Exam Tips</button>
+            <button class="nav-button px-4 py-2 rounded-md font-semibold bg-white shadow-sm border border-slate-200 text-slate-700 hover:bg-sky-100" data-target="concept-map">Concept Map</button>
+        </nav>
+
+        <main>
+            <!-- Fundamentals Section -->
+            <section id="fundamentals" class="content-section active">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">1. Beam & Load Fundamentals</h2>
+                    <p class="mb-6 text-slate-600">Beams are fundamental structural elements engineered to primarily resist forces applied perpendicular to their longitudinal axis. Their behavior under external forces is profoundly influenced by their support conditions and the characteristics of the applied loads. Click on a beam type below to explore its characteristics and common examples.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div id="beam-selector" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                <button class="p-3 text-center bg-slate-100 hover:bg-sky-100 rounded-md font-semibold border border-slate-200 transition-all" data-beam="cantilever">Cantilever</button>
+                                <button class="p-3 text-center bg-slate-100 hover:bg-sky-100 rounded-md font-semibold border border-slate-200 transition-all" data-beam="simply-supported">Simply Supported</button>
+                                <button class="p-3 text-center bg-slate-100 hover:bg-sky-100 rounded-md font-semibold border border-slate-200 transition-all" data-beam="overhanging">Overhanging</button>
+                                <button class="p-3 text-center bg-slate-100 hover:bg-sky-100 rounded-md font-semibold border border-slate-200 transition-all" data-beam="fixed">Fixed</button>
+                                <button class="p-3 text-center bg-slate-100 hover:bg-sky-100 rounded-md font-semibold border border-slate-200 transition-all" data-beam="continuous">Continuous</button>
+                            </div>
+                        </div>
+                        <div id="beam-display" class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <!-- Content will be injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Shear Force & Bending Moment Diagrams Section -->
+            <section id="sfd-bmd" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">2. Shear Force & Bending Moment Diagrams</h2>
+                    <p class="mb-6 text-slate-600">Internal shear forces and bending moments develop within a beam to resist external loads. These forces and moments vary along the beam's length, and their distribution is graphically represented by <strong>Shear Force Diagrams (SFD)</strong> and <strong>Bending Moment Diagrams (BMD)</strong>. These diagrams are essential for identifying the critical sections where stresses are highest.</p>
+                    <p class="mb-6 text-slate-600">The relationship between load ($w$), shear force ($V$), and bending moment ($M$) is fundamental:</p>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li>The slope of the shear force diagram at any point is equal to the negative of the distributed load intensity at that point: $\frac{dV}{dx} = -w(x)$</li>
+                        <li>The slope of the bending moment diagram at any point is equal to the shear force at that point: $\frac{dM}{dx} = V(x)$</li>
+                        <li>The change in shear force between two points is equal to the area under the load diagram between those points.</li>
+                        <li>The change in bending moment between two points is equal to the area under the shear force diagram between those points.</li>
+                    </ul>
+                    <p class="mb-6 text-slate-600">Use the sliders below to apply a point load to a simply supported beam and observe how the SFD and BMD change dynamically. This visualizes the derivative relationships described above.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <label for="load-magnitude" class="block font-semibold">Load Magnitude (P): <span id="load-magnitude-val">50</span> N</label>
+                                <input type="range" id="load-magnitude" min="0" max="100" value="50" class="w-2/3">
+                            </div>
+                            <div class="flex items-center justify-between mb-4">
+                                <label for="load-position" class="block font-semibold">Load Position (a): <span id="load-position-val">5</span> m</label>
+                                <input type="range" id="load-position" min="0" max="10" value="5" step="0.1" class="w-2/3">
+                            </div>
+                            <div id="sfd-bmd-beam-container" class="relative">
+                                <div class="support-pin" style="left: 0%;"></div>
+                                <div class="support-roller" style="right: 0%;"></div>
+                                <div id="sfd-bmd-load-indicator" style="left: 50%;"></div>
+                                <div class="absolute bottom-[-30px] left-0 text-sm">A</div>
+                                <div class="absolute bottom-[-30px] right-0 text-sm">B</div>
+                                <div class="absolute top-[-50px] text-sm" id="load-label" style="left: 50%;">P</div>
+                            </div>
+                            <div class="text-center mt-8 font-medium text-slate-500">Simply Supported Beam with Point Load (Length = 10m)</div>
+                        </div>
+                        <div>
+                            <div class="chart-container mb-8">
+                                <canvas id="sfd-chart"></canvas>
+                            </div>
+                            <div class="text-center mt-2 font-medium text-slate-500">Shear Force Diagram (SFD)</div>
+
+                            <div class="chart-container">
+                                <canvas id="bmd-chart"></canvas>
+                            </div>
+                            <div class="text-center mt-2 font-medium text-slate-500">Bending Moment Diagram (BMD)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Shear Stress in Beams Section -->
+            <section id="shear-stress" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">3. Shear Stress in Beams</h2>
+                    <p class="mb-6 text-slate-600">While bending moments induce normal (longitudinal) stresses, <strong>transverse shear forces</strong> induce <strong>shear stresses</strong> within a beam's cross-section. These shear stresses act parallel to the cross-section and are crucial for understanding the complete stress state, especially in short, deep beams or at connections.</p>
+                    <p class="mb-6 text-slate-600">The formula for transverse shear stress ($\tau$) at any point in a beam's cross-section is given by <strong>Jourawski's Formula</strong>:</p>
+                    <p class="text-center text-xl font-bold mb-6">$\tau = \frac{VQ}{Ib}$</p>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li>$V$: The shear force at the cross-section of interest (from the SFD).</li>
+                        <li>$Q$: The first moment of area of the portion of the cross-section <em>above</em> (or below) the point where shear stress is being calculated, taken about the neutral axis. $Q = A' \bar{y}'$, where $A'$ is the area of the portion and $\bar{y}'$ is the distance from the neutral axis to the centroid of $A'$.</li>
+                        <li>$I$: The moment of inertia of the entire cross-section about the neutral axis.</li>
+                        <li>$b$: The width of the cross-section at the point where shear stress is being calculated.</li>
+                    </ul>
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">Shear Stress Distribution</h3>
+                    <p class="mb-4 text-slate-600">Unlike bending stress, which is zero at the neutral axis and maximum at the extreme fibers, transverse shear stress typically exhibits a different distribution:</p>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Rectangular Section:</strong> The shear stress distribution is parabolic, being zero at the top and bottom extreme fibers and <strong>maximum at the neutral axis</strong>. The maximum shear stress is $\tau_{max} = \frac{3}{2} \frac{V}{A}$, where $A$ is the total cross-sectional area.</li>
+                        <li><strong>I-Section:</strong> The shear stress distribution is more complex, but the majority of the shear force is resisted by the web. Shear stress is relatively low in the flanges and significantly higher in the web, reaching a maximum near the neutral axis.</li>
+                    </ul>
+                    <p class="mb-6 text-slate-600"><strong>Diagram Description (Rectangular Section):</strong> Imagine a rectangular cross-section. A horizontal dashed line in the middle is the neutral axis. The shear stress distribution is shown by a parabola opening downwards, with its peak at the neutral axis and zero values at the top and bottom edges.</p>
+                    <p class="mb-6 text-slate-600"><strong>Diagram Description (I-Section):</strong> Imagine an I-beam cross-section. The shear stress distribution would show a small parabolic curve within the top flange, a sharp jump at the flange-web junction, a large parabolic curve within the web (with maximum at the neutral axis), and then another sharp jump and small parabolic curve in the bottom flange. This highlights the web's primary role in resisting shear.</p>
+                </div>
+            </section>
+
+            <!-- Beam Deflection Calculations Section -->
+            <section id="deflection-calc" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">4. Beam Deflection Calculations</h2>
+                    <p class="mb-6 text-slate-600">Predicting beam deflection is crucial for ensuring <strong>serviceability</strong> – that a structure performs its intended function without excessive deformation that could cause damage to non-structural elements or discomfort to occupants. Deflection calculations rely on the beam's material properties (Young's Modulus, $E$), its cross-sectional geometry (Moment of Inertia, $I$), and the applied loading and support conditions.</p>
+                    <p class="mb-6 text-slate-600">The general differential equation for the elastic curve of a beam is:</p>
+                    <p class="text-center text-xl font-bold mb-6">$EI \frac{d^2y}{dx^2} = M(x)$</p>
+                    <p class="mb-6 text-slate-600">Where $y$ is the deflection, $x$ is the position along the beam, and $M(x)$ is the bending moment as a function of $x$. Integrating this equation twice and applying boundary conditions yields specific deflection formulas for various loading cases.</p>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">Deflection Calculator: Simply Supported Beam with Central Point Load</h3>
+                    <p class="mb-4 text-slate-600">Use this calculator to explore how different parameters affect the maximum deflection of a simply supported beam with a point load at its center. The formula for maximum deflection ($\delta_{max}$) at the center is:</p>
+                    <p class="text-center text-xl font-bold mb-6">$\delta_{max} = \frac{PL^3}{48EI}$</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="mb-2">
+                                <label for="def-load-P" class="block text-sm font-medium">Point Load (P) [N]:</label>
+                                <input type="number" id="def-load-P" value="1000" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                            </div>
+                            <div class="mb-2">
+                                <label for="def-length-L" class="block text-sm font-medium">Beam Length (L) [m]:</label>
+                                <input type="number" id="def-length-L" value="5" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                            </div>
+                            <div class="mb-2">
+                                <label for="def-modulus-E" class="block text-sm font-medium">Young's Modulus (E) [Pa]:</label>
+                                <input type="number" id="def-modulus-E" value="200e9" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                            </div>
+                            <div class="mb-2">
+                                <label for="def-inertia-I" class="block text-sm font-medium">Moment of Inertia (I) [m$^4$]:</label>
+                                <input type="number" id="def-inertia-I" value="1e-6" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                            </div>
+                            <div class="mt-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <h3 class="font-bold text-lg text-slate-800">Calculated Maximum Deflection:</h3>
+                                <p class="mt-2">Max Deflection ($\delta_{max}$): <strong id="deflection-result" class="text-sky-600">0</strong> m</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="mb-4 text-slate-600"><strong>Common Values for E:</strong></p>
+                            <ul class="list-disc list-inside mb-4 ml-4 text-slate-600">
+                                <li>Steel: ~200 GPa ($200 \times 10^9$ Pa)</li>
+                                <li>Aluminum: ~70 GPa ($70 \times 10^9$ Pa)</li>
+                                <li>Wood (approx): ~10-15 GPa ($10-15 \times 10^9$ Pa)</li>
+                            </ul>
+                            <p class="mb-4 text-slate-600"><strong>How to get I:</strong> Use the Section Modulus Calculator (Section 6) to find 'I' for your desired cross-section, then input it here. Remember to convert units to meters if necessary!</p>
+                            <p class="mb-4 text-slate-600"><strong>Example Calculation:</strong></p>
+                            <p class="mb-2 text-slate-600">For a steel beam ($E=200 \times 10^9$ Pa) of length $L=5$ m, with a rectangular cross-section of $b=0.05$ m and $h=0.1$ m, loaded with $P=1000$ N at the center:</p>
+                            <p class="mb-2 text-slate-600">First, calculate $I = \frac{bh^3}{12} = \frac{0.05 \times (0.1)^3}{12} = 4.167 \times 10^{-6} \text{ m}^4$.</p>
+                            <p class="mb-2 text-slate-600">Then, $\delta_{max} = \frac{1000 \times (5)^3}{48 \times 200 \times 10^9 \times 4.167 \times 10^{-6}} \approx 0.0312 \text{ m}$ (or 31.2 mm).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stress Visualizer Section -->
+            <section id="visualizer" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">5. Bending Stress Visualizer</h2>
+                    <p class="mb-6 text-slate-600">When a beam bends, it develops internal stresses. Fibers on one side of the neutral axis are compressed, and on the other, they are stretched (tension). This stress is zero at the neutral axis and maximum at the extreme fibers. Use the slider to apply a load and see how the stress distribution changes.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <label for="load-slider" class="block font-semibold mb-2">Applied Load</label>
+                            <input id="load-slider" type="range" min="0" max="100" value="50" class="w-full">
+                            <div id="bending-beam-container" class="mt-8 h-24 flex items-center justify-center">
+                                <div id="bending-beam" class="w-full h-8 bg-sky-500 rounded-md transition-transform duration-300 ease-out"></div>
+                            </div>
+                            <div class="text-center mt-2 font-medium text-slate-500">Visual Representation of Bending</div>
+                        </div>
+                        <div>
+                            <div class="chart-container">
+                                <canvas id="stress-chart"></canvas>
+                            </div>
+                             <div class="text-center mt-2 font-medium text-slate-500">Stress Distribution Across Cross-Section</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Modulus Calculator -->
+            <section id="calculator" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">6. Section Modulus Calculator</h2>
+                    <p class="mb-6 text-slate-600">The <strong>Section Modulus (S)</strong> is a geometric property that measures a beam's resistance to bending stress. A higher 'S' means a stronger beam for a given material. Experiment with different cross-sections and dimensions to see how it affects the Moment of Inertia (I) and Section Modulus (S).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="mb-4">
+                                <label for="shape-selector" class="block font-semibold mb-2">Select Cross-Section Shape:</label>
+                                <select id="shape-selector" class="w-full p-2 border border-slate-300 rounded-md">
+                                    <option value="rectangle">Rectangle</option>
+                                    <option value="circle">Solid Circle</option>
+                                    <option value="i-beam">Symmetric I-Beam</option>
+                                </select>
+                            </div>
+                            <div id="dimension-inputs">
+                                <!-- Inputs will be injected by JS -->
+                            </div>
+                            <div class="mt-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <h3 class="font-bold text-lg text-slate-800">Calculated Properties:</h3>
+                                <p class="mt-2">Moment of Inertia (I): <strong id="inertia-result" class="text-sky-600">0</strong></p>
+                                <p class="mt-1">Section Modulus (S): <strong id="modulus-result" class="text-sky-600">0</strong></p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="chart-container">
+                                <canvas id="shape-chart"></canvas>
+                            </div>
+                            <div class="text-center mt-2 font-medium text-slate-500">Cross-Section Visualization</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stress Concentration Section -->
+            <section id="stress-concentration" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">7. Stress Concentration</h2>
+                    <p class="mb-6 text-slate-600">The basic bending stress formulas assume a smooth, uniform beam. However, in real-world components, geometric discontinuities like holes, fillets, notches, or sudden changes in cross-section can cause localized increases in stress, known as <strong>stress concentrations</strong>.</p>
+                    <p class="mb-6 text-slate-600">At these points, the actual stress can be significantly higher than the nominal stress calculated by simple formulas. This localized high stress can lead to premature yielding or fatigue failure, even if the overall nominal stress in the component is well below the material's yield strength.</p>
+                    <p class="mb-6 text-slate-600">The severity of a stress concentration is quantified by the <strong>stress concentration factor ($K_t$)</strong>:</p>
+                    <p class="text-center text-xl font-bold mb-6">$K_t = \frac{\sigma_{max}}{\sigma_{nom}}$</p>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li>$\sigma_{max}$: The actual maximum stress at the discontinuity.</li>
+                        <li>$\sigma_{nom}$: The nominal (average) stress calculated using basic formulas, ignoring the discontinuity.</li>
+                    </ul>
+                    <p class="mb-6 text-slate-600">Engineers use stress concentration factors (often obtained from handbooks or FEA) to adjust their stress calculations and ensure designs account for these localized effects, especially in components subjected to dynamic or cyclic loading (fatigue).</p>
+                    <p class="mb-6 text-slate-600"><strong>Practical Example:</strong> A shaft with a sharp shoulder fillet will experience higher stress at the fillet radius when subjected to bending compared to a shaft with a larger, smoother fillet. This is why designers strive for generous radii at changes in cross-section.</p>
+                </div>
+            </section>
+
+            <!-- Combined Loading Section -->
+            <section id="combined-loading" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">8. Combined Loading</h2>
+                    <p class="mb-6 text-slate-600">In many real-world engineering applications, structural members and machine components are subjected to more than one type of load simultaneously. This is known as <strong>combined loading</strong>. A beam might experience bending, axial tension/compression, and torsion all at once.</p>
+                    <p class="mb-6 text-slate-600">To analyze such complex scenarios, the <strong>Principle of Superposition</strong> is often applied. This principle states that if the material behaves linearly elastically and the deformations are small, the total stress or deflection at any point due to multiple loads is the algebraic sum of the stresses or deflections caused by each load acting independently.</p>
+                    <p class="mb-6 text-slate-600">For example, consider a shaft subjected to both bending and torsion:</p>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Bending Stress ($\sigma_b$):</strong> Calculated using $\sigma_b = My/I$. This is a normal stress (tension/compression).</li>
+                        <li><strong>Torsional Shear Stress ($\tau_t$):</strong> Calculated using $\tau_t = Tr/J$, where $T$ is the torque, $r$ is the radial distance from the center, and $J$ is the polar moment of inertia. This is a shear stress.</li>
+                        <li><strong>Axial Stress ($\sigma_a$):</strong> Calculated using $\sigma_a = P/A$, where $P$ is the axial force and $A$ is the cross-sectional area. This is also a normal stress.</li>
+                    </ul>
+                    <p class="mb-6 text-slate-600">To find the complete stress state at a point, these individual stresses are combined. This often involves using <strong>Mohr's Circle</strong> or stress transformation equations to find the <strong>principal stresses</strong> (maximum normal stresses) and <strong>maximum in-plane shear stress</strong> at that point. These principal stresses are then compared against material failure criteria (e.g., maximum normal stress theory, maximum shear stress theory, Von Mises yield criterion).</p>
+                    <p class="mb-6 text-slate-600"><strong>Practical Example:</strong> A propeller shaft in a boat experiences torsional loads from the engine, bending loads due to its own weight and propeller forces, and potentially axial loads from thrust. Designing such a shaft requires combining all these stresses to ensure it doesn't fail.</p>
+                </div>
+            </section>
+
+            <!-- Bending Stresses in Levers Section -->
+            <section id="levers" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">9. Bending Stresses in Levers</h2>
+                    <p class="mb-6 text-slate-600">Levers are common mechanical components designed to multiply force or change the direction of force, often experiencing significant bending. Understanding bending stresses in levers is a direct application of beam theory.</p>
+                    <p class="mb-6 text-slate-600">A lever typically consists of a rigid body pivoted about a fixed point called the **fulcrum**. When a force is applied at one point, it creates a moment about the fulcrum, which is resisted by another force at a different point. This moment induces bending stresses within the lever arm.</p>
+                    <p class="mb-6 text-slate-600">To analyze bending in a lever, you would:</p>
+                    <ol class="list-decimal list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Identify Forces and Moments:</strong> Determine all external forces acting on the lever and calculate the bending moment at critical sections. The maximum bending moment often occurs at the fulcrum or at the point of maximum applied load.</li>
+                        <li><strong>Determine Cross-Sectional Properties:</strong> Find the Moment of Inertia ($I$) and Section Modulus ($S$) for the lever's cross-section at the critical sections. Levers can have various cross-sections (rectangular, circular, I-shaped, etc.).</li>
+                        <li><strong>Calculate Bending Stress:</strong> Use the flexure formula, $\sigma = \frac{My}{I}$, to calculate the normal bending stress. The maximum bending stress will occur at the extreme fibers ($y = y_{max}$), where $\sigma_{max} = \frac{M}{S}$.</li>
+                        <li><strong>Consider Shear Stress:</strong> Although often secondary to bending stress in slender levers, transverse shear stress should also be considered, especially near the fulcrum where shear forces might be high.</li>
+                    </ol>
+                    <p class="mb-6 text-slate-600"><strong>Real-world Analogy:</strong> Think of a wrench tightening a bolt. The handle of the wrench acts as a lever. When you apply force to the end of the handle, it creates a large bending moment at the point where the wrench head meets the bolt. The design of the wrench handle (its material and cross-section) must be sufficient to withstand these bending stresses without yielding or breaking.</p>
+                    <p class="mb-6 text-slate-600"><strong>Typical Student Mistake:</strong> Forgetting that the bending moment can vary along the length of the lever. Always calculate the bending moment at the critical section, which is usually where the maximum stress will occur.</p>
+                </div>
+            </section>
+
+            <!-- Key Formulas Section -->
+            <section id="key-formulas" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">10. Key Formulas for Bending Theory Numericals</h2>
+                    <p class="mb-6 text-slate-600">This section provides a consolidated list of the most important formulas required for solving numerical problems in bending theory. Ensure consistent units for all calculations.</p>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">10.1 Fundamental Stress & Strain Relationships</h3>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Hooke's Law:</strong> $\sigma = E\epsilon$</li>
+                        <li><strong>Longitudinal Strain in Bending:</strong> $\epsilon = \frac{y}{R}$</li>
+                    </ul>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">10.2 Bending Stress (Flexure Formula)</h3>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Flexure Formula:</strong> $\sigma = \frac{My}{I}$</li>
+                        <li><strong>Maximum Bending Stress:</strong> $\sigma_{max} = \frac{M_{max}}{S}$</li>
+                    </ul>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">10.3 Shear Stress in Beams</h3>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Jourawski's Formula (Transverse Shear Stress):</strong> $\tau = \frac{VQ}{Ib}$</li>
+                        <li><strong>Maximum Shear Stress (Rectangular Section):</strong> $\tau_{max} = \frac{3}{2} \frac{V}{A}$</li>
+                    </ul>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">10.4 Beam Deflection Formulas (Common Cases)</h3>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>General Differential Equation for Elastic Curve:</strong> $EI \frac{d^2y}{dx^2} = M(x)$</li>
+                        <li><strong>Simply Supported Beam with Central Point Load (Max Deflection at center):</strong> $\delta_{max} = \frac{PL^3}{48EI}$</li>
+                        <li><strong>Cantilever Beam with End Point Load (Max Deflection at free end):</strong> $\delta_{max} = \frac{PL^3}{3EI}$</li>
+                        <li><strong>Simply Supported Beam with Uniformly Distributed Load (Max Deflection at center):</strong> $\delta_{max} = \frac{5wL^4}{384EI}$ (where $w$ is load per unit length)</li>
+                        <li><strong>Cantilever Beam with Uniformly Distributed Load (Max Deflection at free end):</strong> $\delta_{max} = \frac{wL^4}{8EI}$ (where $w$ is load per unit length)</li>
+                    </ul>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">10.5 Geometric Properties of Cross-Sections</h3>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Moment of Inertia ($I$)</strong>
+                            <ul class="list-circle list-inside ml-4 mt-2">
+                                <li>Rectangular: $I = \frac{bh^3}{12}$</li>
+                                <li>Solid Circular: $I = \frac{\pi d^4}{64}$</li>
+                                <li>Hollow Circular: $I = \frac{\pi (D^4 - d^4)}{64}$</li>
+                            </ul>
+                        </li>
+                        <li><strong>Section Modulus ($S$)</strong>
+                            <ul class="list-circle list-inside ml-4 mt-2">
+                                <li>General: $S = \frac{I}{y_{max}}$</li>
+                                <li>Rectangular: $S = \frac{bh^2}{6}$</li>
+                                <li>Solid Circular: $S = \frac{\pi d^3}{32}$</li>
+                                <li>Hollow Circular: $S = \frac{\pi (D^4 - d^4)}{32D}$</li>
+                            </ul>
+                        </li>
+                        <li><strong>Polar Moment of Inertia ($J$)</strong>
+                            <ul class="list-circle list-inside ml-4 mt-2">
+                                <li>Solid Circular Shaft: $J = \frac{\pi d^4}{32}$</li>
+                                <li>Hollow Circular Shaft: $J = \frac{\pi (D^4 - d^4)}{32}$</li>
+                            </ul>
+                        </li>
+                        <li><strong>Parallel Axis Theorem (for composite sections):</strong> $I_{total} = \sum (I_{i} + A_{i}d_{i}^2)$</li>
+                    </ul>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">10.6 Other Relevant Formulas</h3>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Stress Concentration Factor:</strong> $K_t = \frac{\sigma_{max}}{\sigma_{nom}}$</li>
+                        <li><strong>Axial Stress:</strong> $\sigma_a = \frac{P}{A}$</li>
+                        <li><strong>Torsional Shear Stress (for circular shafts):</strong> $\tau_t = \frac{Tr}{J}$</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Exam Tips Section -->
+            <section id="exam-tips" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">11. Practical Tips for Solving Bending-Related Problems in Exams</h2>
+                    <p class="mb-6 text-slate-600">Mastering bending theory for exams requires a systematic approach and attention to detail. Here are some practical tips to help you tackle numerical problems effectively and avoid common mistakes.</p>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">11.1 How to Tackle Numerical Problems</h3>
+                    <ol class="list-decimal list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Read the Problem Carefully:</strong> Understand what is being asked (e.g., maximum stress, deflection at a specific point, required dimensions). Identify all given information and constraints.</li>
+                        <li><strong>Draw a Clear Free Body Diagram (FBD):</strong> This is the crucial first step. Show all external forces, moments, and support reactions. Accurately determine the reactions using equilibrium equations ($\sum F_x = 0, \sum F_y = 0, \sum M = 0$).</li>
+                        <li><strong>Construct Shear Force and Bending Moment Diagrams (SFD & BMD):</strong> These diagrams are essential for identifying the maximum shear force ($V_{max}$) and maximum bending moment ($M_{max}$), which are critical for stress and deflection calculations. Pay attention to the relationships between load, shear, and moment (slopes and areas).</li>
+                        <li><strong>Locate the Neutral Axis (NA):</strong> For symmetric sections, the NA is at the geometric centroid. For unsymmetrical sections (e.g., T-sections, channel sections), calculate the centroid of the composite area using the first moment of area principle. This is a common point of error if not done carefully.</li>
+                        <li><strong>Calculate Moment of Inertia ($I$) and Section Modulus ($S$):</strong> Use the correct formulas for the given cross-section. For composite sections, apply the Parallel Axis Theorem correctly ($I_{total} = \sum (I_{i} + A_{i}d_{i}^2)$). Remember $S = I/y_{max}$, where $y_{max}$ is the distance from the NA to the farthest fiber.</li>
+                        <li><strong>Apply the Relevant Formulas:</strong> Use the Flexure Formula ($\sigma = My/I$ or $\sigma_{max} = M_{max}/S$) for bending stress. For shear stress, use Jourawski's formula ($\tau = VQ/Ib$). For deflection, use the appropriate formula based on beam type and loading, or integrate $EI \frac{d^2y}{dx^2} = M(x)$.</li>
+                        <li><strong>Pay Close Attention to Units:</strong> Always convert all values to a consistent set of units (e.g., Newtons and meters, or pounds and inches) *before* performing calculations. A common mistake is mixing units (e.g., kN and mm), leading to incorrect magnitudes.</li>
+                        <li><strong>Check Sign Conventions:</strong> Be consistent with your chosen sign conventions for shear force, bending moment, and stress (tension vs. compression). This is crucial for interpreting results correctly.</li>
+                        <li><strong>Review Your Answer:</strong> Does the magnitude seem reasonable? Does the stress make sense (e.g., tension where expected, compression where expected)? Double-check calculations, especially for complex problems.</li>
+                    </ol>
+
+                    <h3 class="text-xl font-bold mb-3 text-slate-800">11.2 Common Mistakes Students Make</h3>
+                    <ul class="list-disc list-inside mb-6 ml-4 text-slate-600">
+                        <li><strong>Incorrect Free Body Diagrams:</strong> Missing reactions, incorrect directions of reactions, or misplacing loads.</li>
+                        <li><strong>Errors in SFD/BMD:</strong> Incorrectly calculating areas under curves, wrong slopes, or not identifying maximum/minimum values correctly.</li>
+                        <li><strong>Mislocating the Neutral Axis:</strong> Especially for unsymmetrical sections, failing to calculate the centroid accurately. This is a cascading error.</li>
+                        <li><strong>Incorrect Moment of Inertia ($I$) or Section Modulus ($S$):</strong> Using the wrong formula for the shape, or making calculation errors, particularly with the Parallel Axis Theorem.</li>
+                        <li><strong>Unit Inconsistencies:</strong> Mixing different unit systems (e.g., kN and mm in the same calculation without converting to N and m).</li>
+                        <li><strong>Sign Convention Errors:</strong> Confusing tension with compression, or misinterpreting positive/negative bending moments.</li>
+                        <li><strong>Ignoring Stress Concentration:</strong> Forgetting that geometric discontinuities can significantly increase local stresses beyond nominal values.</li>
+                        <li><strong>Neglecting Shear Stress:</strong> Focusing only on bending stress and overlooking transverse shear stress, which can be critical for short, deep beams.</li>
+                        <li><strong>Assuming Pure Bending:</strong> Applying pure bending assumptions when shear forces are present and significant (which is most real-world scenarios).</li>
+                        <li><strong>Arithmetic Mistakes:</strong> Simple calculation errors that can be avoided by double-checking and using a calculator carefully.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Concept Map Section -->
+            <section id="concept-map" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">12. Bending Theory Concept Map</h2>
+                    <p class="mb-6 text-slate-600">This map shows the hierarchical and interdependent relationships between the core concepts of bending theory. Follow the arrows and labels to understand the flow of analysis and how topics connect.</p>
+                    <div class="concept-map-flow">
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Beams & Loads</h3>
+                            <p class="text-sm">Foundation of structural analysis.</p>
+                        </div>
+                        <div class="concept-connector">Lead to &darr;</div>
+
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Shear Force & Bending Moment Diagrams</h3>
+                            <p class="text-sm">Quantify internal forces and moments.</p>
+                        </div>
+                        <div class="concept-connector">Influence &darr;</div>
+
+                        <div class="concept-group-horizontal">
+                            <div class="concept-item">
+                                <h3 class="font-bold text-lg text-sky-700">Shear Stress in Beams</h3>
+                                <p class="text-sm">Transverse shear stress ($\tau = VQ/Ib$).</p>
+                            </div>
+                            <div class="concept-connector horizontal hidden md:block">Related to &harr;</div>
+                            <div class="concept-item">
+                                <h3 class="font-bold text-lg text-sky-700">Bending & Deflection</h3>
+                                <p class="text-sm">Beam deformation and internal normal stresses.</p>
+                            </div>
+                        </div>
+                        <div class="concept-connector">Requires &darr;</div>
+
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Theory Assumptions</h3>
+                            <p class="text-sm">Simplifications for elastic analysis.</p>
+                        </div>
+                        <div class="concept-connector">Enable Derivation of &darr;</div>
+
+                        <div class="concept-group-horizontal">
+                            <div class="concept-item">
+                                <h3 class="font-bold text-lg text-sky-700">Flexure Formula</h3>
+                                <p class="text-sm">Core stress equation: $\sigma = My/I$.</p>
+                            </div>
+                            <div class="concept-connector horizontal hidden md:block">Relies on &harr;</div>
+                            <div class="concept-item">
+                                <h3 class="font-bold text-lg text-sky-700">Neutral Axis</h3>
+                                <p class="text-sm">Axis of zero bending stress.</p>
+                            </div>
+                        </div>
+                        <div class="concept-connector">Leads to &darr;</div>
+
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Section Modulus</h3>
+                            <p class="text-sm">Measure of bending strength: $S = I/y_{max}$.</p>
+                        </div>
+                        <div class="concept-connector">Applied in &darr;</div>
+
+                        <div class="concept-group-horizontal">
+                            <div class="concept-item">
+                                <h3 class="font-bold text-lg text-sky-700">Beam Deflection Calculations</h3>
+                                <p class="text-sm">Predicting deformation ($\delta_{max} = PL^3/48EI$).</p>
+                            </div>
+                            <div class="concept-connector horizontal hidden md:block">Considers &harr;</div>
+                            <div class="concept-item">
+                                <h3 class="font-bold text-lg text-sky-700">Stress Concentration</h3>
+                                <p class="text-sm">Localized stress increases ($K_t = \sigma_{max}/\sigma_{nom}$).</p>
+                            </div>
+                        </div>
+                         <div class="concept-connector">Extends to &darr;</div>
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Combined Loading</h3>
+                            <p class="text-sm">Analysis with multiple load types (superposition).</p>
+                        </div>
+                        <div class="concept-connector">Practical Application &darr;</div>
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Bending Stresses in Levers</h3>
+                            <p class="text-sm">Applying theory to common mechanical components.</p>
+                        </div>
+                        <div class="concept-connector">Summarized by &darr;</div>
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Key Formulas</h3>
+                            <p class="text-sm">Consolidated reference for numerical problems.</p>
+                        </div>
+                        <div class="concept-connector">Requires &darr;</div>
+                        <div class="concept-item">
+                            <h3 class="font-bold text-lg text-sky-700">Exam Tips</h3>
+                            <p class="text-sm">Strategies for numerical problem-solving.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function switchTab(targetId) {
+                navButtons.forEach(button => {
+                    button.classList.toggle('active', button.dataset.target === targetId);
+                });
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+                // Ensure MathJax re-renders content when a new section becomes active
+                if (typeof MathJax !== 'undefined') {
+                    MathJax.typesetPromise();
+                }
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switchTab(button.dataset.target);
+                });
+            });
+
+            // Set initial active tab
+            switchTab('fundamentals');
+
+            // Section 1: Fundamentals
+            const beamSelector = document.getElementById('beam-selector');
+            const beamDisplay = document.getElementById('beam-display');
+            const beamData = {
+                cantilever: {
+                    title: 'Cantilever Beam',
+                    diagram: `<div class="beam-diagram"><div class="support-fixed"></div><div class="load-arrow" style="left: 90%;"></div></div>`,
+                    description: 'Fixed at one end and free at the other. It supports loads by transmitting them to the fixed support.',
+                    examples: 'Balconies, diving boards, aircraft wings.'
+                },
+                'simply-supported': {
+                    title: 'Simply Supported Beam',
+                    diagram: `<div class="beam-diagram"><div class="support-pin"></div><div class="load-arrow"></div><div class="support-roller"></div></div>`,
+                    description: 'Supported at both ends, with one pin support and one roller support. Allows rotation at the ends.',
+                    examples: 'Simple bridges, floor joists.'
+                },
+                overhanging: {
+                    title: 'Overhanging Beam',
+                    diagram: `<div class="beam-diagram"><div class="support-pin" style="left: 20%; position: absolute;"></div><div class="load-arrow" style="left: 85%;"></div><div class="support-roller" style="left: 60%; position: absolute;"></div></div>`,
+                    description: 'A beam that extends beyond one or both of its supports, creating a cantilevered portion.',
+                    examples: 'Balconies supported by columns, some bridge designs.'
+                },
+                fixed: {
+                    title: 'Fixed Beam',
+                    diagram: `<div class="beam-diagram"><div class="support-fixed"></div><div class="load-arrow"></div><div class="support-fixed"></div></div>`,
+                    description: 'Fixed at both ends, preventing both rotation and translation at the supports. Also known as a built-in beam.',
+                    examples: 'Beams cast into concrete walls, integral parts of rigid frames.'
+                },
+                continuous: {
+                    title: 'Continuous Beam',
+                    diagram: `<div class="beam-diagram"><div class="support-pin" style="left: 10%; position: absolute;"></div><div class="support-roller" style="left: 45%; position: absolute;"></div><div class="support-roller" style="left: 80%; position: absolute;"></div></div>`,
+                    description: 'A beam that rests on more than two supports, spanning multiple sections.',
+                    examples: 'Long-span bridges, beams in multi-story buildings.'
+                }
+            };
+
+            function updateBeamDisplay(beamType) {
+                const data = beamData[beamType];
+                beamDisplay.innerHTML = `
+                    <h3 class="font-bold text-lg text-slate-800">${data.title}</h3>
+                    ${data.diagram}
+                    <p class="mt-4 text-sm text-slate-600">${data.description}</p>
+                    <p class="mt-2 text-sm text-slate-600"><strong>Examples:</strong> ${data.examples}</p>
+                `;
+                document.querySelectorAll('#beam-selector button').forEach(btn => {
+                    btn.classList.remove('bg-sky-200', 'text-sky-800');
+                    if (btn.dataset.beam === beamType) {
+                        btn.classList.add('bg-sky-200', 'text-sky-800');
+                    }
+                });
+            }
+
+            beamSelector.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    updateBeamDisplay(e.target.dataset.beam);
+                }
+            });
+            updateBeamDisplay('cantilever');
+
+            // Section 2: SFD & BMD
+            const loadMagnitudeSlider = document.getElementById('load-magnitude');
+            const loadPositionSlider = document.getElementById('load-position');
+            const loadMagnitudeVal = document.getElementById('load-magnitude-val');
+            const loadPositionVal = document.getElementById('load-position-val');
+            const sfdBmdLoadIndicator = document.getElementById('sfd-bmd-load-indicator');
+            const loadLabel = document.getElementById('load-label');
+
+            const sfdCtx = document.getElementById('sfd-chart').getContext('2d');
+            const bmdCtx = document.getElementById('bmd-chart').getContext('2d');
+            let sfdChart, bmdChart;
+
+            const beamLength = 10; // meters
+
+            function createSFDBMDCharts() {
+                if (sfdChart) sfdChart.destroy();
+                sfdChart = new Chart(sfdCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: beamLength * 10 + 1}, (_, i) => (i / 10).toFixed(1)),
+                        datasets: [{
+                            label: 'Shear Force (N)',
+                            data: [],
+                            borderColor: '#0284c7', // sky-600
+                            backgroundColor: 'rgba(2, 132, 199, 0.2)',
+                            fill: true,
+                            stepped: true,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Position (m)' },
+                                beginAtZero: true,
+                                max: beamLength
+                            },
+                            y: {
+                                title: { display: true, text: 'Shear Force (N)' },
+                                beginAtZero: false
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) { return `Position: ${context[0].label} m`; },
+                                    label: function(context) { return `Shear Force: ${context.raw.toFixed(2)} N`; }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if (bmdChart) bmdChart.destroy();
+                bmdChart = new Chart(bmdCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: beamLength * 10 + 1}, (_, i) => (i / 10).toFixed(1)),
+                        datasets: [{
+                            label: 'Bending Moment (Nm)',
+                            data: [],
+                            borderColor: '#ef4444', // red-500
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            fill: true,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Position (m)' },
+                                beginAtZero: true,
+                                max: beamLength
+                            },
+                            y: {
+                                title: { display: true, text: 'Bending Moment (Nm)' },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) { return `Position: ${context[0].label} m`; },
+                                    label: function(context) { return `Bending Moment: ${context.raw.toFixed(2)} Nm`; }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateSFDBMD() {
+                const P = parseFloat(loadMagnitudeSlider.value);
+                const a = parseFloat(loadPositionSlider.value); // position of load from left support (A)
+                const L = beamLength; // total length of the beam
+
+                loadMagnitudeVal.textContent = P;
+                loadPositionVal.textContent = a;
+
+                // Update load indicator position
+                sfdBmdLoadIndicator.style.left = `${(a / L) * 100}%`;
+                loadLabel.style.left = `${(a / L) * 100}%`;
+                loadLabel.textContent = `P = ${P} N`;
+
+                // Calculate reactions for simply supported beam with point load P at 'a' from left
+                const Rb = (P * a) / L; // Reaction at B (right support)
+                const Ra = P - Rb;      // Reaction at A (left support)
+
+                const sfdData = [];
+                const bmdData = [];
+                const numPoints = beamLength * 10 + 1; // 0.1m increments
+
+                for (let i = 0; i < numPoints; i++) {
+                    const x = i / 10;
+                    let V, M;
+
+                    if (x <= a) {
+                        V = Ra;
+                        M = Ra * x;
+                    } else {
+                        V = Ra - P;
+                        M = Ra * x - P * (x - a);
+                    }
+                    sfdData.push(V);
+                    bmdData.push(M);
+                }
+
+                sfdChart.data.datasets[0].data = sfdData;
+                bmdChart.data.datasets[0].data = bmdData;
+
+                // Adjust Y-axis scales dynamically
+                const maxShear = Math.max(...sfdData.map(Math.abs));
+                sfdChart.options.scales.y.max = maxShear * 1.2;
+                sfdChart.options.scales.y.min = -maxShear * 1.2;
+
+                const maxMoment = Math.max(...bmdData.map(Math.abs));
+                bmdChart.options.scales.y.max = maxMoment * 1.2;
+                bmdChart.options.scales.y.min = 0; // Bending moment is usually positive for simply supported under downward load
+
+                sfdChart.update('none');
+                bmdChart.update('none');
+            }
+
+            loadMagnitudeSlider.addEventListener('input', updateSFDBMD);
+            loadPositionSlider.addEventListener('input', updateSFDBMD);
+
+            createSFDBMDCharts();
+            updateSFDBMD();
+
+            // Section 4: Beam Deflection Calculations
+            const defLoadP = document.getElementById('def-load-P');
+            const defLengthL = document.getElementById('def-length-L');
+            const defModulusE = document.getElementById('def-modulus-E');
+            const defInertiaI = document.getElementById('def-inertia-I');
+            const deflectionResult = document.getElementById('deflection-result');
+
+            function calculateDeflection() {
+                const P = parseFloat(defLoadP.value);
+                const L = parseFloat(defLengthL.value);
+                const E = parseFloat(defModulusE.value);
+                const I = parseFloat(defInertiaI.value);
+
+                if (isNaN(P) || isNaN(L) || isNaN(E) || isNaN(I) || E === 0 || I === 0) {
+                    deflectionResult.textContent = 'Invalid Input';
+                    return;
+                }
+
+                // Formula for simply supported beam with central point load: PL^3 / 48EI
+                const deltaMax = (P * Math.pow(L, 3)) / (48 * E * I);
+                deflectionResult.textContent = deltaMax.toExponential(4); // Display in scientific notation for small numbers
+            }
+
+            defLoadP.addEventListener('input', calculateDeflection);
+            defLengthL.addEventListener('input', calculateDeflection);
+            defModulusE.addEventListener('input', calculateDeflection);
+            defInertiaI.addEventListener('input', calculateDeflection);
+
+            calculateDeflection(); // Initial calculation
+
+            // Section 5: Stress Visualizer
+            const loadSlider = document.getElementById('load-slider');
+            const bendingBeam = document.getElementById('bending-beam');
+            const stressCtx = document.getElementById('stress-chart').getContext('2d');
+            let stressChart;
+
+            function createStressChart() {
+                if (stressChart) stressChart.destroy();
+                stressChart = new Chart(stressCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Compression', 'Tension'],
+                        datasets: [{
+                            label: 'Stress Magnitude',
+                            data: [0, 0],
+                            backgroundColor: ['#f87171', '#60a5fa'], // red-400, blue-400
+                            borderColor: ['#ef4444', '#3b82f6'],
+                            borderWidth: 2,
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Relative Stress' },
+                                grid: { display: false }
+                            },
+                            y: { grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+            }
+
+            function updateBendingVisuals() {
+                const loadValue = parseInt(loadSlider.value);
+                const maxBend = 15; // degrees
+                const bendAngle = (loadValue / 100) * maxBend;
+                bendingBeam.style.transform = `perspective(500px) rotateX(${bendAngle}deg)`;
+
+                stressChart.data.datasets[0].data = [loadValue, loadValue];
+                stressChart.update('none');
+            }
+
+            loadSlider.addEventListener('input', updateBendingVisuals);
+            createStressChart();
+            updateBendingVisuals();
+
+            // Section 6: Section Modulus Calculator
+            const shapeSelector = document.getElementById('shape-selector');
+            const dimensionInputs = document.getElementById('dimension-inputs');
+            const inertiaResult = document.getElementById('inertia-result');
+            const modulusResult = document.getElementById('modulus-result');
+            const shapeCtx = document.getElementById('shape-chart').getContext('2d');
+            let shapeChart;
+
+            const shapeFormulas = {
+                rectangle: {
+                    inputs: `
+                        <div class="mb-2">
+                            <label for="rect-width" class="block text-sm font-medium">Width (b):</label>
+                            <input type="number" id="rect-width" value="0.05" step="0.001" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                            <span class="text-xs text-slate-500">meters</span>
+                        </div>
+                        <div>
+                            <label for="rect-height" class="block text-sm font-medium">Height (h):</label>
+                            <input type="number" id="rect-height" value="0.1" step="0.001" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                            <span class="text-xs text-slate-500">meters</span>
+                        </div>
+                    `,
+                    calculate: () => {
+                        const b = parseFloat(document.getElementById('rect-width').value) || 0;
+                        const h = parseFloat(document.getElementById('rect-height').value) || 0;
+                        const I = (b * Math.pow(h, 3)) / 12;
+                        const S = (b * Math.pow(h, 2)) / 6;
+                        return { I, S, params: { b, h } };
+                    },
+                    draw: (params) => {
+                        const { b, h } = params;
+                        const maxDim = Math.max(b, h, 0.001); // Avoid division by zero
+                        const scale = 280 / maxDim; // Scale to fit chart area
+                        const drawB = b * scale;
+                        const drawH = h * scale;
+
+                        shapeChart.data.datasets[0].data = [{x: -drawB/2, y: -drawH/2}, {x: drawB/2, y: -drawH/2}, {x: drawB/2, y: drawH/2}, {x: -drawB/2, y: drawH/2}];
+                        shapeChart.update();
+                    }
+                },
+                circle: {
+                    inputs: `
+                        <div>
+                            <label for="circle-diameter" class="block text-sm font-medium">Diameter (d) [m]:</label>
+                            <input type="number" id="circle-diameter" value="0.1" step="0.001" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                            <span class="text-xs text-slate-500">meters</span>
+                        </div>
+                    `,
+                    calculate: () => {
+                        const d = parseFloat(document.getElementById('circle-diameter').value) || 0;
+                        const I = (Math.PI * Math.pow(d, 4)) / 64;
+                        const S = (Math.PI * Math.pow(d, 3)) / 32;
+                        return { I, S, params: { d } };
+                    },
+                    draw: (params) => {
+                        const { d } = params;
+                        const radius = (d / 2) * (280 / d);
+                        const points = [];
+                        for(let i = 0; i <= 360; i += 10) {
+                            const angle = i * Math.PI / 180;
+                            points.push({x: radius * Math.cos(angle), y: radius * Math.sin(angle)});
+                        }
+                        shapeChart.data.datasets[0].data = points;
+                        shapeChart.update();
+                    }
+                },
+                'i-beam': {
+                    inputs: `
+                        <div class="mb-2">
+                            <label for="ibeam-bf" class="block text-sm font-medium">Flange Width (b_f) [m]:</label>
+                            <input type="number" id="ibeam-bf" value="0.1" step="0.001" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                        </div>
+                        <div class="mb-2">
+                            <label for="ibeam-d" class="block text-sm font-medium">Overall Depth (d) [m]:</label>
+                            <input type="number" id="ibeam-d" value="0.15" step="0.001" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                        </div>
+                        <div class="mb-2">
+                            <label for="ibeam-bw" class="block text-sm font-medium">Web Width (b_w) [m]:</label>
+                            <input type="number" id="ibeam-bw" value="0.01" step="0.001" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                        </div>
+                        <div class="mb-2">
+                            <label for="ibeam-tf" class="block text-sm font-medium">Flange Thickness (t_f) [m]:</label>
+                            <input type="number" id="ibeam-tf" value="0.015" step="0.001" class="w-full p-2 border border-slate-300 rounded-md mt-1">
+                        </div>
+                    `,
+                    calculate: () => {
+                        const bf = parseFloat(document.getElementById('ibeam-bf').value) || 0;
+                        const d = parseFloat(document.getElementById('ibeam-d').value) || 0;
+                        const bw = parseFloat(document.getElementById('ibeam-bw').value) || 0;
+                        const tf = parseFloat(document.getElementById('ibeam-tf').value) || 0;
+                        const dw = d - 2 * tf;
+                        const I_outer = (bf * Math.pow(d, 3)) / 12;
+                        const I_inner_void = ((bf - bw) * Math.pow(dw, 3)) / 12;
+                        const I = I_outer - I_inner_void;
+                        const S = I / (d / 2);
+                        return { I, S, params: { bf, d, bw, tf, dw } };
+                    },
+                    draw: (params) => {
+                        const { bf, d, bw, tf, dw } = params;
+                        const maxDim = Math.max(bf, d, 0.001);
+                        const scale = 280 / maxDim;
+                        const s_bf = bf * scale, s_d = d * scale, s_bw = bw * scale, s_tf = tf * scale;
+
+                        shapeChart.data.datasets[0].data = [
+                            {x: -s_bf/2, y: -s_d/2}, {x: s_bf/2, y: -s_d/2}, {x: s_bf/2, y: -s_d/2 + s_tf},
+                            {x: s_bw/2, y: -s_d/2 + s_tf}, {x: s_bw/2, y: s_d/2 - s_tf}, {x: s_bf/2, y: s_d/2 - s_tf},
+                            {x: s_bf/2, y: s_d/2}, {x: -s_bf/2, y: s_d/2}, {x: -s_bf/2, y: s_d/2 - s_tf},
+                            {x: -s_bw/2, y: s_d/2 - s_tf}, {x: -s_bw/2, y: -s_d/2 + s_tf}, {x: -s_bf/2, y: -s_d/2 + s_tf}
+                        ];
+                        shapeChart.update();
+                    }
+                }
+            };
+
+            function createShapeChart() {
+                if (shapeChart) shapeChart.destroy();
+                shapeChart = new Chart(shapeCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Cross-Section',
+                            data: [],
+                            borderColor: '#0284c7', // sky-600
+                            backgroundColor: 'rgba(14, 165, 233, 0.2)', // sky-500 with opacity
+                            borderWidth: 3,
+                            fill: true,
+                            showLine: true,
+                            pointRadius: 0,
+                            tension: 0,
+                            closed: true,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                grid: { color: '#e2e8f0' },
+                                ticks: { display: false }
+                            },
+                            y: {
+                                grid: { color: '#e2e8f0' },
+                                ticks: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+            }
+
+            function updateCalculator() {
+                const shape = shapeSelector.value;
+                const { I, S, params } = shapeFormulas[shape].calculate();
+                inertiaResult.textContent = I.toExponential(4); // Scientific notation for I
+                modulusResult.textContent = S.toExponential(4); // Scientific notation for S
+                shapeFormulas[shape].draw(params);
+            }
+
+            function setupCalculator() {
+                const shape = shapeSelector.value;
+                dimensionInputs.innerHTML = shapeFormulas[shape].inputs;
+                updateCalculator();
+            }
+
+            shapeSelector.addEventListener('change', setupCalculator);
+            dimensionInputs.addEventListener('input', updateCalculator);
+
+            createShapeChart();
+            setupCalculator();
+        });
+    </script>
+</body>
+</html>
