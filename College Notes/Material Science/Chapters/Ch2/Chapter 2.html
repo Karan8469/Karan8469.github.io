@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Crystalline Materials</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a non-linear, single-page educational tool with a fixed top navigation bar for easy access to different concepts. The structure groups related topics for better understanding: 1) 'Blueprint' combines unit cells and lattices. 2) 'Packing & Efficiency' uses an interactive chart to compare structures. 3) 'Metallic Structures' provides an interactive, tab-like interface to deeply explore and compare SC, BCC, FCC, and HCP side-by-side. 4) 'Language of Crystals' visualizes abstract Miller Indices. 5) 'Reality of Crystals' connects imperfections to the practical application of solute strengthening. This thematic, interactive structure was chosen over a linear report format to enhance engagement, facilitate comparison, and cater to a student's need to jump between topics and visualize complex spatial arrangements. -->
+    <!-- Visualization & Content Choices: 1. Atomic Packing Factor Comparison: Report Info -> APF values for SC, BCC, FCC, HCP. Goal -> Compare packing density. Viz -> Bar Chart. Interaction -> Visual comparison. Justification -> A bar chart provides the clearest, most immediate comparison of quantitative data. Library -> Chart.js (Canvas). 2. Metallic Structure Explorer: Report Info -> Properties of SC, BCC, FCC, HCP. Goal -> In-depth comparison. Viz -> Interactive cards with HTML/CSS-based 3D unit cell models. Interaction -> User clicks a button to dynamically update the display with the selected structure's data and visualization. Justification -> Allows focused study of one structure while enabling easy switching for direct comparison, enhancing learning. Library -> Vanilla JS for DOM manipulation. 3. Imperfections & Strengthening: Report Info -> Defect types and strengthening mechanism. Goal -> Show cause and effect. Viz -> Card layout for defects, before/after diagram for strengthening. Interaction -> Clicking cards reveals info; diagram visually contrasts a lattice with and without solute atoms. Justification -> Breaks down complex topics into manageable parts and visually demonstrates the strengthening mechanism. Library -> Vanilla JS & HTML/CSS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFDFD;
+            color: #333;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #A0522D;
+            border-bottom-color: #A0522D;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .structure-btn {
+            transition: background-color 0.3s, color 0.3s, transform 0.3s;
+        }
+        .structure-btn.active {
+            background-color: #A0522D;
+            color: white;
+            transform: scale(1.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .atom {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #8B4513;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .unit-cell-vis {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border: 2px solid #D3D3D3;
+            margin: 2rem auto;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-[#A0522D]">Crystalline Materials</h1>
+                <div class="hidden sm:flex sm:space-x-4 lg:space-x-8">
+                    <a href="#blueprint" class="nav-link px-3 py-2 text-sm font-medium">Blueprint</a>
+                    <a href="#efficiency" class="nav-link px-3 py-2 text-sm font-medium">Efficiency</a>
+                    <a href="#structures" class="nav-link px-3 py-2 text-sm font-medium">Structures</a>
+                    <a href="#language" class="nav-link px-3 py-2 text-sm font-medium">Language</a>
+                    <a href="#reality" class="nav-link px-3 py-2 text-sm font-medium">Reality</a>
+                </div>
+                <div class="sm:hidden">
+                    <select id="mobile-nav" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="#blueprint">Blueprint</option>
+                        <option value="#efficiency">Efficiency</option>
+                        <option value="#structures">Structures</option>
+                        <option value="#language">Language</option>
+                        <option value="#reality">Reality</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <section id="blueprint" class="content-section space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The Blueprint of Crystals</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600">This section explores the fundamental building blocks of all crystalline materials. We'll look at the 'unit cell'—the smallest repeating pattern—and the 'Bravais lattice'—the underlying grid that defines the crystal's symmetry and structure. Understanding this blueprint is the first step to predicting a material's behavior.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-[#A0522D]">Unit Cell: The Repeating Brick</h3>
+                    <p class="mt-2 text-gray-600">Imagine a crystal as a massive wall built from identical LEGO bricks. The <strong>unit cell</strong> is that single, fundamental brick. It's the smallest volume that contains the complete atomic arrangement and symmetry of the entire crystal. By repeating this cell in all three dimensions, the entire crystal lattice is formed. Its shape and size are defined by <strong>lattice parameters</strong>: edge lengths (<em>a, b, c</em>) and the angles between them (α, β, γ).</p>
+                    <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Common Confusion:</strong> Don't forget that atoms on the corners, faces, or edges of a unit cell are shared with neighboring cells. An atom at a corner is part of 8 cells, so only 1/8th of it "belongs" to any single cell.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-[#A0522D]">Bravais Lattice: The Invisible Grid</h3>
+                    <p class="mt-2 text-gray-600">If the unit cell is the brick, the <strong>Bravais lattice</strong> is the invisible, abstract scaffolding or grid that dictates where each brick is placed. It's a purely geometrical concept, an infinite array of points in space where every point has an identical surrounding. It's not something you would physically 'see' within a material, but rather the mathematical framework. There are only <strong>14 unique Bravais lattices</strong> in 3D, which are grouped into <strong>7 crystal systems</strong> (like Cubic, Hexagonal, etc.) based on their symmetry. The final crystal structure is created by placing a group of one or more atoms (the 'basis') at each point of the Bravais lattice.</p>
+                     <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Key Relationship:</strong> Crystal Structure = Bravais Lattice (the grid) + Basis (the atoms on the grid).</p>
+                    <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Common Mistake:</strong> A common misconception is to confuse a Bravais lattice with a crystal structure. The Bravais lattice is an abstract set of points, representing the translational symmetry. The crystal structure is the physical arrangement of atoms, which includes the Bravais lattice <em>and</em> the specific arrangement of atoms (the basis) at each lattice point.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="efficiency" class="content-section space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Atomic Packing & Efficiency</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600">This section quantifies how efficiently atoms are packed within the different crystal structures. We'll explore the Atomic Packing Factor (APF), which measures the percentage of space in a unit cell filled by atoms. This single value provides powerful insights into a material's density, ductility, and overall stability. A higher APF often correlates with materials that are more ductile and formable.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-[#A0522D]">Key Metrics</h3>
+                    <p class="mt-2 text-gray-600"><strong>Coordination Number (CN):</strong> The number of direct, touching neighbors a single atom has. It's a measure of the local packing density.</p>
+                    <p class="mt-4 text-gray-600"><strong>Atomic Packing Factor (APF):</strong> The fraction of the unit cell's volume that is occupied by atoms, assuming they are hard spheres. It's calculated as:
+                    <br><code class="text-sm bg-gray-100 p-1 rounded">(Volume of atoms in cell) / (Total volume of cell)</code></p>
+                    <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Common Mistake:</strong> When calculating APF, the relationship between the atomic radius (R) and the lattice parameter (a) is different for each structure, depending on which direction the atoms touch (e.g., along the edge, face diagonal, or body diagonal).</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-[#A0522D] text-center">APF Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="apfChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="structures" class="content-section space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Common Metallic Structures</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600">Most metals crystallize into one of a few highly symmetric structures. This section provides an interactive explorer for the most important ones: Simple Cubic (SC), Body-Centered Cubic (BCC), Face-Centered Cubic (FCC), and Hexagonal Close-Packed (HCP). Click on each structure to see its unit cell, key properties, and how its atomic arrangement influences its real-world mechanical behavior.</p>
+            </div>
+            <div class="flex justify-center space-x-2 sm:space-x-4 p-4">
+                <button class="structure-btn bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm" data-structure="sc">SC</button>
+                <button class="structure-btn bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm" data-structure="bcc">BCC</button>
+                <button class="structure-btn bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm" data-structure="fcc">FCC</button>
+                <button class="structure-btn bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm" data-structure="hcp">HCP</button>
+            </div>
+            <div id="structure-display" class="card">
+            </div>
+        </section>
+        
+        <section id="language" class="content-section space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The Language of Crystals: Directions and Planes</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600">To describe specific orientations within a crystal, scientists use a standardized notation called <strong>Miller Indices</strong>. This system provides a "language" to precisely identify specific directions and planes of atoms. For a mechanical engineer, this is critical because properties like strength and ductility can change depending on the direction of applied force relative to these planes. Understanding these directions and planes is also fundamental to comprehending plastic deformation mechanisms, such as slip, and interpreting diffraction patterns used for material characterization.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                 <div class="card">
+                    <h3 class="text-2xl font-semibold text-[#A0522D]">Miller Indices for Crystal Directions [uvw]</h3>
+                    <p class="mt-2 text-gray-600">Crystal directions are represented by <strong>Miller indices</strong>, denoted as <code>[uvw]</code>. These indices define a vector extending from the origin of the unit cell to a specific point within the lattice.</p>
+                    <p class="mt-2 text-gray-600">To determine the Miller indices for a direction:</p>
+                    <ol class="list-decimal list-inside ml-4 text-gray-600 space-y-1">
+                        <li><strong>Identify two points</strong> that lie along the direction of interest, typically the origin (0,0,0) and another point (x,y,z) on the vector.</li>
+                        <li><strong>Determine the fractional coordinates</strong> of the second point along the x, y, and z axes relative to the unit cell lengths (a, b, c).</li>
+                        <li><strong>Subtract the coordinates of the first point from the second.</strong> For a vector from the origin, this simply gives (x,y,z).</li>
+                        <li><strong>Clear any fractions</strong> by multiplying all three numbers by the smallest common integer, and then <strong>reduce them to the lowest integer values</strong>.</li>
+                        <li><strong>Enclose the resulting integers in square brackets [uvw]</strong>. Negative integers are indicated by a bar placed over the number (e.g., [1̅21]).</li>
+                    </ol>
+                    <p class="mt-4 text-gray-600">A <strong>family of directions</strong> comprises crystallographic directions that are symmetrically equivalent due to the crystal's inherent symmetry. These are denoted by angle brackets <code class="bg-gray-100 p-1 rounded">&lt;uvw&gt;</code>. For example, in a cubic system, the <code class="bg-gray-100 p-1 rounded">&lt;100&gt;</code> family includes [100], [010], [001], and their negative counterparts (e.g., [1̅00]).</p>
+                    <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Common Mistake:</strong> For directions, you *reduce* the indices to the lowest integers. For planes, you *do not* reduce them.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-[#A0522D]">Miller Indices for Crystal Planes (hkl)</h3>
+                    <p class="mt-2 text-gray-600">Crystal planes are also described using <strong>Miller indices</strong>, denoted as <code>(hkl)</code>. These indices define the orientation of a set of parallel planes within the crystal lattice.</p>
+                    <p class="mt-2 text-gray-600">To determine the Miller indices for a plane:</p>
+                    <ol class="list-decimal list-inside ml-4 text-gray-600 space-y-1">
+                        <li><strong>Identify the intercepts</strong> of the plane with the crystallographic axes (x, y, z). If a plane is parallel to an axis, its intercept is considered infinite (∞).</li>
+                        <li><strong>Take the reciprocals</strong> of these intercepts.</li>
+                        <li><strong>Clear any fractions</strong> by multiplying by the least common multiple (LCM) of the denominators. Crucially, <strong>do not reduce these integers to their lowest terms</strong>. This distinction from direction indices is important because it preserves information about the interplanar spacing.</li>
+                        <li><strong>Enclose the resulting integers in parentheses (hkl)</strong>. Negative indices are indicated with a bar over the number (e.g., (1̅11)).</li>
+                    </ol>
+                    <p class="mt-4 text-gray-600">A <strong>family of planes</strong> refers to a set of planes that are symmetrically equivalent, denoted by curly brackets <code class="bg-gray-100 p-1 rounded">{hkl}</code>. For example, in a cubic system, the <code class="bg-gray-100 p-1 rounded">{100}</code> family includes (100), (010), (001), and their negative counterparts.</p>
+                    <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Common Confusion:</strong> When a plane passes through the origin (0,0,0), the origin must be shifted to an adjacent, equivalent lattice point before determining the intercepts.</p>
+                </div>
+            </div>
+             <div class="card mt-8">
+                <h3 class="text-2xl font-semibold text-[#A0522D]">Connection to Properties: Slip Systems</h3>
+                <p class="mt-2 text-gray-600">The precise identification of crystal directions and planes is paramount for understanding <strong>slip systems</strong>, which are the specific combinations of crystallographic planes and directions along which plastic deformation occurs in crystalline materials. When a material is subjected to stress, atoms move by the propagation of line defects called <strong>dislocations</strong> along these slip systems. The ease with which these dislocations move determines a material's ductility and strength.</p>
+                <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mt-4">
+                    <li><strong>FCC crystals</strong> (e.g., Copper): Have a high number of slip systems (12, typically {111} planes and <110> directions), contributing to their high ductility.</li>
+                    <li><strong>BCC crystals</strong> (e.g., Iron): Generally have fewer active slip systems at room temperature ({110}, {112}, {123} planes and <111> directions), making them harder but less ductile.</li>
+                    <li><strong>HCP crystals</strong> (e.g., Titanium): Have a limited number of slip systems, primarily on the basal (0001) plane and <11-20> directions, which often leads to anisotropic mechanical properties and lower ductility compared to FCC.</li>
+                </ul>
+                <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Key Takeaway:</strong> The orientation of applied stress relative to these slip systems significantly affects the material's yield strength. For mechanical engineers, this means that understanding Miller indices and slip systems is crucial for predicting how a component will deform under load and for designing materials with desired formability and strength.</p>
+            </div>
+        </section>
+
+        <section id="reality" class="content-section space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The Reality of Crystals: Imperfections & Strengthening</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600">Perfect crystals only exist in textbooks. Real materials are full of defects, or <strong>imperfections (defects)</strong> in their atomic arrangement. Far from being just flaws, these defects are often what give materials their most useful properties. This section explores the types of defects and how we can intentionally introduce them—through a process called <strong>solute strengthening</strong>—to make metals stronger.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card">
+                    <h3 class="text-xl font-semibold text-[#A0522D]">Point Defects (0D)</h3>
+                    <p class="mt-2 text-gray-600">Localized errors like a missing atom (<strong>vacancy</strong>) or an extra atom squeezed in between (<strong>interstitial atom</strong>). <strong>Impurities</strong> are also point defects, categorized as <strong>substitutional impurities</strong> (replace host atoms) or <strong>interstitial impurities</strong> (fit into spaces between host atoms).</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-semibold text-[#A0522D]">Line Defects (1D)</h3>
+                    <p class="mt-2 text-gray-600">Known as <strong>dislocations</strong>, these are entire lines of misplaced atoms. Their movement is what allows metals to be ductile and deform without breaking. Types include <strong>edge dislocation</strong>, <strong>screw dislocation</strong>, and <strong>mixed dislocation</strong>.</p>
+                </div>
+                <div class="card md:col-span-2 lg:col-span-1">
+                    <h3 class="text-xl font-semibold text-[#A0522D]">Planar Defects (2D)</h3>
+                    <p class="mt-2 text-gray-600">Interfaces like <strong>grain boundaries</strong> (where two crystals meet) or <strong>stacking faults</strong>. <strong>Twin boundaries</strong> are also planar defects. Grain boundaries are crucial for strengthening materials.</p>
+                </div>
+            </div>
+            <div class="card mt-8">
+                <h3 class="text-2xl font-semibold text-[#A0522D]">Application: Solute Strengthening</h3>
+                <p class="mt-2 text-gray-600">This is a technique to make a metal stronger by intentionally adding impurity atoms (a <strong>solute</strong>) to its crystal lattice of another element (the <strong>solvent</strong>), forming a <strong>solid solution</strong>. The presence of these foreign atoms distorts the lattice, creating local stress fields. These stress fields act like roadblocks, making it much harder for <strong>dislocations</strong> to move. More force is then required to deform the material, making it stronger and harder. A classic example is adding carbon to iron to make steel.</p>
+                <p class="mt-4 text-gray-600">The primary ways solute atoms impede dislocations are through:</p>
+                <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1">
+                    <li><strong>Lattice Distortion (Size Effect):</strong> When solute atoms differ in size from the solvent atoms, they introduce localized strains, interacting with dislocation stress fields.</li>
+                    <li><strong>Modulus Effect:</strong> Differences in the elastic modulus between solute and solvent atoms create energy barriers for dislocation motion.</li>
+                </ul>
+                <p class="mt-4 text-gray-600">Common applications include <strong>Steel Alloys</strong> (carbon in iron), <strong>Aluminum Alloys</strong> (magnesium, manganese in aluminum), and <strong>Nickel-Based Superalloys</strong> (chromium, cobalt, tungsten in nickel).</p>
+                 <p class="mt-4 text-sm text-gray-500 border-l-4 border-[#A0522D] pl-4"><strong>Key Takeaway:</strong> We control a material's strength by controlling how easily dislocations can move. Adding solute atoms is a primary way to impede their motion. A common mistake is to oversimplify it as merely "adding an impurity"; it's about the specific interaction between solute atoms and dislocations through lattice distortion and modulus effects.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+            const structureButtons = document.querySelectorAll('.structure-btn');
+            const structureDisplay = document.getElementById('structure-display');
+
+            const structureData = {
+                sc: {
+                    name: 'Simple Cubic (SC)',
+                    atoms: 1,
+                    cn: 6,
+                    apf: 0.52,
+                    properties: 'Rare in metals due to low packing efficiency. Relatively unstable.',
+                    examples: 'Polonium (Po)',
+                    visualization: [
+                        { top: '0%', left: '0%' }, { top: '0%', left: '100%' },
+                        { top: '100%', left: '0%' }, { top: '100%', left: '100%' },
+                        { top: '0%', left: '50%', display: 'none' }, 
+                        { top: '50%', left: '0%', display: 'none' }, { top: '50%', left: '100%', display: 'none' },
+                        { top: '100%', left: '50%', display: 'none' },
+                        { top: '50%', left: '50%', display: 'none' }
+                    ]
+                },
+                bcc: {
+                    name: 'Body-Centered Cubic (BCC)',
+                    atoms: 2,
+                    cn: 8,
+                    apf: 0.68,
+                    properties: 'Higher strength and hardness than FCC, but often less ductile.',
+                    examples: 'Iron (at room temp), Chromium, Tungsten',
+                    visualization: [
+                        { top: '0%', left: '0%' }, { top: '0%', left: '100%' },
+                        { top: '100%', left: '0%' }, { top: '100%', left: '100%' },
+                        { top: '0%', left: '50%', display: 'none' }, 
+                        { top: '50%', left: '0%', display: 'none' }, { top: '50%', left: '100%', display: 'none' },
+                        { top: '100%', left: '50%', display: 'none' },
+                        { top: '50%', left: '50%' }
+                    ]
+                },
+                fcc: {
+                    name: 'Face-Centered Cubic (FCC)',
+                    atoms: 4,
+                    cn: 12,
+                    apf: 0.74,
+                    properties: 'Highly ductile and malleable due to high packing efficiency and many slip systems.',
+                    examples: 'Aluminum, Copper, Gold, Silver',
+                     visualization: [
+                        { top: '0%', left: '0%' }, { top: '0%', left: '100%' },
+                        { top: '100%', left: '0%' }, { top: '100%', left: '100%' },
+                        { top: '0%', left: '50%' }, { top: '100%', left: '50%' },
+                        { top: '50%', left: '0%' }, { top: '50%', left: '100%' },
+                        { top: '50%', left: '50%' }
+                    ]
+                },
+                hcp: {
+                    name: 'Hexagonal Close-Packed (HCP)',
+                    atoms: 6,
+                    cn: 12,
+                    apf: 0.74,
+                    properties: 'High strength-to-weight ratio, but often brittle due to fewer slip systems.',
+                    examples: 'Titanium, Magnesium, Zinc',
+                    visualization: [] 
+                }
+            };
+
+            function showSection(hash) {
+                sections.forEach(section => {
+                    if ('#' + section.id === hash) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                
+                if (mobileNav.value !== hash) {
+                    mobileNav.value = hash;
+                }
+            }
+
+            function updateStructureDisplay(structureKey) {
+                const data = structureData[structureKey];
+                let visualizationHTML = '';
+
+                if (structureKey === 'hcp') {
+                    visualizationHTML = `<p class="text-center text-gray-500 my-8">HCP visualization is complex and best shown in 3D software.</p>`;
+                } else {
+                    const atomsHTML = data.visualization.map(atom => {
+                        const style = `top: ${atom.top}; left: ${atom.left}; display: ${atom.display || 'block'};`;
+                        return `<div class="atom" style="${style}"></div>`;
+                    }).join('');
+                    visualizationHTML = `<div class="unit-cell-vis">${atomsHTML}</div>`;
+                }
+                
+                structureDisplay.innerHTML = `
+                    <div class="grid md:grid-cols-3 gap-6 items-center">
+                        <div class="md:col-span-2">
+                            <h3 class="text-2xl font-bold text-[#A0522D]">${data.name}</h3>
+                            <ul class="mt-4 space-y-2 text-gray-700">
+                                <li><strong>Atoms per Unit Cell:</strong> ${data.atoms}</li>
+                                <li><strong>Coordination Number (CN):</strong> ${data.cn}</li>
+                                <li><strong>Atomic Packing Factor (APF):</strong> ${data.apf.toFixed(2)} (${data.apf * 100}%)</li>
+                                <li class="pt-2"><strong>Common Properties:</strong> ${data.properties}</li>
+                                <li><strong>Examples:</strong> ${data.examples}</li>
+                            </ul>
+                        </div>
+                        <div class="md:col-span-1">
+                            ${visualizationHTML}
+                        </div>
+                    </div>
+                `;
+
+                structureButtons.forEach(btn => {
+                    if (btn.dataset.structure === structureKey) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const hash = this.getAttribute('href');
+                    history.pushState(null, null, hash);
+                    showSection(hash);
+                });
+            });
+            
+            mobileNav.addEventListener('change', function() {
+                const hash = this.value;
+                history.pushState(null, null, hash);
+                showSection(hash);
+            });
+
+            window.addEventListener('popstate', function() {
+                showSection(window.location.hash || '#blueprint');
+            });
+
+            structureButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    updateStructureDisplay(this.dataset.structure);
+                });
+            });
+
+            const initialHash = window.location.hash || '#blueprint';
+            showSection(initialHash);
+            updateStructureDisplay('fcc'); 
+            structureButtons[2].classList.add('active');
+
+            const ctx = document.getElementById('apfChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Simple Cubic (SC)', 'Body-Centered Cubic (BCC)', 'Face-Centered Cubic (FCC)', 'Hexagonal Close-Packed (HCP)'],
+                    datasets: [{
+                        label: 'Atomic Packing Factor (APF)',
+                        data: [0.52, 0.68, 0.74, 0.74],
+                        backgroundColor: [
+                            'rgba(211, 211, 211, 0.6)',
+                            'rgba(169, 169, 169, 0.6)',
+                            'rgba(160, 82, 45, 0.6)',
+                            'rgba(160, 82, 45, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(211, 211, 211, 1)',
+                            'rgba(169, 169, 169, 1)',
+                            'rgba(160, 82, 45, 1)',
+                            'rgba(160, 82, 45, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0,
+                            title: {
+                                display: true,
+                                text: 'Packing Efficiency'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += (context.parsed.y * 100).toFixed(1) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
