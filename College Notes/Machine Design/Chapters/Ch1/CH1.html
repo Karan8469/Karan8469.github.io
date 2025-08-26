@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Guide to Stress, Strain, & Machine Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <!-- Chosen Palette: Calm Neutral Harmony -->
+    <!-- Application Structure Plan: A thematic, multi-section single-page application (SPA) navigated by a persistent top bar. This non-linear structure allows students to explore concepts based on interest, fostering a more engaging learning path than a linear report. The sections are: 1) Fundamentals (interactive cards for stress/strain types, Hooke's Law, Poisson's Ratio, Volumetric Strain, and relations between constants), 2) Stress-Strain Curve (interactive chart comparing ductile/brittle materials with detailed point explanations), 3) Material Properties (dynamic chart and info panel for material comparison of elastic moduli), 4) Machine Design Principles (overview of design, types, process, and material selection), and 5) Problem Solving (solved examples, common pitfalls, and problem-solving strategies). This structure was chosen to break down complex information into manageable, interactive modules, promoting exploration and connecting theoretical concepts to practical applications, ensuring all requested topics are covered in depth. -->
+    <!-- Visualization & Content Choices: 1. Fundamentals: Goal: Inform/Organize. Method: Interactive HTML cards. Interaction: Click to reveal detailed info. Justification: Visually separates and explains each foundational concept (stress types, strain types, Hooke's Law, Poisson's Ratio, Volumetric Strain, Elastic Constants relations) with formulas rendered by MathJax. 2. Stress-Strain Curve: Goal: Compare/Change. Method: Chart.js Line Chart. Interaction: Hover for tooltips on key points, toggle button to switch between ductile/brittle datasets. Justification: Dynamically illustrates the core difference in material behavior and clearly labels critical stress/strain points. 3. Material Properties: Goal: Compare. Method: Chart.js Bar Chart. Interaction: Dropdown to change property, click bars to update info panel. Justification: Enables direct, visual comparison of quantitative data across materials for Young's, Shear, and Bulk Moduli. 4. Machine Design Principles: Goal: Organize/Inform. Method: HTML/CSS Flowchart for design process, interactive cards for design types and material selection. Interaction: Static visual guide and click-to-reveal details. Justification: Clearly presents procedural and conceptual aspects of machine design. 5. Problem Solving: Goal: Apply/Inform. Method: HTML sections with hide/show solutions for examples, and detailed text for pitfalls and problem-solving approaches. Interaction: Click to reveal solutions. Justification: Provides practical application and guidance for common student challenges, with all formulas rendered by MathJax. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FDFBF8; }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { color: #3B82F6; border-bottom-color: #3B82F6; }
+        .nav-link:not(.active):hover { color: #6B7280; border-bottom-color: #D1D5DB; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 40vh; max-height: 450px; }
+        @media (min-width: 768px) { .chart-container { height: 50vh; } }
+        .btn { transition: background-color 0.3s ease, transform 0.2s ease; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-toggle.active { background-color: #3B82F6; color: white; }
+        .solution-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 0.375rem; margin-top: 1rem; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-900">Mechanics & Design</h1>
+                <div class="hidden sm:flex items-center space-x-4 lg:space-x-8">
+                    <a href="#fundamentals" class="nav-link text-gray-500 font-medium border-b-2 border-transparent pb-1">Fundamentals</a>
+                    <a href="#curve" class="nav-link text-gray-500 font-medium border-b-2 border-transparent pb-1">Stress-Strain Curve</a>
+                    <a href="#properties" class="nav-link text-gray-500 font-medium border-b-2 border-transparent pb-1">Material Properties</a>
+                    <a href="#design-principles" class="nav-link text-gray-500 font-medium border-b-2 border-transparent pb-1">Machine Design</a>
+                    <a href="#problem-solving" class="nav-link text-gray-500 font-medium border-b-2 border-transparent pb-1">Problem Solving</a>
+                </div>
+                <div class="sm:hidden">
+                    <select id="mobile-nav" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="fundamentals">Fundamentals</option>
+                        <option value="curve">Stress-Strain Curve</option>
+                        <option value="properties">Material Properties</option>
+                        <option value="design-principles">Machine Design</option>
+                        <option value="problem-solving">Problem Solving</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <section id="fundamentals" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Fundamentals: How Materials Respond to Forces</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600 max-w-3xl mx-auto">This section lays the groundwork for understanding how engineering materials behave under different loads. Stress is the internal resistance per unit area, while strain is the deformation per unit length. These concepts are intrinsically linked by material properties. Click on each card to delve into specific types of stress and strain, fundamental laws, and the relationships between key material constants. Pay close attention to the formulas and their units to build a strong foundation.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-blue-600">Tensile Stress & Linear Strain</h3>
+                    <p class="mt-2 text-gray-600">The material's response to being pulled apart, and its resulting elongation.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p><strong>Tensile Stress ($\sigma_t$):</strong> This is the internal force intensity developed within a material when it is subjected to an external pulling (tensile) force, tending to stretch or elongate it. Imagine a rope being pulled from both ends; the stress is the internal resistance per unit of the rope's cross-section.</p>
+                        <p class="mt-2">Formula: $$\sigma_t = \frac{F}{A}$$ where $F$ is the applied tensile force (in Newtons, N) and $A$ is the original cross-sectional area perpendicular to the force (in square meters, $m^2$). Units are Pascals (Pa) or psi (pounds per square inch).</p>
+                        <p class="mt-2"><strong>Linear (Axial) Strain ($\epsilon_L$):</strong> This is the fractional change in length of the material in the direction of the applied tensile force. It quantifies how much the material stretches relative to its original size.</p>
+                        <p class="mt-2">Formula: $$\epsilon_L = \frac{\Delta L}{L_0}$$ where $\Delta L$ is the change in length (elongation) and $L_0$ is the original length. Strain is dimensionless, as it's a ratio of lengths.</p>
+                        <p class="mt-2"><strong>Connection:</strong> Tensile stress is the cause, and linear strain is the effect. For elastic materials, a higher tensile stress will result in a proportionally higher linear strain, indicating more elongation.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> Students often confuse 'force' with 'stress'. Force is the total external load, while stress is the *intensity* of that internal force distributed over an area. Similarly, 'deformation' ($\Delta L$) is an absolute change in size, whereas 'strain' ($\epsilon$) is a *relative* measure, making it a more useful property for comparing material behavior regardless of specimen size.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-green-600">Compressive Stress & Linear Strain</h3>
+                    <p class="mt-2 text-gray-600">The material's response to being squeezed, and its resulting shortening.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p><strong>Compressive Stress ($\sigma_c$):</strong> This is the internal force intensity developed within a material when it is subjected to an external pushing (compressive) force, tending to shorten or compress it. Think of a building column supporting a roof; the column experiences compressive stress.</p>
+                        <p class="mt-2">Formula: $$\sigma_c = \frac{F}{A}$$ where $F$ is the applied compressive force and $A$ is the original cross-sectional area. Units are Pascals (Pa) or psi. By convention, compressive stress is often considered negative.</p>
+                        <p class="mt-2"><strong>Linear (Axial) Strain ($\epsilon_L$):</strong> This is the fractional change in length (shortening) of the material in the direction of the applied compressive force.</p>
+                        <p class="mt-2">Formula: $$\epsilon_L = \frac{\Delta L}{L_0}$$ where $\Delta L$ is the change in length (shortening) and $L_0$ is the original length. Strain is dimensionless. By convention, compressive strain is often considered negative.</p>
+                        <p class="mt-2"><strong>Connection:</strong> Compressive stress causes linear strain (shortening). While the formulas are similar to tensile stress, materials, especially brittle ones like concrete or ceramics, often exhibit different strength characteristics in compression compared to tension.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> For slender components under compression, a phenomenon called *buckling* (a stability failure where the component bends sideways) can occur before the material itself reaches its compressive yield or ultimate strength. This is a distinct failure mode from pure material compression and requires different analysis methods.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-purple-600">Shear Stress & Shear Strain</h3>
+                    <p class="mt-2 text-gray-600">The material's response to sliding forces, causing angular distortion.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p><strong>Shear Stress ($\tau$):</strong> This is the internal force intensity developed within a material due to forces acting *parallel* to a surface, causing one part of the material to slide or deform tangentially relative to another. Imagine cutting paper with scissors; the blades exert shear stress on the paper.</p>
+                        <p class="mt-2">Formula: $$\tau = \frac{V}{A_{shear}}$$ where $V$ is the applied shear force (in N) and $A_{shear}$ is the area of the cross-section *parallel* to the force (in $m^2$). Units are Pascals (Pa) or psi.</p>
+                        <p class="mt-2"><strong>Shear Strain ($\gamma$):</strong> This is the angular distortion of the material caused by shear stress. It is measured as the tangent of the angle of deformation, or for small angles, simply the angle itself (in radians).</p>
+                        <p class="mt-2">Formula: $$\gamma = \frac{\Delta x}{h}$$ where $\Delta x$ is the lateral displacement and $h$ is the original height perpendicular to the shear force. Alternatively, $\gamma = \tan \phi \approx \phi$ (for small angles, where $\phi$ is the angle of distortion in radians). Shear strain is dimensionless.</p>
+                        <p class="mt-2"><strong>Connection:</strong> Shear stress directly causes shear strain. This type of loading is common in bolted or riveted joints, pins, and shafts subjected to twisting (torsional) loads.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> The critical distinction is that shear stress acts *parallel* to the surface, unlike normal (tensile/compressive) stress which acts perpendicular. Always ensure you are using the correct area ($A_{shear}$) which is parallel to the applied shear force.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-yellow-600">Poisson's Ratio & Lateral Strain</h3>
+                    <p class="mt-2 text-gray-600">How a material deforms sideways when stretched or compressed axially.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p><strong>Lateral Strain ($\epsilon_{lateral}$):</strong> When a material is stretched or compressed axially, it doesn't just change length in that direction; it also changes its dimensions perpendicular to the applied force. This change in width or thickness, relative to the original width or thickness, is called lateral strain.</p>
+                        <p class="mt-2">Formula: $$\epsilon_{lateral} = \frac{\Delta w}{w_0}$$ where $\Delta w$ is the change in width (or thickness) and $w_0$ is the original width. It is dimensionless.</p>
+                        <p class="mt-2"><strong>Poisson's Ratio ($\nu$):</strong> This is a fundamental material property that quantifies the ratio of lateral strain to axial (linear) strain. It describes the "necking" effect (thinning when stretched) or "bulging" effect (widening when compressed).</p>
+                        <p class="mt-2">Formula: $$\nu = -\frac{\epsilon_{lateral}}{\epsilon_{axial}}$$ The negative sign is included in the definition because for most materials, when axial strain is positive (stretching), lateral strain is negative (thinning), making $\nu$ a positive value. Poisson's ratio typically ranges from 0 to 0.5 for most engineering materials (e.g., steel is around 0.27-0.30, rubber is close to 0.5).</p>
+                        <p class="mt-2"><strong>Connection:</strong> Poisson's ratio is crucial for understanding how a material deforms in three dimensions under uniaxial loading, and it plays a vital role in calculating volumetric changes and in multi-axial stress analysis.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> Forgetting the negative sign in the formula for Poisson's ratio is a common mistake. Also, remember that a material with a Poisson's ratio of 0.5 is considered incompressible in terms of volume (like rubber), meaning its volume doesn't change under elastic deformation.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-orange-600">Hooke's Law & Modulus of Elasticity</h3>
+                    <p class="mt-2 text-gray-600">The fundamental linear relationship between stress and strain in the elastic region.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p><strong>Hooke's Law:</strong> This fundamental principle states that, within the elastic limit of a material, the stress applied is directly proportional to the strain produced. This means that if you double the stress, you double the strain, provided the material remains elastic (returns to its original shape after unloading).</p>
+                        <p class="mt-2">For tensile/compressive loads: $$\sigma = E \epsilon$$</p>
+                        <p class="mt-2">For shear loads: $$\tau = G \gamma$$</p>
+                        <p class="mt-2"><strong>Modulus of Elasticity (Young's Modulus, E):</strong> This is the constant of proportionality in Hooke's Law for normal stress and strain. It is a measure of a material's stiffness or its resistance to elastic (recoverable) deformation under tensile or compressive loads. A higher value of $E$ indicates a stiffer material that will deform less under a given stress.</p>
+                        <p class="mt-2">Units are Pascals (Pa) or psi, the same as stress, because strain is dimensionless. It represents the slope of the linear elastic portion of the stress-strain curve.</p>
+                        <p class="mt-2"><strong>Connection:</strong> Young's Modulus ($E$) is a critical material property. It directly links the applied stress to the resulting elastic strain, allowing engineers to predict how much a component will deform under a given load before permanent damage occurs. It's essential for deflection calculations.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> The most significant pitfall is applying Hooke's Law outside its validity range. It *only* applies within the elastic region (up to the proportional limit or elastic limit). Beyond this, the material begins to deform plastically, and the relationship between stress and strain becomes non-linear.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-red-600">Volumetric Strain & Bulk Modulus</h3>
+                    <p class="mt-2 text-gray-600">The change in a material's total volume under hydrostatic pressure.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p><strong>Volumetric Strain ($\epsilon_v$):</strong> This is the fractional change in an object's total volume due to applied stress. It's particularly relevant when a material is subjected to pressure from all sides (hydrostatic pressure), such as a submarine hull in deep water.</p>
+                        <p class="mt-2">For small strains, it can be approximated as the sum of normal strains in three orthogonal directions: $$\epsilon_v = \epsilon_x + \epsilon_y + \epsilon_z$$ For uniaxial stress (e.g., simple tension in x-direction), considering Poisson's effect: $$\epsilon_v = \epsilon_x (1 - 2\nu)$$</p>
+                        <p class="mt-2"><strong>Bulk Modulus (K):</strong> This is a material property that measures its resistance to change in volume under hydrostatic (uniform pressure from all sides) stress. It essentially quantifies a material's compressibility.</p>
+                        <p class="mt-2">Formula: $$K = -\frac{P}{\epsilon_v}$$ where $P$ is the hydrostatic pressure (stress) and $\epsilon_v$ is the volumetric strain. The negative sign ensures that $K$ is positive, as an increase in pressure (negative stress) leads to a decrease in volume (negative volumetric strain). Units are Pascals (Pa) or psi.</p>
+                        <p class="mt-2"><strong>Connection:</strong> A high Bulk Modulus indicates that a material is very resistant to volume changes, meaning it is nearly incompressible. This property is vital for materials used in high-pressure environments or fluid dynamics applications.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> Bulk modulus ($K$) specifically relates to volume change under *hydrostatic* pressure, where stress is uniform in all directions. It is distinct from Young's modulus ($E$), which describes deformation under *uniaxial* (single-direction) loading.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-cyan-600">Modulus of Rigidity (Shear Modulus, G)</h3>
+                    <p class="mt-2 text-gray-600">A material's resistance to elastic deformation under shear stress.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p><strong>Modulus of Rigidity (Shear Modulus, G):</strong> This is the constant of proportionality in Hooke's Law for shear stress and shear strain ($\tau = G \gamma$). It measures a material's stiffness or resistance to angular distortion or twisting (torsion).</p>
+                        <p class="mt-2">Units are Pascals (Pa) or psi, similar to Young's Modulus. It represents the slope of the linear elastic portion of the shear stress-strain curve.</p>
+                        <p class="mt-2"><strong>Connection:</strong> The Shear Modulus ($G$) is crucial for designing components subjected to torsional loads (like drive shafts) or transverse shear forces (like bolts and pins). A higher $G$ means the material will resist twisting or shearing deformation more effectively.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> It's important to distinguish between Young's Modulus ($E$) and Shear Modulus ($G$). $E$ governs deformation under normal (tensile/compressive) loads, while $G$ governs deformation under shear loads. They are related, but not interchangeable in calculations.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                    <h3 class="text-xl font-semibold text-gray-700">Relations Between Elastic Constants</h3>
+                    <p class="mt-2 text-gray-600">How Young's Modulus, Shear Modulus, Bulk Modulus, and Poisson's Ratio are related.</p>
+                    <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                        <p>For isotropic materials (materials whose properties are the same in all directions, like many metals), the four elastic constants ($E$, $G$, $K$, and $\nu$) are not independent. If you know any two of them, the other two can be derived using the following relationships:</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            <li>Relation between $E$, $G$, and $\nu$: $$E = 2G(1 + \nu)$$</li>
+                            <li>Relation between $E$, $K$, and $\nu$: $$E = 3K(1 - 2\nu)$$</li>
+                            <li>Relation between $G$, $K$, and $\nu$: $$\nu = \frac{3K - 2G}{6K + 2G}$$</li>
+                            <li>Relation between $E$, $G$, and $K$: $$E = \frac{9KG}{3K + G}$$</li>
+                        </ul>
+                        <p class="mt-2"><strong>Connection:</strong> These relations highlight the interconnectedness of a material's elastic response to different types of loading. They are invaluable for material characterization, allowing engineers to determine all elastic properties from a limited set of tests, and for advanced stress analysis where multiple types of deformation are involved.</p>
+                        <p class="mt-2 text-sm text-red-600"><strong>Common Confusion:</strong> These relations are strictly valid only for *isotropic* materials. Anisotropic materials (like wood, composites, or single crystals), which have different properties in different directions, require more complex constitutive equations and cannot be described by these simple relationships.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="curve" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The Stress-Strain Curve: A Material's Mechanical Fingerprint</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600 max-w-3xl mx-auto">This chart is crucial for understanding how materials behave under increasing tensile load. It reveals key points that define a material's strength, stiffness, and ductility. Hover over the curve to see explanations of these critical points. Use the buttons to compare the characteristic behavior of a ductile material (like low-carbon steel) with a brittle material (like cast iron).</p>
+            </div>
+            <div class="flex justify-center mb-6 space-x-4">
+                <button id="ductileBtn" class="btn btn-toggle active px-4 py-2 rounded-md font-medium">Ductile Material (e.g., Steel)</button>
+                <button id="brittleBtn" class="btn btn-toggle bg-gray-200 px-4 py-2 rounded-md font-medium">Brittle Material (e.g., Cast Iron)</button>
+            </div>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="stressStrainChart"></canvas>
+                </div>
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <h3 class="text-lg font-semibold mb-2">Key Points on the Stress-Strain Curve:</h3>
+                    <ul class="list-disc list-inside text-gray-700 space-y-1">
+                        <li><strong>Proportional Limit:</strong> This is the highest stress at which stress is directly proportional to strain. Up to this point, Hooke's Law ($\sigma = E\epsilon$) is valid, and the curve is a straight line.</li>
+                        <li><strong>Elastic Limit:</strong> The maximum stress a material can withstand without undergoing any permanent deformation. If the load is removed below this limit, the material will return to its original size and shape. It is typically very close to the proportional limit.</li>
+                        <li><strong>Yield Point / Yield Strength ($\sigma_y$):</strong> The stress at which a material begins to deform plastically (permanently) without a significant increase in load. For materials with a distinct yield point (like some steels), there's an upper and lower yield point. For materials without a clear yield point (like aluminum alloys), a "0.2% offset yield strength" is commonly used, defined as the stress corresponding to a permanent strain of 0.002. This is a critical design parameter as it signifies the onset of permanent deformation.</li>
+                        <li><strong>Ultimate Tensile Strength (UTS, $\sigma_u$):</strong> This is the maximum stress a material can withstand under tensile loading. It represents the peak stress on the engineering stress-strain curve. Beyond this point, "necking" (localized reduction in cross-sectional area) begins, and the material starts to weaken, even as the load continues to increase until fracture.</li>
+                        <li><strong>Fracture / Breaking Stress ($\sigma_f$):</strong> The stress at which the material finally ruptures or breaks. For ductile materials, this stress is typically lower than the ultimate tensile strength due to necking. For brittle materials, the fracture stress is often very close to the ultimate strength, with little to no plastic deformation.</li>
+                    </ul>
+                    <p class="mt-3 text-sm text-red-600"><strong>Common Pitfall:</strong> Confusing Elastic Limit with Proportional Limit. While often very close, the elastic limit is technically the point where *any* permanent deformation begins, whereas the proportional limit is where the linear relationship ends. Also, remember that Engineering Stress-Strain curves (shown here, based on original area) can differ significantly from True Stress-Strain curves (based on instantaneous area), especially after necking begins.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="properties" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Material Properties: Quantifying Performance</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600 max-w-3xl mx-auto">Mechanical properties are crucial for selecting the right material for a machine component. This explorer allows you to compare key elastic moduli for common engineering materials (Young's, Shear, and Bulk Modulus). Select a property from the dropdown to update the chart, and click on a material's bar to learn more about its characteristics and typical uses. Remember, these properties dictate how a material will deform under load and resist failure, directly influencing design decisions.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">Compare Elastic Moduli</h3>
+                        <select id="propertySelector" class="rounded-md border-gray-300 shadow-sm">
+                            <option value="E" selected>Young's Modulus (E)</option>
+                            <option value="G">Shear Modulus (G)</option>
+                            <option value="K">Bulk Modulus (K)</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" style="height: 45vh; max-height: 500px;">
+                        <canvas id="propertiesChart"></canvas>
+                    </div>
+                </div>
+                <div id="materialInfo" class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2" id="materialName">Select a Material</h3>
+                    <p class="text-gray-600" id="materialDescription">Click on a bar in the chart to see details here. This panel provides context on the material's properties and common applications, linking the quantitative data to real-world engineering choices.</p>
+                </div>
+            </div>
+            <div class="mt-8 p-6 bg-gray-50 rounded-lg shadow-inner">
+                <h3 class="text-xl font-semibold mb-3">Other Important Mechanical Properties:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                    <div>
+                        <p><strong>Strength:</strong> The ability of a material to withstand an applied load without failure or plastic deformation. Key measures include Yield Strength (onset of permanent deformation) and Ultimate Tensile Strength (maximum load-carrying capacity before necking).</p>
+                        <p><strong>Ductility:</strong> The ability of a material to deform plastically (permanently) under tensile stress before fracturing. Ductile materials can be drawn into wires or stretched. Measured by % Elongation (increase in length) and % Reduction in Area at fracture. High ductility is desirable for components that need to absorb energy or undergo forming operations.</p>
+                        <p><strong>Brittleness:</strong> The opposite of ductility. Brittle materials exhibit very little or no plastic deformation before fracturing. They tend to fail suddenly without warning. Examples include cast iron, ceramics, and glass.</p>
+                        <p><strong>Toughness:</strong> The ability of a material to absorb energy and deform plastically before fracturing. It represents the total energy absorbed up to fracture and is typically measured by the area under the entire stress-strain curve. Tough materials are resistant to crack propagation and sudden failure, making them suitable for impact applications.</p>
+                    </div>
+                    <div>
+                        <p><strong>Hardness:</strong> The resistance of a material to localized plastic deformation, such as indentation, scratching, or abrasion. Hardness is often correlated with strength and wear resistance. Common tests include Brinell, Rockwell, and Vickers hardness tests.</p>
+                        <p><strong>Resilience:</strong> The ability of a material to absorb energy elastically and release it upon unloading. It is represented by the area under the elastic portion of the stress-strain curve (up to the elastic limit). Materials with high resilience are suitable for springs or components that need to store and release elastic energy.</p>
+                        <p><strong>Fatigue Strength:</strong> The maximum stress a material can withstand for a specified number of cycles without fracturing when subjected to cyclic or fluctuating loads. Fatigue is a common failure mode in components like shafts, gears, and aircraft structures, where stresses are repeated over time, even if below the yield strength.</p>
+                        <p><strong>Creep Resistance:</strong> The resistance of a material to time-dependent plastic deformation under a constant load at elevated temperatures. Creep becomes significant at temperatures above approximately 0.4 times the material's melting point (in Kelvin). It's crucial for components in high-temperature applications like jet engines or power plants.</p>
+                    </div>
+                </div>
+                <p class="mt-3 text-sm text-red-600"><strong>Common Pitfall:</strong> Confusing hardness with strength, or ductility with toughness. While related, they are distinct properties. A material can be hard but brittle (e.g., ceramics), or tough but not extremely hard (e.g., some rubbers or low-carbon steels). Always consider the specific application requirements when choosing a material based on its properties.</p>
+            </div>
+        </section>
+        
+        <section id="design-principles" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Machine Design Principles: From Concept to Reality</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600 max-w-3xl mx-auto">Machine design is the art and science of creating functional, safe, and efficient mechanical components and systems. This section covers the definition of machine design, different types of design, the systematic procedure engineers follow, and the critical role of material selection in bringing designs to life. Understanding these principles bridges the gap between theoretical material behavior and practical engineering application, enabling you to translate material science knowledge into tangible products.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-center">What is Machine Design?</h3>
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                        <p class="text-gray-700">Machine design is a creative process that involves applying scientific principles (like mechanics of materials, thermodynamics, fluid mechanics), technical information, and engineering judgment to conceive, plan, and create new or improved mechanical components, products, or systems. It's not just about drawing parts; it's about solving real-world problems by ensuring components can withstand anticipated loads, operate reliably, efficiently, and safely for their intended lifespan, while also considering factors like cost, manufacturability, aesthetics, ergonomics, and environmental impact.</p>
+                        <p class="mt-3 text-sm text-red-600"><strong>Common Confusion:</strong> Design is not merely analysis. While analysis (stress, strain, thermal, etc.) is a crucial part, design encompasses the entire lifecycle from identifying a need to ensuring manufacturability, assembly, and maintenance. It's an iterative, problem-solving process.</p>
+                    </div>
+
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Types of Machine Design</h3>
+                    <div class="space-y-4">
+                        <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                            <h4 class="text-xl font-semibold text-blue-600">Adaptive Design</h4>
+                            <p class="mt-2 text-gray-600">Modifying an existing design to meet new requirements or conditions.</p>
+                            <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                                <p>This is the most common type of design. It involves making minor changes to an existing product or system, such as altering its size, material, or arrangement of components, without changing the fundamental working principle. The core design remains the same, but it's adapted for a new application or improved performance.</p>
+                                <p class="mt-2"><strong>Example:</strong> Scaling up an existing pump design to handle a higher flow rate, or changing the material of a bracket to reduce weight while maintaining strength.</p>
+                            </div>
+                        </div>
+                        <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                            <h4 class="text-xl font-semibold text-green-600">Developmental Design</h4>
+                            <p class="mt-2 text-gray-600">New designs based on existing principles but with new combinations or materials.</p>
+                            <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                                <p>Involves significant modifications or new applications of known principles or technologies. It often combines existing concepts in novel ways or incorporates new materials or manufacturing processes to achieve a substantial improvement or new functionality. It's more innovative than adaptive design but less revolutionary than new design.</p>
+                                <p class="mt-2"><strong>Example:</strong> Developing a new type of hybrid vehicle transmission that combines elements of existing automatic and manual transmissions, or designing a new lightweight bicycle frame using advanced composite materials.</p>
+                            </div>
+                        </div>
+                        <div class="card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="toggleCardDetail(this)">
+                            <h4 class="text-xl font-semibold text-purple-600">New Design (Original Design / Innovation)</h4>
+                            <p class="mt-2 text-gray-600">Developing a completely new product or system to satisfy a new need or a significantly different approach to an old problem.</p>
+                            <div class="detail-content hidden mt-4 pt-4 border-t border-gray-200">
+                                <p>This is the most challenging and innovative type of design, involving the creation of a completely novel product or system that has not existed before, or a fundamentally different way of solving an existing problem. It often requires extensive research, development, and testing, and can lead to significant breakthroughs.</p>
+                                <p class="mt-2"><strong>Example:</strong> Designing the first commercial jet engine, the first smartphone, or the first truly autonomous robot. This type of design often involves inventing new components or processes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-center">The Iterative Design Procedure</h3>
+                    <div class="space-y-4 mb-8">
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><strong>1. Define Problem & Needs</strong><p class="text-sm text-gray-500">Clearly identify the problem to be solved, the functional requirements (what it must do), and all constraints (cost, space, weight, operating environment, safety, regulations, manufacturing capabilities). This stage often involves market research and stakeholder interviews.</p></div>
+                        <div class="text-center font-bold text-2xl text-blue-500">&darr;</div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><strong>2. Synthesis (Conceptualization)</strong><p class="text-sm text-gray-500">Generate multiple potential ideas and concepts that could solve the defined problem. This stage emphasizes creativity and brainstorming, often involving sketching, functional block diagrams, and exploring different working principles. The goal is quantity of ideas, not perfection.</p></div>
+                        <div class="text-center font-bold text-2xl text-blue-500">&darr;</div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><strong>3. Analysis & Optimization</strong><p class="text-sm text-gray-500">Evaluate the generated concepts using engineering principles. This involves applying mechanics of materials (stress, strain), thermodynamics, fluid dynamics, etc., to predict performance. Computer-Aided Engineering (CAE) tools like Finite Element Analysis (FEA) are often used here. Concepts are refined and optimized based on analysis results to meet performance targets and constraints.</p></div>
+                        <div class="text-center font-bold text-2xl text-blue-500">&darr;</div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><strong>4. Material Selection</strong><p class="text-sm text-gray-500">Choose appropriate materials based on mechanical properties, cost, availability, manufacturability, environment.</p></div>
+                        <div class="text-center font-bold text-2xl text-blue-500">&darr;</div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><strong>5. Detailed Design & Documentation</strong><p class="text-sm text-gray-500">Create detailed engineering drawings (using CAD software), specifications, and manufacturing instructions. This includes precise dimensions, tolerances, surface finishes, and assembly instructions. Proper documentation is vital for manufacturing and quality control.</p></div>
+                        <div class="text-center font-bold text-2xl text-blue-500">&darr;</div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><strong>6. Manufacturing & Prototyping</strong><p class="text-sm text-gray-500">Fabricate a prototype or the final product based on the detailed design. This involves selecting appropriate manufacturing processes (machining, casting, forging, additive manufacturing, etc.) and assembling the components. Prototyping allows for physical testing and validation.</p></div>
+                        <div class="text-center font-bold text-2xl text-blue-500">&darr;</div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><strong>7. Testing & Evaluation</strong><p class="text-sm text-gray-500">Thoroughly test the prototype or product to verify its performance against the initial requirements and specifications. This involves functional tests, durability tests, and safety checks. Data from testing is crucial for identifying flaws, areas for improvement, and validating the design.</p></div>
+                        <div class="text-center font-bold text-2xl text-blue-500">&#8635;</div>
+                        <div class="bg-blue-100 border-l-4 border-blue-500 p-4 rounded-lg shadow text-center"><strong>8. Refinement & Iteration</strong><p class="text-sm text-gray-600">Based on the results of testing and evaluation, the design is refined. This often means returning to earlier stages (analysis, material selection, detailed design) to make necessary adjustments. The design process is inherently iterative, with cycles of design, analysis, and testing continuing until an optimal and validated solution is achieved.</p></div>
+                    </div>
+                    <p class="mt-3 text-sm text-red-600"><strong>Common Pitfall:</strong> Skipping steps or not iterating enough. Design is rarely a linear process; feedback loops are essential for robust, optimized, and safe solutions. A common mistake is to "design once and build" without sufficient testing and refinement.</p>
+                </div>
+            </div>
+            <div class="mt-8 p-6 bg-gray-50 rounded-lg shadow-inner">
+                <h3 class="text-xl font-semibold mb-3">Material Selection in Machine Design: A Critical Balance</h3>
+                <p class="text-gray-700 mb-4">Selecting the right material is paramount to the success of any machine design. It's a complex, multi-criteria decision that directly impacts performance, cost, manufacturability, and lifespan. Engineers must balance various, often competing, requirements:</p>
+                <ul class="list-disc list-inside text-gray-700 space-y-1">
+                    <li><strong>Mechanical Properties:</strong> This is often the primary consideration. It includes strength (yield, ultimate), stiffness (Young's, Shear, Bulk Moduli), ductility, toughness, hardness, fatigue strength (for cyclic loads), and creep resistance (for high-temperature loads).</li>
+                    <li><strong>Physical Properties:</strong> Properties like density (for weight considerations), thermal conductivity (for heat dissipation), electrical conductivity, coefficient of thermal expansion (for temperature changes), and melting point.</li>
+                    <li><strong>Manufacturing Properties:</strong> How easily can the material be processed and formed into the desired shape? This includes machinability, weldability, formability (e.g., for sheet metal), castability, and suitability for additive manufacturing.</li>
+                    <li><strong>Cost:</strong> This includes not only the raw material cost but also processing costs (machining, heat treatment), tooling costs, and assembly costs. Life-cycle cost (including maintenance and disposal) is also important.</li>
+                    <li><strong>Environmental Factors:</strong> The material's resistance to corrosion, oxidation, degradation from UV radiation, and its performance at specific operating temperatures (high or low).</li>
+                    <li><strong>Availability:</strong> Is the material readily available in the required form (e.g., sheet, bar, tube) and quantity? Supply chain reliability is a practical consideration.</li>
+                    <li><strong>Sustainability:</strong> Increasingly important, considering recyclability, environmental impact of production, and resource depletion.</li>
+                </ul>
+                <p class="mt-3 text-sm text-red-600"><strong>Common Pitfall:</strong> Over-specifying materials (using expensive, high-performance materials when a cheaper, more common one would suffice) or under-specifying (leading to premature failure or safety issues). Always balance performance requirements with cost, manufacturability, and sustainability. A common mistake is to select a material based on only one property without considering its overall performance profile and constraints.</p>
+            </div>
+        </section>
+
+        <section id="problem-solving" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Problem-Solving Sandbox: Apply Your Knowledge</h2>
+                <p class="mt-4 text-lg leading-8 text-gray-600 max-w-3xl mx-auto">This section helps you solidify your understanding by working through practical problems. Read the problem statement, try to solve it yourself, then click to reveal the step-by-step solution. Pay close attention to the common pitfalls and the suggested approach to stress-strain problems, as these are crucial for success in engineering analysis. Remember to always check your units!</p>
+            </div>
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold">Example 1: Axial Stress, Strain, and Elongation</h3>
+                    <p class="mt-2 text-gray-600">A cylindrical steel rod has a diameter of 20 mm and a length of 1.5 m. It is subjected to a tensile force of 50 kN. Given that the Young's Modulus (E) for steel is 200 GPa, calculate: (a) the tensile stress in the rod, (b) the linear strain, and (c) the total elongation of the rod.</p>
+                    <button class="btn bg-blue-500 text-white px-4 py-2 rounded-md mt-4" onclick="toggleDetail('ex1-sol')">Show/Hide Solution</button>
+                    <div id="ex1-sol" class="hidden solution-box">
+                        <p><strong>Given:</strong></p>
+                        <ul>
+                            <li>Diameter ($d$) = 20 mm = 0.020 m</li>
+                            <li>Length ($L_0$) = 1.5 m</li>
+                            <li>Force ($F$) = 50 kN = $50 \times 10^3$ N</li>
+                            <li>Young's Modulus ($E$) = 200 GPa = $200 \times 10^9$ Pa</li>
+                        </ul>
+                        <p class="mt-2"><strong>(a) Calculate Cross-sectional Area ($A$):</strong></p>
+                        <p>$$A = \pi \left(\frac{d}{2}\right)^2 = \pi \left(\frac{0.020 \text{ m}}{2}\right)^2 = \pi (0.010 \text{ m})^2 = 3.14159 \times 10^{-4} \text{ m}^2$$</p>
+                        <p class="mt-2"><strong>(b) Calculate Tensile Stress ($\sigma$):</strong></p>
+                        <p>$$\sigma = \frac{F}{A} = \frac{50 \times 10^3 \text{ N}}{3.14159 \times 10^{-4} \text{ m}^2} = 159.15 \times 10^6 \text{ Pa} = 159.15 \text{ MPa}$$</p>
+                        <p class="mt-2"><strong>(c) Calculate Linear Strain ($\epsilon$):</strong></p>
+                        <p>Using Hooke's Law: $\sigma = E \epsilon \implies \epsilon = \frac{\sigma}{E}$</p>
+                        <p>$$\epsilon = \frac{159.15 \times 10^6 \text{ Pa}}{200 \times 10^9 \text{ Pa}} = 0.00079575 \text{ (dimensionless)}$$</p>
+                        <p class="mt-2"><strong>(d) Calculate Total Elongation ($\Delta L$):</strong></p>
+                        <p>From the definition of linear strain: $\epsilon = \frac{\Delta L}{L_0} \implies \Delta L = \epsilon \times L_0$</p>
+                        <p>$$\Delta L = 0.00079575 \times 1.5 \text{ m} = 0.0011936 \text{ m} = 1.1936 \text{ mm}$$</p>
+                        <p class="mt-2"><strong>Answers:</strong> (a) 159.15 MPa, (b) 0.000796, (c) 1.19 mm</p>
+                    </div>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold">Example 2: Shear Stress and Strain in a Bolted Joint</h3>
+                    <p class="mt-2 text-gray-600">Two plates are joined by a single bolt with a diameter of 16 mm. A shear force of 25 kN is applied parallel to the bolt's cross-section. If the Shear Modulus (G) of the bolt material is 78 GPa, calculate: (a) the average shear stress in the bolt, and (b) the shear strain.</p>
+                    <button class="btn bg-blue-500 text-white px-4 py-2 rounded-md mt-4" onclick="toggleDetail('ex2-sol')">Show/Hide Solution</button>
+                    <div id="ex2-sol" class="hidden solution-box">
+                        <p><strong>Given:</strong></p>
+                        <ul>
+                            <li>Bolt Diameter ($d$) = 16 mm = 0.016 m</li>
+                            <li>Shear Force ($V$) = 25 kN = $25 \times 10^3$ N</li>
+                            <li>Shear Modulus ($G$) = 78 GPa = $78 \times 10^9$ Pa</li>
+                        </ul>
+                        <p class="mt-2"><strong>(a) Calculate Shear Area ($A_{shear}$):</strong></p>
+                        <p>$$A_{shear} = \pi \left(\frac{d}{2}\right)^2 = \pi \left(\frac{0.016 \text{ m}}{2}\right)^2 = \pi (0.008 \text{ m})^2 = 2.0106 \times 10^{-4} \text{ m}^2$$</p>
+                        <p class="mt-2"><strong>(b) Calculate Average Shear Stress ($\tau$):</strong></p>
+                        <p>$$\tau = \frac{V}{A_{shear}} = \frac{25 \times 10^3 \text{ N}}{2.0106 \times 10^{-4} \text{ m}^2} = 124.34 \times 10^6 \text{ Pa} = 124.34 \text{ MPa}$$</p>
+                        <p class="mt-2"><strong>(c) Calculate Shear Strain ($\gamma$):</strong></p>
+                        <p>Using Hooke's Law for shear: $\tau = G \gamma \implies \gamma = \frac{\tau}{G}$</p>
+                        <p>$$\gamma = \frac{124.34 \times 10^6 \text{ Pa}}{78 \times 10^9 \text{ Pa}} = 0.001594 \text{ radians}$$</p>
+                        <p class="mt-2"><strong>Answers:</strong> (a) 124.34 MPa, (b) 0.001594 radians</p>
+                    </div>
+                </div>
+                <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-red-800 mb-3">Common Pitfalls & Mistakes</h3>
+                     <ul class="mt-2 list-disc list-inside text-red-700 space-y-2">
+                        <li><strong>Unit Inconsistency:</strong> The most frequent and critical error! Always convert all values to a consistent set of units (e.g., all to SI units: meters, Newtons, Pascals, seconds) before performing calculations. Forgetting to convert GPa to Pa, kN to N, or mm to m will lead to incorrect results.</li>
+                        <li><strong>Incorrect Area:</strong> For normal stress (tensile/compressive), use the cross-sectional area *perpendicular* to the axial force. For shear stress, use the cross-sectional area *parallel* to the shear force (the area resisting the shear). For hollow objects, remember to use the annular area.</li>
+                        <li><strong>Applying Hooke's Law Outside Elastic Region:</strong> Remember that Hooke's Law ($\sigma = E\epsilon$ or $\tau = G\gamma$) is only valid up to the proportional/elastic limit of the material. Beyond this point, the material deforms plastically, and the linear relationship no longer holds.</li>
+                        <li><strong>Ignoring Stress Concentrations:</strong> Simple stress formulas assume uniform stress distribution. In reality, stress can be significantly higher (stress concentration) near geometric discontinuities like holes, fillets, notches, or sharp corners. These areas are prone to failure even if the average stress is low.</li>
+                        <li><strong>Confusing Engineering vs. True Stress/Strain:</strong> Engineering stress and strain are based on the original dimensions of the specimen. True stress and strain account for the instantaneous changes in cross-sectional area and length during deformation, especially important for large plastic deformations and accurate material characterization beyond the ultimate tensile strength.</li>
+                        <li><strong>Misinterpreting Negative Signs:</strong> In compression, stress and strain are often considered negative. Be consistent with your sign conventions throughout your calculations. Remember that Poisson's ratio has a negative sign in its definition to ensure the ratio itself is positive for most materials.</li>
+                        <li><strong>Ignoring Material Properties:</strong> Always ensure you are using the correct Young's Modulus ($E$), Shear Modulus ($G$), Poisson's ratio ($\nu$), or other properties for the specific material in question. These values vary widely between different materials.</li>
+                        <li><strong>Neglecting Buckling:</strong> For slender columns under compression, buckling can be the primary failure mode, not material yielding or fracture. This requires a stability analysis, not just a simple stress calculation.</li>
+                    </ul>
+                </div>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3">How to Approach Stress-Strain Problems: A Systematic Guide</h3>
+                    <ol class="mt-2 list-decimal list-inside text-blue-700 space-y-2">
+                        <li><strong>1. Understand the Problem and Visualize:</strong>
+                            <ul>
+                                <li>Read the problem statement carefully and identify all given information (forces, dimensions, material properties).</li>
+                                <li>Draw a clear Free Body Diagram (FBD) of the component. Label all forces and moments acting on it.</li>
+                                <li>Sketch the geometry and indicate the relevant dimensions. This helps in visualizing the stresses and deformations.</li>
+                            </ul>
+                        </li>
+                        <li><strong>2. Identify the Type of Loading:</strong>
+                            <ul>
+                                <li>Determine if the component is subjected to tensile, compressive, shear, torsional, bending, or a combination of these loads. This dictates which stress and strain formulas are applicable.</li>
+                            </ul>
+                        </li>
+                        <li><strong>3. Determine the Relevant Area:</strong>
+                            <ul>
+                                <li>For normal stress ($\sigma$), use the cross-sectional area *perpendicular* to the axial force.</li>
+                                <li>For shear stress ($\tau$), use the cross-sectional area *parallel* to the shear force.</li>
+                                <li>Be mindful of hollow sections, holes, or multiple shear planes (e.g., double shear in a bolt).</li>
+                            </ul>
+                        </li>
+                        <li><strong>4. Check and Convert Units:</strong>
+                            <ul>
+                                <li>This is the most crucial step to avoid errors. Convert all given values to a consistent system of units (e.g., all to SI units: meters (m), Newtons (N), Pascals (Pa), seconds (s)).</li>
+                                <li>Example: GPa to Pa ($1 \text{ GPa} = 10^9 \text{ Pa}$), kN to N ($1 \text{ kN} = 10^3 \text{ N}$), mm to m ($1 \text{ mm} = 10^{-3} \text{ m}$).</li>
+                            </ul>
+                        </li>
+                        <li><strong>5. Apply Relevant Formulas:</strong>
+                            <ul>
+                                <li><strong>Stress:</strong> $\sigma = F/A$ (normal), $\tau = V/A_{shear}$ (shear).</li>
+                                <li><strong>Strain:</strong> $\epsilon = \Delta L/L_0$ (linear), $\gamma = \Delta x/h$ or $\gamma = \phi$ (shear).</li>
+                                <li><strong>Hooke's Law:</strong> $\sigma = E\epsilon$ (normal), $\tau = G\gamma$ (shear).</li>
+                                <li><strong>Poisson's Ratio:</strong> $\nu = -\epsilon_{lateral}/\epsilon_{axial}$.</li>
+                                <li><strong>Volumetric Strain:</strong> $\epsilon_v = \epsilon_x + \epsilon_y + \epsilon_z$ or $\epsilon_v = \epsilon_x (1 - 2\nu)$ for uniaxial stress.</li>
+                                <li><strong>Bulk Modulus:</strong> $K = -P/\epsilon_v$.</li>
+                                <li><strong>Relations between constants:</strong> $E = 2G(1+\nu)$, $E = 3K(1-2\nu)$, etc.</li>
+                            </ul>
+                        </li>
+                        <li><strong>6. Solve for Unknowns:</strong>
+                            <ul>
+                                <li>Perform the calculations systematically. Show all steps.</li>
+                                <li>If solving for a variable, algebraically rearrange the formula before plugging in numbers.</li>
+                            </ul>
+                        </li>
+                        <li><strong>7. Check Your Answer and Units:</strong>
+                            <ul>
+                                <li>Does the magnitude of your answer make physical sense? (e.g., elongations are usually small, stresses are typically in MPa or GPa).</li>
+                                <li>Are the units of your final answer correct?</li>
+                            </ul>
+                        </li>
+                        <li><strong>8. State Assumptions and Simplifications:</strong>
+                            <ul>
+                                <li>Most introductory problems involve simplifying assumptions. It's good practice to acknowledge them. Common assumptions include:
+                                    <ul>
+                                        <li><strong>Homogeneous Material:</strong> Properties are uniform throughout the material.</li>
+                                        <li><strong>Isotropic Material:</strong> Material properties are the same in all directions (e.g., many metals).</li>
+                                        <li><strong>Linear Elastic Behavior:</strong> The material obeys Hooke's Law, and deformation is fully recoverable.</li>
+                                        <li><strong>Small Deformations:</strong> Changes in geometry due to deformation are negligible and do not significantly affect the force or area calculations.</li>
+                                        <li><strong>Uniform Stress Distribution:</strong> Stress is assumed to be evenly distributed over the cross-section, especially away from points of load application or geometric discontinuities (Saint-Venant's Principle).</li>
+                                        <li><strong>Static Loading:</strong> Loads are applied slowly and do not change with time, or dynamic effects are negligible.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+
+            function navigateTo(hash) {
+                sections.forEach(section => {
+                    if ('#' + section.id === hash) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                navLinks.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                if (mobileNav.value !== hash.substring(1)) {
+                    mobileNav.value = hash.substring(1);
+                }
+                 window.scrollTo(0, 0);
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const hash = this.getAttribute('href');
+                    navigateTo(hash);
+                    window.location.hash = hash;
+                });
+            });
+
+            mobileNav.addEventListener('change', function() {
+                const hash = '#' + this.value;
+                navigateTo(hash);
+                window.location.hash = hash;
+            });
+
+            const initialHash = window.location.hash || '#fundamentals';
+            navigateTo(initialHash);
+
+            window.addEventListener('hashchange', () => {
+                navigateTo(window.location.hash);
+            });
+
+            setupStressStrainChart();
+            setupPropertiesChart();
+        });
+
+        // Modified function to toggle detail within a specific card
+        function toggleCardDetail(cardElement) {
+            // Find the detail content div within the clicked card
+            const detail = cardElement.querySelector('.detail-content');
+            if (detail) {
+                detail.classList.toggle('hidden');
+                // If MathJax is loaded, re-typeset the content when it becomes visible
+                if (!detail.classList.contains('hidden') && typeof MathJax !== 'undefined') {
+                    MathJax.typesetPromise([detail]).catch((err) => console.error('MathJax typesetting failed:', err));
+                }
+            }
+        }
+
+        // Existing toggleDetail for problem solutions (uses ID directly)
+        function toggleDetail(id) {
+            const detail = document.getElementById(id);
+            if (detail) {
+                detail.classList.toggle('hidden');
+                if (!detail.classList.contains('hidden') && typeof MathJax !== 'undefined') {
+                    MathJax.typesetPromise([detail]).catch((err) => console.error('MathJax typesetting failed:', err));
+                }
+            }
+        }
+
+
+        let stressStrainChart;
+        function setupStressStrainChart() {
+            const ctx = document.getElementById('stressStrainChart').getContext('2d');
+            
+            const ductileData = {
+                labels: ['0', 'Proportional Limit', 'Elastic Limit', 'Yield Point', 'Ultimate Strength', 'Fracture'],
+                datasets: [{
+                    label: 'Ductile Material (Engineering Stress-Strain)',
+                    data: [
+                        {x: 0, y: 0},
+                        {x: 0.002, y: 350}, // Proportional Limit
+                        {x: 0.0025, y: 360}, // Elastic Limit (slightly above proportional)
+                        {x: 0.005, y: 340}, // Yield Point (lower yield for some steels)
+                        {x: 0.15, y: 550}, // Ultimate Tensile Strength
+                        {x: 0.25, y: 450}  // Fracture
+                    ],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                }]
+            };
+
+            const brittleData = {
+                labels: ['0', 'Fracture'],
+                datasets: [{
+                    label: 'Brittle Material (Stress-Strain)',
+                    data: [
+                        {x: 0, y: 0},
+                        {x: 0.003, y: 350} // Fracture (very little plastic deformation)
+                    ],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.1,
+                    fill: false,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                }]
+            };
+            
+            const config = {
+                type: 'line',
+                data: ductileData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Strain (ε) (dimensionless)',
+                                font: { size: 14 }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Stress (σ) (MPa)',
+                                font: { size: 14 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].dataset.label;
+                                },
+                                label: function(context) {
+                                    let label = context.dataset.labels[context.dataIndex] || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += `Stress: ${context.parsed.y} MPa, Strain: ${context.parsed.x}`;
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            };
+
+            stressStrainChart = new Chart(ctx, config);
+
+            document.getElementById('ductileBtn').addEventListener('click', () => {
+                stressStrainChart.data = ductileData;
+                stressStrainChart.update();
+                document.getElementById('ductileBtn').classList.add('active');
+                document.getElementById('brittleBtn').classList.remove('active');
+            });
+
+            document.getElementById('brittleBtn').addEventListener('click', () => {
+                stressStrainChart.data = brittleData;
+                stressStrainChart.update();
+                document.getElementById('brittleBtn').classList.add('active');
+                document.getElementById('ductileBtn').classList.remove('active');
+            });
+        }
+
+        let propertiesChart;
+        const materialPropertiesData = {
+            labels: ['Steel', 'Aluminum', 'Titanium', 'Rubber', 'Diamond'],
+            datasets: {
+                E: {
+                    label: "Young's Modulus (E) in GPa",
+                    data: [200, 70, 116, 0.001, 1200], /* Rubber E is very low, adjusted for log scale visibility */
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                },
+                G: {
+                    label: 'Shear Modulus (G) in GPa',
+                    data: [80, 26, 42, 0.0006, 520], /* Rubber G is very low */
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                },
+                K: {
+                    label: 'Bulk Modulus (K) in GPa',
+                    data: [160, 70, 110, 2.0, 442], /* Rubber K is higher than E/G */
+                    backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                }
+            },
+            descriptions: {
+                'Steel': 'Very stiff and strong (high E, G). Good ductility and toughness. Used in construction, automotive, and machinery. A versatile engineering material.',
+                'Aluminum': 'Lightweight and corrosion-resistant (moderate E, G). Good electrical and thermal conductor. Used in aerospace, window frames, and beverage cans.',
+                'Titanium': 'High strength-to-weight ratio and excellent corrosion resistance (high E, G for its weight). Biocompatible. Used in aerospace, medical implants, and high-performance sports gear.',
+                'Rubber': 'Extremely flexible (very low E, G). High Poisson\'s ratio (close to 0.5), making it nearly incompressible (moderate K). Used for tires, seals, and shock absorbers.',
+                'Diamond': 'The stiffest known material (extremely high E, G, K). Also extremely hard. Used for cutting tools, abrasives, and as a high-performance electronic component.',
+            }
+        };
+
+        function setupPropertiesChart() {
+            const ctx = document.getElementById('propertiesChart').getContext('2d');
+            const config = {
+                type: 'bar',
+                data: {
+                    labels: materialPropertiesData.labels,
+                    datasets: [materialPropertiesData.datasets.E]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            type: 'logarithmic',
+                            title: {
+                                display: true,
+                                text: 'Value (GPa) - Log Scale',
+                                font: { size: 14 }
+                            },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    // Only show integer powers of 10 or significant values
+                                    if (value === 0.001 || value === 0.01 || value === 0.1 || value === 1 || value === 10 || value === 100 || value === 1000) {
+                                        return value.toLocaleString();
+                                    }
+                                    return null;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y} GPa`;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const materialName = materialPropertiesData.labels[index];
+                            const materialDescription = materialPropertiesData.descriptions[materialName];
+                            document.getElementById('materialName').innerText = materialName;
+                            document.getElementById('materialDescription').innerText = materialDescription;
+                        }
+                    }
+                }
+            };
+            propertiesChart = new Chart(ctx, config);
+
+            document.getElementById('propertySelector').addEventListener('change', function() {
+                const selectedProp = this.value;
+                propertiesChart.data.datasets[0] = materialPropertiesData.datasets[selectedProp];
+                propertiesChart.options.scales.y.title.text = `${materialPropertiesData.datasets[selectedProp].label.split('(')[0]} (GPa) - Log Scale`;
+                propertiesChart.update();
+            });
+        }
+    </script>
+</body>
+</html>
