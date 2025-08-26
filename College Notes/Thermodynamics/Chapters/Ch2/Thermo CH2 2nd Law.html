@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Thermodynamics Learning Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: A two-column layout with a fixed navigation sidebar on the left and a dynamic content area on the right. This non-linear structure allows users to freely explore interconnected concepts, enhancing usability over a simple top-to-bottom report. Key interactions include a comparative chart, animated equivalence proofs, an interactive efficiency calculator, and toggle-able info cards to make learning active rather than passive. This design prioritizes user-driven exploration and conceptual understanding. -->
+    <!-- Visualization & Content Choices: 
+        - 1st vs 2nd Law: Goal: Compare. Viz: Chart.js Radar Chart. Interaction: Hover tooltips. Justification: Visually summarizes multi-faceted differences effectively.
+        - Kelvin-Planck/Clausius: Goal: Show equivalence. Viz: HTML/CSS/JS animated diagram. Interaction: Button-triggered transformations. Justification: Makes abstract logical proof concrete and easy to follow.
+        - PMM2: Goal: Define & contrast. Viz: HTML/CSS diagram. Interaction: Static visual aid. Justification: Clearly illustrates the impossible energy flow.
+        - Irreversibility: Goal: Organize causes. Viz: HTML/CSS/JS accordion cards. Interaction: Click to reveal details. Justification: Breaks down a dense list into digestible, user-controlled chunks.
+        - Carnot Theorem: Goal: Explore efficiency formula. Viz: Sliders, JS-updated text, and a Chart.js T-S diagram. Interaction: Drag sliders to see real-time efficiency changes. Justification: Turns a static equation into a hands-on, intuitive learning tool.
+        - Thermo Scale: Goal: Explain absolutes. Viz: HTML/CSS comparison graphic. Interaction: Static visual aid. Justification: Clearly contrasts relative vs. absolute scales.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFCFB; /* A very light, warm off-white */
+            color: #3D405B;
+        }
+        .sidebar-bg { background-color: #F4F1EA; }
+        .accent-bg { background-color: #E07A5F; }
+        .accent-text { color: #E07A5F; }
+        .accent-border { border-color: #E07A5F; }
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+            border-left: 3px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            background-color: #EAE5D9;
+            border-left-color: #E07A5F;
+            color: #3D405B;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAE5D9;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease;
+            padding: 0 1.5rem;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        .diagram-box {
+            border: 2px solid #D1D5DB;
+            background-color: #F9FAFB;
+            min-height: 150px;
+        }
+        .arrow {
+            position: relative;
+        }
+        .arrow::after {
+            content: '→';
+            position: absolute;
+            font-size: 2rem;
+            line-height: 1;
+            color: #3D405B;
+        }
+        .arrow-down::after {
+            content: '↓';
+        }
+        .work-out::after {
+            content: '→ W';
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .work-in::after {
+            content: '← W';
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #E07A5F;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #E07A5F;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-full md:w-64 lg:w-72 sidebar-bg border-r border-gray-200 flex-shrink-0">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold accent-text">ThermoHub</h1>
+                <p class="text-sm text-gray-600 mt-1">An Interactive Guide</p>
+            </div>
+            <nav id="navigation" class="flex flex-row md:flex-col p-3 md:p-0 overflow-x-auto">
+                <a href="#intro" class="nav-link block font-medium p-4 text-gray-700">Introduction</a>
+                <a href="#first-law-limits" class="nav-link block font-medium p-4 text-gray-700">1st Law Limitations</a>
+                <a href="#second-law" class="nav-link block font-medium p-4 text-gray-700">The Second Law</a>
+                <a href="#statements" class="nav-link block font-medium p-4 text-gray-700">Two Statements</a>
+                <a href="#pmm2" class="nav-link block font-medium p-4 text-gray-700">PMM of the 2nd Kind</a>
+                <a href="#irreversibility" class="nav-link block font-medium p-4 text-gray-700">Irreversibility</a>
+                <a href="#carnot" class="nav-link block font-medium p-4 text-gray-700">Carnot's Theorem</a>
+                <a href="#thermo-scale" class="nav-link block font-medium p-4 text-gray-700">Thermo. Scale</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto">
+            
+            <!-- Introduction -->
+            <section id="intro" class="content-section">
+                <h2 class="text-3xl font-bold mb-4">Beyond Energy Conservation</h2>
+                <p class="text-lg text-gray-600 mb-6">Welcome! This hub explores the core principles of thermodynamics, moving beyond simple energy conservation to understand why processes happen the way they do. We'll see how the First Law accounts for the <span class="font-semibold accent-text">quantity</span> of energy, but why we need the Second Law to understand its <span class="font-semibold accent-text">quality</span> and the <span class="font-semibold accent-text">direction</span> of nature.</p>
+                <div class="card rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-3">Comparing the Two Pillars of Thermodynamics</h3>
+                    <p class="mb-4 text-gray-600">The First and Second Laws provide the foundational rules for all energy interactions. The First Law is a universal accounting principle, while the Second Law is the director that determines which way the action flows. Use the chart below to see a direct comparison of their core functions.</p>
+                    <div class="chart-container">
+                        <canvas id="lawsComparisonChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Limitations of the First Law -->
+            <section id="first-law-limits" class="content-section">
+                <h2 class="text-3xl font-bold mb-4">Limitations of the First Law</h2>
+                <p class="text-lg text-gray-600 mb-6">The First Law is perfect for balancing the energy books, but it's silent on crucial aspects of reality. It can't tell us if a process is possible or which way it will spontaneously proceed.</p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="card rounded-lg p-6">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center"><span class="text-3xl mr-3">☕</span> Direction of Heat Flow</h3>
+                        <p class="text-gray-600">A hot cup of coffee always cools down, transferring heat to the room. The reverse—the room spontaneously heating the coffee—never happens, even though it wouldn't violate energy conservation. The First Law offers no explanation for this one-way street.</p>
+                    </div>
+                    <div class="card rounded-lg p-6">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center"><span class="text-3xl mr-3">⚙️</span> Efficiency Limits</h3>
+                        <p class="text-gray-600">You can convert 100% of work into heat (e.g., through friction), but converting 100% of heat into work in a continuous cycle is impossible. The First Law doesn't explain this fundamental asymmetry or define the limits of engine efficiency.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Second Law -->
+            <section id="second-law" class="content-section">
+                <h2 class="text-3xl font-bold mb-4">The Second Law: Nature's Directional Signpost</h2>
+                <p class="text-lg text-gray-600 mb-6">The Second Law fills the gaps left by the First. It's an empirical law that introduces the concepts of energy quality and entropy, governing the direction and feasibility of all natural processes.</p>
+                <div class="card rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-3">Key Principles of the Second Law</h3>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><span class="font-semibold">Directionality:</span> Processes occur in a certain direction. Heat flows spontaneously from hot to cold bodies.</li>
+                        <li><span class="font-semibold">Energy Quality:</span> Energy has quality as well as quantity. High-temperature energy is higher quality as it has more potential to do work. This quality degrades in all real processes.</li>
+                        <li><span class="font-semibold">Entropy (S):</span> Introduces a property to quantify the level of disorder or energy dispersal. For any spontaneous process in an isolated system, the total entropy always increases.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Kelvin-Planck and Clausius Statements -->
+            <section id="statements" class="content-section">
+                <h2 class="text-3xl font-bold mb-4">Two Sides of the Same Coin</h2>
+                <p class="text-lg text-gray-600 mb-6">The Second Law is expressed in two main statements that seem different but are perfectly equivalent. One focuses on producing work (engines), the other on moving heat (refrigerators). Violating one inevitably means you can violate the other. Explore their equivalence below.</p>
+                <div class="card rounded-lg p-6">
+                    <div class="flex justify-center space-x-4 mb-6">
+                        <button id="showValidBtn" class="px-4 py-2 rounded-md font-semibold text-white accent-bg">Show Valid Systems</button>
+                        <button id="violateKPBtn" class="px-4 py-2 rounded-md font-semibold bg-gray-200 text-gray-800">Violate Kelvin-Planck</button>
+                    </div>
+                    <div id="equivalence-diagram" class="grid md:grid-cols-2 gap-8 items-center">
+                        <!-- Diagram content will be injected by JS -->
+                    </div>
+                    <p id="equivalence-explanation" class="mt-6 text-center text-gray-600 italic"></p>
+                </div>
+            </section>
+
+            <!-- PMM2 -->
+            <section id="pmm2" class="content-section">
+                <h2 class="text-3xl font-bold mb-4">Perpetual Motion of the Second Kind (PMM2)</h2>
+                <p class="text-lg text-gray-600 mb-6">A PMM2 is a hypothetical machine that violates the Second Law, but not the First. It's a machine that could convert heat from a single source (like the ocean or atmosphere) into work with 100% efficiency. The impossibility of such a device is a cornerstone of the Second Law.</p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="card rounded-lg p-6">
+                        <h3 class="text-xl font-semibold mb-3">Valid Heat Engine</h3>
+                        <p class="mb-4 text-gray-600">Requires a hot and cold reservoir to produce work, necessarily rejecting waste heat.</p>
+                        <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around">
+                            <div class="text-center font-semibold">Hot Reservoir (T<sub>H</sub>)</div>
+                            <div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div>
+                            <div class="border-2 border-dashed border-gray-400 p-4 rounded-full bg-white">Engine</div>
+                            <div class="flex w-full justify-around items-center mt-2">
+                                <div class="arrow-down text-center text-2xl">Q<sub>L</sub></div>
+                                <div class="work-out text-center text-2xl"></div>
+                            </div>
+                            <div class="text-center font-semibold mt-2">Cold Reservoir (T<sub>L</sub>)</div>
+                        </div>
+                    </div>
+                    <div class="card rounded-lg p-6 bg-red-50 border-red-200">
+                        <h3 class="text-xl font-semibold mb-3 text-red-700">PMM2 (Impossible)</h3>
+                        <p class="mb-4 text-red-600">Hypothetically produces work from a single reservoir with no waste heat.</p>
+                        <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around border-red-300 bg-red-100">
+                            <div class="text-center font-semibold">Single Reservoir (T<sub>H</sub>)</div>
+                            <div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div>
+                            <div class="border-2 border-dashed border-red-400 p-4 rounded-full bg-white">Engine</div>
+                            <div class="work-out text-center text-2xl mt-4">W = Q<sub>H</sub></div>
+                            <div class="text-center font-semibold mt-2 text-red-700">Violation of Kelvin-Planck</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Irreversibility -->
+            <section id="irreversibility" class="content-section">
+                 <h2 class="text-3xl font-bold mb-4">Why Real Processes Aren't Perfect</h2>
+                <p class="text-lg text-gray-600 mb-6">A "reversible" process is a perfect, idealized process that can be reversed without leaving any trace on the universe. In reality, all processes are irreversible due to factors that generate entropy and degrade energy quality. Click on each cause to learn more.</p>
+                <div id="accordion" class="space-y-4">
+                    <div class="accordion-item card rounded-lg overflow-hidden">
+                        <button class="accordion-header w-full text-left p-6 flex justify-between items-center">
+                            <span class="text-xl font-semibold">Friction & Dissipation</span>
+                            <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="pb-6 text-gray-600">Includes mechanical friction, fluid viscosity, and electrical resistance. These effects convert high-quality work or electrical energy into low-quality, disordered heat that cannot be fully recovered. Think of car brakes getting hot—that kinetic energy is lost as heat.</p>
+                        </div>
+                    </div>
+                     <div class="accordion-item card rounded-lg overflow-hidden">
+                        <button class="accordion-header w-full text-left p-6 flex justify-between items-center">
+                            <span class="text-xl font-semibold">Heat Transfer (Finite ΔT)</span>
+                            <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="pb-6 text-gray-600">Whenever heat moves between two objects at different temperatures, the process is irreversible. A perfectly reversible heat transfer would require an infinitely small temperature difference (ΔT → 0), which would take infinite time, making it impractical.</p>
+                        </div>
+                    </div>
+                     <div class="accordion-item card rounded-lg overflow-hidden">
+                        <button class="accordion-header w-full text-left p-6 flex justify-between items-center">
+                            <span class="text-xl font-semibold">Unrestrained Expansion</span>
+                            <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="pb-6 text-gray-600">When a gas expands rapidly into a vacuum, no work is done. The process is highly chaotic and increases the system's entropy significantly. It's impossible to make the gas spontaneously return to its original container without doing work on it.</p>
+                        </div>
+                    </div>
+                     <div class="accordion-item card rounded-lg overflow-hidden">
+                        <button class="accordion-header w-full text-left p-6 flex justify-between items-center">
+                            <span class="text-xl font-semibold">Mixing of Substances</span>
+                            <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="pb-6 text-gray-600">Mixing two different gases or liquids is an irreversible process. Think of adding milk to coffee. The components will not spontaneously un-mix. This process increases the overall entropy of the system.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Carnot -->
+            <section id="carnot" class="content-section">
+                <h2 class="text-3xl font-bold mb-4">Carnot's Theorem: The Ultimate Speed Limit</h2>
+                <p class="text-lg text-gray-600 mb-6">Sadi Carnot established the maximum possible efficiency for any heat engine. This theoretical limit, the Carnot Efficiency, depends only on the absolute temperatures of the hot and cold reservoirs. No real engine can ever beat it. Use the sliders below to see how temperature dictates efficiency.</p>
+                <div class="card rounded-lg p-6">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <div class="mb-6">
+                                <label for="tempHot" class="block font-semibold mb-2">Hot Reservoir Temp (T<sub>H</sub>): <span id="tHotValue" class="font-bold accent-text"></span> K</label>
+                                <input type="range" id="tempHot" min="300" max="1500" value="600" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider">
+                            </div>
+                            <div class="mb-6">
+                                <label for="tempCold" class="block font-semibold mb-2">Cold Reservoir Temp (T<sub>L</sub>): <span id="tColdValue" class="font-bold accent-text"></span> K</label>
+                                <input type="range" id="tempCold" min="1" max="500" value="300" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider">
+                            </div>
+                            <div class="text-center bg-gray-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold">Max Theoretical Efficiency (η<sub>Carnot</sub>)</h3>
+                                <p id="carnotEfficiencyValue" class="text-5xl font-bold accent-text my-2"></p>
+                                <p id="carnotFormula" class="text-gray-600 font-mono"></p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-3 text-center">Carnot Cycle (T-S Diagram)</h3>
+                            <div class="chart-container h-[300px] max-h-[300px]">
+                                <canvas id="carnotCycleChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Thermodynamic Scale -->
+            <section id="thermo-scale" class="content-section">
+                <h2 class="text-3xl font-bold mb-4">The Thermodynamic Temperature Scale</h2>
+                <p class="text-lg text-gray-600 mb-6">For thermodynamic laws to work universally, we need a temperature scale that's independent of the properties of any specific substance (like water). The Kelvin scale is this absolute scale, derived directly from the Second Law.</p>
+                <div class="card rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-3">Why Absolute Temperature Matters</h3>
+                    <p class="text-gray-600 mb-4">The ratio of heat transfer in a reversible engine is equal to the ratio of the absolute temperatures of the reservoirs (Q<sub>H</sub>/Q<sub>L</sub> = T<sub>H</sub>/T<sub>L</sub>). This relationship defines the Kelvin scale. Using Celsius or Fahrenheit in thermodynamic formulas will lead to incorrect results.</p>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <div class="flex justify-between items-end text-center">
+                            <div class="w-1/3">
+                                <p class="font-bold">Kelvin (K)</p>
+                                <div class="h-40 bg-blue-300 relative mt-2 rounded-t-lg flex items-end justify-center pb-2"><span class="font-semibold text-sm">0 K</span></div>
+                                <p class="text-xs mt-2">Absolute Zero</p>
+                            </div>
+                            <div class="w-1/3">
+                                <p class="font-bold">Celsius (°C)</p>
+                                <div class="h-20 bg-green-300 relative mt-2 rounded-t-lg flex items-end justify-center pb-2"><span class="font-semibold text-sm">0 °C</span></div>
+                                <p class="text-xs mt-2">Water Freezes</p>
+                            </div>
+                            <div class="w-1/3">
+                                <p class="font-bold">Fahrenheit (°F)</p>
+                                <div class="h-24 bg-orange-300 relative mt-2 rounded-t-lg flex items-end justify-center pb-2"><span class="font-semibold text-sm">32 °F</span></div>
+                                <p class="text-xs mt-2">Water Freezes</p>
+                            </div>
+                        </div>
+                        <p class="text-center mt-8 text-sm italic">Absolute zero (0 K) is the fundamental baseline where all molecular motion ceases. Relative scales like °C and °F are defined by arbitrary points.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const navLinks = document.querySelectorAll('#navigation a');
+    const sections = document.querySelectorAll('.content-section');
+
+    function setActiveSection(hash) {
+        const targetHash = hash || '#intro';
+        
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === targetHash) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        sections.forEach(section => {
+            if ('#' + section.id === targetHash) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+            }
+        });
+    }
+
+    document.getElementById('navigation').addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') {
+            e.preventDefault();
+            const targetHash = e.target.getAttribute('href');
+            window.location.hash = targetHash;
+        }
+    });
+
+    window.addEventListener('hashchange', () => {
+        setActiveSection(window.location.hash);
+    });
+
+    // Initial load
+    setActiveSection(window.location.hash);
+
+    // Chart.js: Laws Comparison Chart
+    const ctxLaws = document.getElementById('lawsComparisonChart').getContext('2d');
+    new Chart(ctxLaws, {
+        type: 'radar',
+        data: {
+            labels: ['Energy Aspect', 'Process Direction', 'Efficiency Limits', 'Key Concept', 'Violation Consequence'],
+            datasets: [{
+                label: 'First Law',
+                data: [5, 1, 1, 4, 3],
+                backgroundColor: 'rgba(224, 122, 95, 0.2)',
+                borderColor: 'rgba(224, 122, 95, 1)',
+                pointBackgroundColor: 'rgba(224, 122, 95, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(224, 122, 95, 1)'
+            }, {
+                label: 'Second Law',
+                data: [3, 5, 5, 5, 4],
+                backgroundColor: 'rgba(61, 64, 91, 0.2)',
+                borderColor: 'rgba(61, 64, 91, 1)',
+                pointBackgroundColor: 'rgba(61, 64, 91, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(61, 64, 91, 1)'
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                    pointLabels: { font: { size: 12 } },
+                    suggestedMin: 0,
+                    suggestedMax: 5,
+                    ticks: {
+                        display: false,
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.dataset.label || '';
+                            const value = context.label;
+                            let details = '';
+                            if (label === 'First Law') {
+                                switch(value) {
+                                    case 'Energy Aspect': details = 'Conserves QUANTITY'; break;
+                                    case 'Process Direction': details = 'No restriction'; break;
+                                    case 'Efficiency Limits': details = 'No limits defined'; break;
+                                    case 'Key Concept': details = 'Internal Energy'; break;
+                                    case 'Violation Consequence': details = 'PMM1 (Creates energy)'; break;
+                                }
+                            } else {
+                                switch(value) {
+                                    case 'Energy Aspect': details = 'Degrades QUALITY'; break;
+                                    case 'Process Direction': details = 'Dictates direction'; break;
+                                    case 'Efficiency Limits': details = 'Defines max efficiency'; break;
+                                    case 'Key Concept': details = 'Entropy'; break;
+                                    case 'Violation Consequence': details = 'PMM2 (100% efficiency)'; break;
+                                }
+                            }
+                            return `${label}: ${details}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Equivalence Diagram Logic
+    const equivalenceDiagram = document.getElementById('equivalence-diagram');
+    const explanationText = document.getElementById('equivalence-explanation');
+    const showValidBtn = document.getElementById('showValidBtn');
+    const violateKPBtn = document.getElementById('violateKPBtn');
+
+    const validDiagrams = `
+        <div>
+            <h3 class="text-xl font-semibold mb-3 text-center">Heat Engine (Valid)</h3>
+            <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around">
+                <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                <div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div>
+                <div class="border-2 border-dashed border-gray-400 p-4 rounded-full bg-white">Engine</div>
+                <div class="flex w-full justify-around items-center mt-2">
+                    <div class="arrow-down text-center text-2xl">Q<sub>L</sub></div>
+                    <div class="work-out text-center text-2xl"></div>
+                </div>
+                <div class="text-center font-semibold mt-2">Cold (T<sub>L</sub>)</div>
+            </div>
+        </div>
+        <div>
+            <h3 class="text-xl font-semibold mb-3 text-center">Refrigerator (Valid)</h3>
+            <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around">
+                <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                <div class="arrow-down w-full text-center text-2xl my-2 transform rotate-180">Q<sub>H</sub></div>
+                <div class="flex w-full justify-around items-center">
+                    <div class="border-2 border-dashed border-gray-400 p-4 rounded-full bg-white">Fridge</div>
+                    <div class="work-in text-center text-2xl"></div>
+                </div>
+                <div class="arrow-down text-center text-2xl my-2 transform rotate-180">Q<sub>L</sub></div>
+                <div class="text-center font-semibold mt-2">Cold (T<sub>L</sub>)</div>
+            </div>
+        </div>
+    `;
+
+    const violationDiagram = `
+        <div>
+            <h3 class="text-xl font-semibold mb-3 text-center text-red-700">Violating K-P...</h3>
+            <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around border-red-300 bg-red-100">
+                <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                <div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div>
+                <div class="border-2 border-dashed border-red-400 p-4 rounded-full bg-white">PMM2</div>
+                <div class="work-out text-center text-2xl mt-4">W = Q<sub>H</sub></div>
+                <div class="text-center font-semibold mt-2 text-red-700">Powers Refrigerator →</div>
+            </div>
+        </div>
+        <div>
+            <h3 class="text-xl font-semibold mb-3 text-center text-red-700">...Creates a Clausius Violation</h3>
+            <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around border-red-300 bg-red-100">
+                <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                <div class="arrow-down w-full text-center text-2xl my-2 transform rotate-180">Q<sub>H</sub> + Q<sub>L</sub></div>
+                <div class="border-2 border-dashed border-red-400 p-4 rounded-full bg-white">Combined System</div>
+                <div class="arrow-down text-center text-2xl my-2 transform rotate-180">Q<sub>L</sub></div>
+                <div class="text-center font-semibold mt-2">Cold (T<sub>L</sub>)</div>
+            </div>
+        </div>
+    `;
+
+    function showValid() {
+        equivalenceDiagram.innerHTML = validDiagrams;
+        explanationText.textContent = 'These are standard, valid thermodynamic systems. A heat engine produces work by moving heat from hot to cold. A refrigerator uses work to move heat from cold to hot.';
+        violateKPBtn.classList.remove('accent-bg', 'text-white');
+        violateKPBtn.classList.add('bg-gray-200', 'text-gray-800');
+        showValidBtn.classList.add('accent-bg', 'text-white');
+        showValidBtn.classList.remove('bg-gray-200', 'text-gray-800');
+    }
+
+    function showViolation() {
+        equivalenceDiagram.innerHTML = violationDiagram;
+        explanationText.textContent = 'If we could build an impossible 100% efficient engine (a PMM2 violating Kelvin-Planck), we could use its work output to power a standard refrigerator. The combined result would be a device that moves heat from cold to hot with NO external work input—a violation of the Clausius statement.';
+        showValidBtn.classList.remove('accent-bg', 'text-white');
+        showValidBtn.classList.add('bg-gray-200', 'text-gray-800');
+        violateKPBtn.classList.add('accent-bg', 'text-white');
+        violateKPBtn.classList.remove('bg-gray-200', 'text-gray-800');
+    }
+
+    showValidBtn.addEventListener('click', showValid);
+    violateKPBtn.addEventListener('click', showViolation);
+    showValid(); // Initial state
+
+    // Accordion Logic
+    const accordionItems = document.querySelectorAll('.accordion-item');
+    accordionItems.forEach(item => {
+        const header = item.querySelector('.accordion-header');
+        const content = item.querySelector('.accordion-content');
+        const icon = item.querySelector('.accordion-icon');
+
+        header.addEventListener('click', () => {
+            const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+            
+            // Close all items
+            accordionItems.forEach(i => {
+                i.querySelector('.accordion-content').style.maxHeight = '0px';
+                i.querySelector('.accordion-content').style.padding = '0 1.5rem';
+                i.querySelector('.accordion-icon').textContent = '+';
+                i.querySelector('.accordion-icon').classList.remove('rotate-45');
+            });
+
+            // Open the clicked item if it was closed
+            if (!isOpen) {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.style.padding = '0 1.5rem 1.5rem';
+                icon.textContent = '+';
+                icon.classList.add('rotate-45');
+            }
+        });
+    });
+
+    // Carnot Efficiency Calculator
+    const tHotSlider = document.getElementById('tempHot');
+    const tColdSlider = document.getElementById('tempCold');
+    const tHotValue = document.getElementById('tHotValue');
+    const tColdValue = document.getElementById('tColdValue');
+    const efficiencyValue = document.getElementById('carnotEfficiencyValue');
+    const formulaText = document.getElementById('carnotFormula');
+    const ctxCarnot = document.getElementById('carnotCycleChart').getContext('2d');
+    let carnotChart;
+
+    function createCarnotChart() {
+        carnotChart = new Chart(ctxCarnot, {
+            type: 'line',
+            data: {
+                labels: ['A', 'B', 'C', 'D', 'A'],
+                datasets: [{
+                    label: 'Carnot Cycle',
+                    data: [],
+                    fill: true,
+                    backgroundColor: 'rgba(224, 122, 95, 0.2)',
+                    borderColor: 'rgba(224, 122, 95, 1)',
+                    tension: 0.1,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Entropy (S)' },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'Temperature (T)' },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            }
+        });
+    }
+
+    function updateCarnotCalculator() {
+        const tH = parseFloat(tHotSlider.value);
+        const tC = parseFloat(tColdSlider.value);
+
+        // Ensure T_H is always greater than T_L
+        if (tC >= tH) {
+            tColdSlider.value = tH - 1;
+            updateCarnotCalculator();
+            return;
+        }
+
+        tHotValue.textContent = tH.toFixed(0);
+        tColdValue.textContent = tC.toFixed(0);
+
+        const efficiency = 1 - (tC / tH);
+        efficiencyValue.textContent = (efficiency * 100).toFixed(1) + '%';
+        formulaText.textContent = `η = 1 - (${tC.toFixed(0)} K / ${tH.toFixed(0)} K)`;
+
+        // Update chart data
+        const s_low = 1;
+        const s_high = 3;
+        carnotChart.data.datasets[0].data = [
+            {x: s_low, y: tC},  // D->A
+            {x: s_low, y: tH},  // A->B Isentropic compression
+            {x: s_high, y: tH}, // B->C Isothermal expansion
+            {x: s_high, y: tC}, // C->D Isentropic expansion
+            {x: s_low, y: tC}   // D->A Isothermal compression
+        ];
+        carnotChart.options.scales.y.max = tH * 1.1;
+        carnotChart.update();
+    }
+    
+    createCarnotChart();
+    tHotSlider.addEventListener('input', updateCarnotCalculator);
+    tColdSlider.addEventListener('input', updateCarnotCalculator);
+    updateCarnotCalculator();
+});
+</script>
+</body>
+</html>

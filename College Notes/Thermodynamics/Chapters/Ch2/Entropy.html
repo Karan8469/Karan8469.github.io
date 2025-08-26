@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Entropy Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4;
+        }
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .tab-inactive {
+            background-color: white;
+            color: #44403c;
+            border-color: #d6d3d1;
+        }
+        .content-pane {
+            display: none;
+        }
+        .content-pane.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        input[type='range']::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            margin-top: -8px; 
+        }
+        input[type='range']::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 500px;
+        }
+        .accordion-content > div {
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            border: 1px solid #e7e5e4;
+            border-top: none;
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">Interactive Entropy Explorer</h1>
+            <p class="text-lg md:text-xl text-stone-600">Go beyond the textbook. See how disorder, energy, and probability shape our universe.</p>
+        </header>
+
+        <nav id="tabs" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+            <button data-tab="basics" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">Entropy Basics</button>
+            <button data-tab="second-law" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">The Second Law</button>
+            <button data-tab="simulator" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">Simulator</button>
+            <button data-tab="equations" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">Equations</button>
+        </nav>
+
+        <main id="content" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg min-h-[500px]">
+            
+            <!-- Section 1: What is Entropy? -->
+            <div id="basics-content" class="content-pane">
+                <h2 class="text-3xl font-bold mb-4 text-center text-blue-600">1. What is Entropy? The View from the Microscopic World</h2>
+                <p class="text-center text-stone-600 max-w-4xl mx-auto mb-8">
+                    At its core, entropy is a measure of possibilities. A system's observable state (its <strong>macrostate</strong>, like temperature or pressure) can be formed by countless different arrangements of its individual particles (its <strong>microstates</strong>). Entropy, defined by the Boltzmann equation S = k<sub>B</sub> ln W, quantifies this. A higher entropy means there are more microstates—more ways—for the system to exist in that macrostate. Let's visualize this.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="border-r-0 md:border-r md:pr-8 border-stone-200">
+                        <h3 class="text-2xl font-semibold mb-3">Visualizing Microstates</h3>
+                        <p class="text-stone-600 mb-4">
+                            Imagine a gas in a box. Initially, all particles are confined to one side. This is a low entropy state—there are relatively few positions the particles can have. When the barrier is removed, they spontaneously spread out. Why? Because there are astronomically more possible positions (microstates) available when they fill the entire box. The system naturally moves to the most probable state, which is the one with the highest entropy.
+                        </p>
+                        <button id="divider-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-md">
+                            Remove Divider
+                        </button>
+                    </div>
+                    <div>
+                        <canvas id="microstates-canvas" class="w-full h-64 bg-stone-100 rounded-lg border border-stone-200"></canvas>
+                        <p class="text-center mt-2 font-semibold">Relative Microstates (W): <span id="microstates-count">Low</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: The Second Law -->
+            <div id="second-law-content" class="content-pane">
+                <h2 class="text-3xl font-bold mb-4 text-center text-blue-600">2. The Arrow of Time: The Second Law of Thermodynamics</h2>
+                <p class="text-center text-stone-600 max-w-4xl mx-auto mb-8">
+                    The Second Law states that the total entropy of an isolated system can only increase over time or remain constant if the process is reversible. This is why heat flows from hot to cold, and not the other way around. It's not a mysterious force, but simple statistics on a massive scale. The universe tends towards states that are more probable, and high-entropy states are vastly more probable. This gives time its direction.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-semibold mb-3">Energy Dispersal in Action</h3>
+                        <p class="text-stone-600 mb-4">
+                            Consider a hot metal ball dropped in cool water. The energy is initially concentrated in the ball (a low-entropy state). It spontaneously disperses into the water until thermal equilibrium is reached. The total energy is conserved, but it's now spread out over a much larger volume, resulting in a higher-entropy state. Click below to see this process of energy dispersal.
+                        </p>
+                        <button id="heat-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-md">
+                            Start Simulation
+                        </button>
+                    </div>
+                    <div class="flex flex-col items-center justify-center p-4">
+                         <div id="water-container" class="w-full max-w-sm h-48 bg-blue-200 rounded-lg flex items-center justify-center transition-colors duration-1000">
+                             <div id="metal-ball" class="w-16 h-16 bg-red-500 rounded-full shadow-2xl transition-colors duration-1000"></div>
+                         </div>
+                         <p id="heat-status" class="text-center mt-4 font-semibold text-lg">Initial State: Low Entropy (Energy Concentrated)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Interactive Simulator -->
+            <div id="simulator-content" class="content-pane">
+                <h2 class="text-3xl font-bold mb-4 text-center text-blue-600">3. The Entropy Simulator: You're in Control</h2>
+                <p class="text-center text-stone-600 max-w-4xl mx-auto mb-8">
+                    Entropy isn't static; it changes based on a system's conditions. Two of the most important factors are temperature and pressure. Use the sliders below to manipulate a virtual gas and observe the direct impact on its entropy. Watch how the particles behave and how the system's total entropy responds in real-time.
+                </p>
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 p-6 bg-stone-50 rounded-lg border">
+                        <h3 class="text-2xl font-semibold mb-6 text-center">Controls</h3>
+                        <div class="mb-8">
+                            <label for="temp-slider" class="block font-semibold mb-2">Temperature (T): <span id="temp-value">3</span></label>
+                            <input id="temp-slider" type="range" min="1" max="10" value="3" class="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                            <div class="flex justify-between text-sm text-stone-500 mt-1">
+                                <span>Low</span>
+                                <span>High</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="pressure-slider" class="block font-semibold mb-2">Pressure (P): <span id="pressure-value">7</span></label>
+                            <input id="pressure-slider" type="range" min="1" max="10" value="7" class="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                            <div class="flex justify-between text-sm text-stone-500 mt-1">
+                                <span>Low</span>
+                                <span>High</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 p-4 bg-stone-50 rounded-lg border">
+                        <div class="grid md:grid-cols-2 gap-6 items-center h-full">
+                            <div class="w-full h-64 md:h-full">
+                                <canvas id="simulator-canvas" class="w-full h-full bg-stone-100 rounded-lg border border-stone-200"></canvas>
+                            </div>
+                            <div class="flex flex-col justify-center h-full">
+                                <div class="chart-container">
+                                    <canvas id="entropy-chart"></canvas>
+                                </div>
+                                <p id="simulator-explanation" class="text-center text-stone-600 mt-4 p-2 bg-blue-50 rounded-md">Adjust the sliders to see how entropy changes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Key Equations -->
+            <div id="equations-content" class="content-pane">
+                <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">4. The Mathematical Framework</h2>
+                <div class="max-w-2xl mx-auto space-y-4">
+                    <div>
+                        <button class="accordion-toggle w-full text-left font-semibold text-lg p-4 bg-stone-100 hover:bg-stone-200 rounded-lg flex justify-between items-center transition">
+                            <span>Change in Entropy (Ideal Gas)</span>
+                            <span class="transform transition-transform duration-300">▼</span>
+                        </button>
+                        <div class="accordion-content">
+                            <div>
+                                <p class="text-stone-600 mb-2">For an ideal gas, the change in entropy (ΔS) depends on both temperature (T) and volume (V):</p>
+                                <p class="text-center font-mono text-blue-600 bg-stone-200 p-2 rounded">ΔS = n C<sub>v</sub> ln(T<sub>2</sub>/T<sub>1</sub>) + n R ln(V<sub>2</sub>/V<sub>1</sub>)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-toggle w-full text-left font-semibold text-lg p-4 bg-stone-100 hover:bg-stone-200 rounded-lg flex justify-between items-center transition">
+                            <span>Isothermal Process (Constant Temperature)</span>
+                            <span class="transform transition-transform duration-300">▼</span>
+                        </button>
+                        <div class="accordion-content">
+                            <div>
+                                <p class="text-stone-600 mb-2">If temperature is constant, entropy change is related to the change in pressure (P) or volume (V). Increasing volume (or decreasing pressure) increases entropy.</p>
+                                <p class="text-center font-mono text-blue-600 bg-stone-200 p-2 rounded">ΔS = n R ln(V<sub>2</sub>/V<sub>1</sub>) = n R ln(P<sub>1</sub>/P<sub>2</sub>)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-toggle w-full text-left font-semibold text-lg p-4 bg-stone-100 hover:bg-stone-200 rounded-lg flex justify-between items-center transition">
+                            <span>Isochoric Process (Constant Volume)</span>
+                            <span class="transform transition-transform duration-300">▼</span>
+                        </button>
+                        <div class="accordion-content">
+                            <div>
+                                <p class="text-stone-600 mb-2">If volume is constant, entropy change depends only on the change in temperature. Increasing temperature increases entropy.</p>
+                                <p class="text-center font-mono text-blue-600 bg-stone-200 p-2 rounded">ΔS = n C<sub>v</sub> ln(T<sub>2</sub>/T<sub>1</sub>)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 pt-8 border-t border-stone-200">
+            <p class="text-stone-500">An interactive exploration of thermodynamics. Inspired by the principles of entropy.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Global variables
+            let particles1 = [];
+            let particles2 = [];
+            let isDivided = true;
+            let isHeated = false;
+            let animationFrameId1 = null;
+            let animationFrameId2 = null;
+            let entropyChartInstance = null;
+
+            // --- Tab Navigation ---
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contentPanes = document.querySelectorAll('.content-pane');
+            const defaultTab = 'basics';
+
+            function activateTab(tabName) {
+                tabs.forEach(tab => {
+                    if (tab.dataset.tab === tabName) {
+                        tab.classList.remove('tab-inactive');
+                        tab.classList.add('tab-active');
+                    } else {
+                        tab.classList.remove('tab-active');
+                        tab.classList.add('tab-inactive');
+                    }
+                });
+
+                contentPanes.forEach(pane => {
+                    if (pane.id === `${tabName}-content`) {
+                        pane.classList.add('active');
+                    } else {
+                        pane.classList.remove('active');
+                    }
+                });
+                
+                // Initialize content when tab becomes active
+                setTimeout(() => {
+                    if (tabName === 'basics') {
+                        setupMicrostatesCanvas();
+                    } else if (tabName === 'simulator') {
+                        setupSimulatorCanvas();
+                        initEntropyChart();
+                        updateSimulator();
+                    }
+                }, 50);
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activateTab(tab.dataset.tab);
+                });
+            });
+
+            // --- Section 1: Microstates Canvas ---
+            const microstatesCanvas = document.getElementById('microstates-canvas');
+            const microstatesCtx = microstatesCanvas.getContext('2d');
+            const dividerBtn = document.getElementById('divider-btn');
+            const microstatesCount = document.getElementById('microstates-count');
+
+            function setupMicrostatesCanvas() {
+                const rect = microstatesCanvas.getBoundingClientRect();
+                microstatesCanvas.width = rect.width;
+                microstatesCanvas.height = rect.height;
+                
+                particles1 = [];
+                const numParticles = 50;
+                
+                for (let i = 0; i < numParticles; i++) {
+                    particles1.push({
+                        x: Math.random() * (microstatesCanvas.width / (isDivided ? 2 : 1) - 10) + 5,
+                        y: Math.random() * (microstatesCanvas.height - 10) + 5,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        radius: 3,
+                        color: '#3b82f6'
+                    });
+                }
+                
+                if (animationFrameId1) cancelAnimationFrame(animationFrameId1);
+                animateMicrostates();
+            }
+
+            function drawParticles1() {
+                microstatesCtx.clearRect(0, 0, microstatesCanvas.width, microstatesCanvas.height);
+                
+                if (isDivided) {
+                    microstatesCtx.fillStyle = 'rgba(120, 113, 108, 0.5)';
+                    microstatesCtx.fillRect(microstatesCanvas.width / 2 - 1, 0, 2, microstatesCanvas.height);
+                }
+                
+                particles1.forEach(p => {
+                    microstatesCtx.beginPath();
+                    microstatesCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    microstatesCtx.fillStyle = p.color;
+                    microstatesCtx.fill();
+                });
+            }
+
+            function updateParticles1() {
+                particles1.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    let horizontalLimit = isDivided ? microstatesCanvas.width / 2 : microstatesCanvas.width;
+
+                    if (p.x + p.radius > horizontalLimit || p.x - p.radius < 0) {
+                        p.vx *= -1;
+                        p.x = Math.max(p.radius, Math.min(p.x, horizontalLimit - p.radius));
+                    }
+                    if (p.y + p.radius > microstatesCanvas.height || p.y - p.radius < 0) {
+                        p.vy *= -1;
+                        p.y = Math.max(p.radius, Math.min(p.y, microstatesCanvas.height - p.radius));
+                    }
+                });
+            }
+
+            function animateMicrostates() {
+                updateParticles1();
+                drawParticles1();
+                animationFrameId1 = requestAnimationFrame(animateMicrostates);
+            }
+
+            dividerBtn.addEventListener('click', () => {
+                if (isDivided) {
+                    isDivided = false;
+                    dividerBtn.textContent = 'Reset Simulation';
+                    microstatesCount.textContent = 'High (More probable)';
+                    microstatesCount.className = 'text-green-600 font-semibold';
+                } else {
+                    isDivided = true;
+                    dividerBtn.textContent = 'Remove Divider';
+                    microstatesCount.textContent = 'Low';
+                    microstatesCount.className = '';
+                    setupMicrostatesCanvas();
+                }
+            });
+
+            // --- Section 2: Heat Simulation ---
+            const heatBtn = document.getElementById('heat-btn');
+            const waterContainer = document.getElementById('water-container');
+            const metalBall = document.getElementById('metal-ball');
+            const heatStatus = document.getElementById('heat-status');
+
+            heatBtn.addEventListener('click', () => {
+                if (!isHeated) {
+                    waterContainer.className = 'w-full max-w-sm h-48 bg-blue-300 rounded-lg flex items-center justify-center transition-colors duration-1000';
+                    metalBall.className = 'w-16 h-16 bg-purple-400 rounded-full shadow-2xl transition-colors duration-1000';
+                    heatStatus.textContent = 'Final State: High Entropy (Energy Dispersed)';
+                    heatStatus.className = 'text-center mt-4 font-semibold text-lg text-green-600';
+                    heatBtn.textContent = 'Reset Simulation';
+                    isHeated = true;
+                } else {
+                    waterContainer.className = 'w-full max-w-sm h-48 bg-blue-200 rounded-lg flex items-center justify-center transition-colors duration-1000';
+                    metalBall.className = 'w-16 h-16 bg-red-500 rounded-full shadow-2xl transition-colors duration-1000';
+                    heatStatus.textContent = 'Initial State: Low Entropy (Energy Concentrated)';
+                    heatStatus.className = 'text-center mt-4 font-semibold text-lg';
+                    heatBtn.textContent = 'Start Simulation';
+                    isHeated = false;
+                }
+            });
+
+            // --- Section 3: Simulator ---
+            const tempSlider = document.getElementById('temp-slider');
+            const pressureSlider = document.getElementById('pressure-slider');
+            const tempValueSpan = document.getElementById('temp-value');
+            const pressureValueSpan = document.getElementById('pressure-value');
+            const simulatorCanvas = document.getElementById('simulator-canvas');
+            const simulatorCtx = simulatorCanvas.getContext('2d');
+            const explanation = document.getElementById('simulator-explanation');
+
+            function setupSimulatorCanvas() {
+                const rect = simulatorCanvas.getBoundingClientRect();
+                simulatorCanvas.width = rect.width;
+                simulatorCanvas.height = rect.height;
+                
+                particles2 = [];
+                const numParticles = 70;
+                for (let i = 0; i < numParticles; i++) {
+                    particles2.push({
+                        x: Math.random() * (simulatorCanvas.width - 20) + 10,
+                        y: Math.random() * (simulatorCanvas.height - 20) + 10,
+                        vx: (Math.random() - 0.5),
+                        vy: (Math.random() - 0.5),
+                        radius: 3,
+                        color: '#ef4444'
+                    });
+                }
+                
+                if (animationFrameId2) cancelAnimationFrame(animationFrameId2);
+                animateSimulator();
+            }
+
+            function drawParticles2(temp, pressure) {
+                let boxWidth = simulatorCanvas.width * Math.max(0.3, 1 - (pressure - 1) / 18);
+                let boxHeight = simulatorCanvas.height * Math.max(0.3, 1 - (pressure - 1) / 18);
+                let xOffset = (simulatorCanvas.width - boxWidth) / 2;
+                let yOffset = (simulatorCanvas.height - boxHeight) / 2;
+
+                simulatorCtx.clearRect(0, 0, simulatorCanvas.width, simulatorCanvas.height);
+                simulatorCtx.strokeStyle = '#a8a29e';
+                simulatorCtx.lineWidth = 2;
+                simulatorCtx.strokeRect(xOffset, yOffset, boxWidth, boxHeight);
+                
+                particles2.forEach(p => {
+                    simulatorCtx.beginPath();
+                    simulatorCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    simulatorCtx.fillStyle = p.color;
+                    simulatorCtx.fill();
+                });
+            }
+
+            function updateParticles2(temp, pressure) {
+                let boxWidth = simulatorCanvas.width * Math.max(0.3, 1 - (pressure - 1) / 18);
+                let boxHeight = simulatorCanvas.height * Math.max(0.3, 1 - (pressure - 1) / 18);
+                let xOffset = (simulatorCanvas.width - boxWidth) / 2;
+                let yOffset = (simulatorCanvas.height - boxHeight) / 2;
+
+                particles2.forEach(p => {
+                    p.x += p.vx * temp * 0.5;
+                    p.y += p.vy * temp * 0.5;
+
+                    if (p.x + p.radius > xOffset + boxWidth || p.x - p.radius < xOffset) {
+                        p.vx *= -1;
+                        p.x = Math.max(xOffset + p.radius, Math.min(p.x, xOffset + boxWidth - p.radius));
+                    }
+                    if (p.y + p.radius > yOffset + boxHeight || p.y - p.radius < yOffset) {
+                        p.vy *= -1;
+                        p.y = Math.max(yOffset + p.radius, Math.min(p.y, yOffset + boxHeight - p.radius));
+                    }
+                });
+            }
+            
+            function animateSimulator() {
+                const temp = parseFloat(tempSlider.value);
+                const pressure = parseFloat(pressureSlider.value);
+                updateParticles2(temp, pressure);
+                drawParticles2(temp, pressure);
+                animationFrameId2 = requestAnimationFrame(animateSimulator);
+            }
+
+            function initEntropyChart() {
+                if (entropyChartInstance) {
+                    entropyChartInstance.destroy();
+                }
+                
+                const chartCtx = document.getElementById('entropy-chart');
+                if (!chartCtx) return;
+                
+                entropyChartInstance = new Chart(chartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['System Entropy (S)'],
+                        datasets: [{
+                            label: 'Relative Entropy',
+                            data: [50],
+                            backgroundColor: ['#3b82f6'],
+                            borderColor: ['#2563eb'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: { display: false },
+                                grid: { display: false }
+                            },
+                            y: {
+                                grid: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+            }
+
+            function updateSimulator() {
+                const temp = parseFloat(tempSlider.value);
+                const pressure = parseFloat(pressureSlider.value);
+                
+                tempValueSpan.textContent = temp;
+                pressureValueSpan.textContent = pressure;
+
+                const entropyValue = Math.max(10, Math.min(100, (temp / pressure) * 50 + 10));
+                
+                if (entropyChartInstance) {
+                    entropyChartInstance.data.datasets[0].data[0] = entropyValue;
+                    entropyChartInstance.update();
+                }
+
+                let tempDesc = temp > 6 ? "high" : temp < 4 ? "low" : "moderate";
+                let pressureDesc = pressure > 6 ? "high" : pressure < 4 ? "low" : "moderate";
+
+                if (temp > 6 && pressure < 4) {
+                    explanation.innerHTML = `With <strong>high temperature</strong> and <strong>low pressure</strong>, particles have maximum freedom and energy. This results in the <strong>highest entropy</strong>.`;
+                } else if (temp < 4 && pressure > 6) {
+                    explanation.innerHTML = `With <strong>low temperature</strong> and <strong>high pressure</strong>, particles are confined and have little energy. This results in the <strong>lowest entropy</strong>.`;
+                } else {
+                    explanation.innerHTML = `A <strong>${tempDesc} temperature</strong> and <strong>${pressureDesc} pressure</strong> give a balanced state with moderate entropy.`;
+                }
+            }
+
+            tempSlider.addEventListener('input', updateSimulator);
+            pressureSlider.addEventListener('input', updateSimulator);
+
+            // --- Section 4: Accordion ---
+            document.querySelectorAll('.accordion-toggle').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('span:last-child');
+                    
+                    // Close all other accordions first
+                    document.querySelectorAll('.accordion-content').forEach(otherContent => {
+                        if (otherContent !== content) {
+                            otherContent.classList.remove('open');
+                            const otherIcon = otherContent.previousElementSibling.querySelector('span:last-child');
+                            otherIcon.style.transform = 'rotate(0deg)';
+                        }
+                    });
+                    
+                    // Toggle current accordion
+                    if (content.classList.contains('open')) {
+                        content.classList.remove('open');
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        content.classList.add('open');
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+            // Initialize the first tab
+            activateTab(defaultTab);
+
+            // Resize handler
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (animationFrameId1) cancelAnimationFrame(animationFrameId1);
+                    if (animationFrameId2) cancelAnimationFrame(animationFrameId2);
+                    animationFrameId1 = null;
+                    animationFrameId2 = null;
+                    
+                    if (document.getElementById('basics-content').classList.contains('active')) {
+                        setupMicrostatesCanvas();
+                    }
+                    if (document.getElementById('simulator-content').classList.contains('active')) {
+                        setupSimulatorCanvas();
+                        if (entropyChartInstance) {
+                            entropyChartInstance.resize();
+                            entropyChartInstance.update();
+                        }
+                    }
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

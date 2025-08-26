@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Entropy Explainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MathJax Configuration for inline and block LaTeX -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Slate Blue -->
+    <!-- Application Structure Plan: The application is designed as a narrative journey to build the concept of entropy intuitively. It starts with a high-level introduction, then delves into the dual definitions (microstates vs. energy dispersal). The core of the experience is an interactive "Packet Game" to make the statistical nature of microstates tangible, followed by a step-by-step visualization of the "Hot Ball in Water" example. It culminates in an interactive dashboard where users can manipulate Temperature and Volume to see their effect on entropy, directly connecting macroscopic variables to the microscopic world. This thematic, story-driven structure was chosen over a linear report format to foster active learning and make abstract scientific concepts more accessible and memorable for the user. -->
+    <!-- Visualization & Content Choices: 
+        - Section 1 (Intro): Goal: Inform. Method: Thematic text and a simple visual icon. Justification: Sets the stage.
+        - Section 2 (Dual Concepts): Goal: Compare. Method: Side-by-side text blocks using HTML/CSS Flexbox. Justification: Clearly presents the two fundamental ways to understand entropy.
+        - Section 3 (Packet Game): Goal: Organize/Relate. Method: Custom HTML Canvas visualization with JS logic. Interaction: Sliders for "packets" and "boxes" dynamically update the calculated number of microstates (W). Justification: Provides a hands-on, "wow" factor experience to demonstrate the combinatorial explosion of microstates, which is central to the report's theme. Library: Vanilla JS Canvas API.
+        - Section 4 (Hot Ball Example): Goal: Change. Method: A multi-step diagram using styled HTML divs and a simple Chart.js bar chart. Interaction: A "Next Step" button guides the user through the process, updating both the visual diagram and the chart. Justification: Turns a static example into an engaging, step-by-step narrative of energy dispersal. Library: Chart.js.
+        - Section 5 (T&P Levers): Goal: Relate/Change. Method: Interactive dashboard with sliders and a Chart.js line chart. Interaction: Sliders for Temperature and Volume update the chart and contextual text in real-time. Justification: Allows for direct manipulation and exploration of the mathematical relationships described in the report. Library: Chart.js.
+        - Section 6 (Equations): Goal: Inform. Method: Cleanly formatted text blocks for key formulas. Justification: Provides a clear, final reference for the core mathematical concepts.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #1f2937;
+        }
+        .section-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button:hover, .nav-button.active {
+            color: #3B82F6;
+            border-bottom-color: #3B82F6;
+        }
+        .interactive-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        .interactive-slider:hover {
+            opacity: 1;
+        }
+        .interactive-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3B82F6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .interactive-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3B82F6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .btn-primary {
+            background-color: #3B82F6;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #2563EB;
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .energy-packet {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #F76C6C;
+            border-radius: 50%;
+            transition: all 0.5s ease-in-out;
+        }
+        .particle-box {
+            display: grid;
+            /* grid-template-columns will be set by JS */
+            gap: 6px; /* Increased gap for visual separation */
+            padding: 8px; /* Added padding for inner spacing */
+            border: 1px solid #E5E7EB; /* Light border for the overall grid */
+            border-radius: 0.75rem; /* More rounded corners for the grid container */
+            width: 280px; /* Fixed width for visual consistency with the image */
+            height: 280px; /* Fixed height for visual consistency with the image */
+            background-color: #EFEFEF; /* Slightly darker background for the grid itself */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Soft outer shadow */
+        }
+        .particle-cell {
+            background-color: #FFFFFF; /* White background for individual cells */
+            border-radius: 0.5rem; /* Rounded corners for cells */
+            position: relative;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); /* Subtle inner shadow for depth */
+            border: 1px solid #F3F4F6; /* Very light border for cell definition */
+        }
+        .particle-cell .energy-packet {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-30 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-gray-800">Entropy Explorer</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-gray-700">Introduction</a>
+                        <a href="#simulation" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-gray-700">Simulation</a>
+                        <a href="#example" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-gray-700">Example</a>
+                        <a href="#levers" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-gray-700">Levers</a>
+                        <a href="#equations" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-gray-700">Equations</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div class="space-y-16">
+
+            <section id="intro" class="text-center">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">The Universe's Tendency Towards Dispersal</h1>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">Entropy is more than just "disorder." It's a fundamental law of physics describing how energy and matter spread out over time. This interactive guide will help you build an intuitive understanding of this profound concept, from microscopic particles to macroscopic systems.</p>
+            </section>
+
+            <section id="concepts" class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">The Two Faces of Entropy</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="border-r-0 md:border-r md:pr-8 border-gray-200">
+                        <h3 class="text-2xl font-semibold mb-3 text-blue-600">1. Microscopic Arrangements (W)</h3>
+                        <p class="text-gray-700 mb-4">At its core, entropy is about probability. For any observable state of a system (a **macrostate**), there are countless specific arrangements of its individual particles (its **microstates**). Entropy measures the number of these possible microstates, W.</p>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="font-mono text-center text-lg text-blue-800">S = k<sub>B</sub> ln(W)</p>
+                        </div>
+                        <p class="text-gray-700 mt-4">A system naturally moves towards the macrostate with the highest number of microstates (highest W) simply because it's the most statistically likely outcome. More ways to be arranged means higher entropy.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-3 text-teal-600">2. Energy Dispersal</h3>
+                        <p class="text-gray-700 mb-4">An equivalent and intuitive way to see entropy is as a measure of how spread out, or dispersed, energy is within a system. Energy doesn't like to be concentrated.</p>
+                        <div class="flex items-center justify-around text-center mt-6">
+                            <div class="w-1/2">
+                                <p class="font-semibold">Concentrated Energy</p>
+                                <div class="w-16 h-16 mx-auto mt-2 bg-red-200 rounded-lg flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-red-500 rounded-full"></div>
+                                </div>
+                                <p class="text-sm mt-2 text-gray-600">Low Entropy</p>
+                            </div>
+                            <div class="text-3xl font-thin text-gray-400">&rarr;</div>
+                            <div class="w-1/2">
+                                <p class="font-semibold">Dispersed Energy</p>
+                                <div class="w-16 h-16 mx-auto mt-2 bg-blue-200 rounded-lg flex flex-wrap p-1 justify-around items-center">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                </div>
+                                <p class="text-sm mt-2 text-gray-600">High Entropy</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 mt-4">When heat flows from a hot object to a cold one, the energy is dispersing. This dispersal increases the number of ways the energy can be distributed, thus increasing entropy.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="simulation" class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">Interactive Simulation: The Packet Game</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">Let's make the idea of microstates (W) tangible. Imagine energy comes in discrete "packets". Use the sliders to change the number of energy packets and the number of "boxes" (particles or locations) they can be in. See how the number of possible arrangements explodes as you give the energy more places to go.</p>
+                <div class="grid md:grid-cols-3 gap-8 items-center">
+                    <div class="md:col-span-1 space-y-6">
+                        <div>
+                            <label for="packetsSlider" class="font-semibold">Energy Packets: <span id="packetsValue" class="font-bold text-blue-600">3</span></label>
+                            <input type="range" id="packetsSlider" min="1" max="10" value="3" class="interactive-slider">
+                        </div>
+                        <div>
+                            <label for="boxesSlider" class="font-semibold">Available Boxes: <span id="boxesValue" class="font-bold text-blue-600">5</span></label>
+                            <input type="range" id="boxesSlider" min="2" max="20" value="5" class="interactive-slider">
+                        </div>
+                        <div class="text-center bg-gray-100 p-4 rounded-lg">
+                            <p class="text-lg font-semibold">Possible Arrangements (W):</p>
+                            <p id="microstatesValue" class="text-4xl font-extrabold text-blue-600">35</p>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 flex justify-center">
+                        <div id="particleGrid" class="particle-box"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="example" class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">Real-World Example: Hot Ball in Water</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">Let's apply these concepts to a classic example. Watch how entropy changes as a hot metal ball is dropped into cool water. The total energy is conserved, but its distribution changes dramatically.</p>
+                <div class="grid md:grid-cols-3 gap-8 items-center">
+                    <div class="md:col-span-2">
+                        <div id="waterTank" class="relative w-full h-80 bg-blue-100 rounded-lg flex items-center justify-center overflow-hidden">
+                            <div id="metalBall" class="absolute w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg" style="bottom: 110%; left: 50%; transform: translateX(-50%); transition: all 1.5s ease;">
+                                Hot
+                            </div>
+                            <div id="waterText" class="absolute text-blue-800 opacity-0 transition-opacity duration-1000">System Reaches Equilibrium</div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-1 flex flex-col items-center space-y-6">
+                        <div class="w-full">
+                           <div class="chart-container" style="height: 200px; max-height: 250px;">
+                                <canvas id="entropyBarChart"></canvas>
+                           </div>
+                        </div>
+                        <div id="example-text" class="text-center text-gray-700 h-20">Initial State: Energy is concentrated in the ball. Low entropy.</div>
+                        <button id="nextStepBtn" class="btn-primary font-bold py-2 px-4 rounded-lg w-full">Start Process</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="levers" class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">The Levers of Entropy: T & V</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">Macroscopic properties like Temperature (T) and Volume (V) are direct levers that control a system's entropy. Play with the sliders to see how changing these conditions affects the entropy of an ideal gas.</p>
+                <div class="grid md:grid-cols-3 gap-8 items-start">
+                    <div class="md:col-span-1 space-y-6">
+                        <div>
+                            <label for="tempSlider" class="font-semibold">Temperature (K): <span id="tempValue" class="font-bold text-red-600">300</span></label>
+                            <input type="range" id="tempSlider" min="100" max="600" value="300" step="10" class="interactive-slider">
+                        </div>
+                        <div>
+                            <label for="volumeSlider" class="font-semibold">Volume (L): <span id="volumeValue" class="font-bold text-green-600">10</span></label>
+                            <input type="range" id="volumeSlider" min="1" max="20" value="10" step="1" class="interactive-slider">
+                        </div>
+                        <div id="levers-text" class="text-gray-700 bg-gray-100 p-4 rounded-lg">
+                            Higher temperature gives particles more kinetic energy, allowing them to access more vibrational and rotational energy states. This increases the number of ways energy can be arranged, raising entropy.
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="chart-container">
+                            <canvas id="entropyLineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="equations" class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">6. Key Entropy Equations</h2>
+                <p class="mt-4 text-lg text-gray-600">These fundamental equations quantify entropy and its changes based on macroscopic properties and microscopic arrangements.</p>
+                <div class="max-w-4xl mx-auto grid sm:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-lg mb-2">Boltzmann's Entropy Formula</h4>
+                        <p class="font-mono text-xl text-center text-gray-800 py-2">$$S = k_B \ln W$$</p>
+                        <p class="text-sm text-gray-600">The fundamental link between macroscopic entropy (S) and the number of microscopic arrangements (W).</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-lg mb-2">Total Change in Entropy (Ideal Gas)</h4>
+                        <p class="font-mono text-lg text-center text-gray-800 py-2">$$\Delta S = n C_v \ln\left(\frac{T_2}{T_1}\right) + n R \ln\left(\frac{V_2}{V_1}\right)$$</p>
+                        <p class="text-sm text-gray-600">This general equation shows how entropy changes with both temperature and volume for an ideal gas.</p>
+                    </div>
+                </div>
+                <div class="max-w-4xl mx-auto mt-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-lg mb-2">Entropy Change with Temperature (Constant Volume)</h4>
+                        <p class="font-mono text-lg text-center text-gray-800 py-2">$$\Delta S = n C_v \ln\left(\frac{T_2}{T_1}\right)$$</p>
+                        <p class="text-sm text-gray-600">This term describes the change in entropy due to a temperature change when the volume is held constant.</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg mt-6">
+                        <h4 class="font-semibold text-lg mb-2">Entropy Change with Volume (Constant Temperature)</h4>
+                        <p class="font-mono text-lg text-center text-gray-800 py-2">$$\Delta S = n R \ln\left(\frac{V_2}{V_1}\right)$$</p>
+                        <p class="text-sm text-gray-600">This term describes the change in entropy due to a volume change when the temperature is held constant.</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg mt-6">
+                        <h4 class="font-semibold text-lg mb-2">Entropy Change with Pressure (Constant Temperature)</h4>
+                        <p class="text-gray-700 mb-2">For an ideal gas at constant temperature, the relationship between volume and pressure is given by Boyle's Law: $P_1V_1 = P_2V_2$, which implies $\frac{V_2}{V_1} = \frac{P_1}{P_2}$.</p>
+                        <p class="text-gray-700 mb-2">Substituting this into the entropy change with volume equation gives:</p>
+                        <p class="font-mono text-lg text-center text-gray-800 py-2">$$\Delta S = n R \ln\left(\frac{P_1}{P_2}\right)$$</p>
+                        <p class="text-sm text-gray-600">This describes the change in entropy due to a pressure change when the temperature is held constant.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="text-center py-8 mt-12 border-t border-gray-200">
+        <p class="text-gray-500">An interactive exploration of thermodynamics.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Navigation ---
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('nav a');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // --- Section 3: Packet Game Simulation ---
+            const packetsSlider = document.getElementById('packetsSlider');
+            const boxesSlider = document.getElementById('boxesSlider');
+            const packetsValue = document.getElementById('packetsValue');
+            const boxesValue = document.getElementById('boxesValue');
+            const microstatesValue = document.getElementById('microstatesValue');
+            const particleGrid = document.getElementById('particleGrid'); 
+            
+            function combinations(n, k) {
+                if (k < 0 || k > n) return 0;
+                if (k === 0 || k === n) return 1;
+                if (k > n / 2) k = n - k;
+                let res = 1;
+                for (let i = 1; i <= k; i++) {
+                    res = res * (n - i + 1) / i;
+                }
+                return Math.round(res);
+            }
+
+            function calculateMicrostates() {
+                const n_cells = parseInt(boxesSlider.value); // Use value from slider for n_cells
+                const k_packets = parseInt(packetsSlider.value); 
+                return combinations(n_cells, k_packets); 
+            }
+
+            function setupGrid(numBoxes) {
+                particleGrid.innerHTML = '';
+                const numColumns = Math.ceil(Math.sqrt(numBoxes)); // Calculate columns for a somewhat square grid
+                particleGrid.style.gridTemplateColumns = `repeat(${numColumns}, 1fr)`; 
+                for (let i = 0; i < numBoxes; i++) { // Create cells based on numBoxes
+                    const cell = document.createElement('div');
+                    cell.classList.add('particle-cell');
+                    particleGrid.appendChild(cell);
+                }
+            }
+
+            function shufflePackets() {
+                const cells = Array.from(particleGrid.children);
+                cells.forEach(cell => cell.innerHTML = ''); 
+                let availableIndices = [...Array(cells.length).keys()]; // Use actual number of cells
+                const packetsToPlace = parseInt(packetsSlider.value); 
+
+                for (let i = 0; i < packetsToPlace; i++) {
+                    if (availableIndices.length === 0) break; 
+                    const randomIndex = Math.floor(Math.random() * availableIndices.length);
+                    const cellIndex = availableIndices.splice(randomIndex, 1)[0]; 
+                    const packet = document.createElement('div');
+                    packet.classList.add('energy-packet');
+                    cells[cellIndex].appendChild(packet);
+                }
+            }
+
+            function updatePacketGameSimulation() {
+                packetsValue.textContent = packetsSlider.value;
+                boxesValue.textContent = boxesSlider.value; 
+                setupGrid(parseInt(boxesSlider.value)); // Re-setup grid with new box count
+                const w = calculateMicrostates();
+                microstatesValue.textContent = w.toLocaleString('en-US');
+                shufflePackets(); 
+            }
+            
+            // Initial setup and updates
+            packetsSlider.addEventListener('input', updatePacketGameSimulation);
+            boxesSlider.addEventListener('input', updatePacketGameSimulation); 
+            updatePacketGameSimulation();
+
+
+            // --- Section 4: Hot Ball Example ---
+            const nextStepBtn = document.getElementById('nextStepBtn');
+            const metalBall = document.getElementById('metalBall');
+            const waterTank = document.getElementById('waterTank');
+            const waterText = document.getElementById('waterText');
+            const exampleText = document.getElementById('example-text');
+            let currentStep = 0;
+
+            const barCtx = document.getElementById('entropyBarChart').getContext('2d');
+            const entropyBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Initial', 'Process', 'Final'],
+                    datasets: [{
+                        label: 'Relative Entropy',
+                        data: [1, 1, 1],
+                        backgroundColor: ['#EF4444', '#F59E0B', '#3B82F6'],
+                        borderColor: ['#DC2626', '#D97706', '#2563EB'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            display: false
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            function updateBarChart(values) {
+                entropyBarChart.data.datasets[0].data = values;
+                entropyBarChart.update();
+            }
+            updateBarChart([2, 0, 0]);
+
+            nextStepBtn.addEventListener('click', () => {
+                currentStep = (currentStep + 1) % 4;
+                switch (currentStep) {
+                    case 0: // Reset
+                        metalBall.style.bottom = '110%';
+                        metalBall.style.backgroundColor = '#EF4444';
+                        metalBall.textContent = 'Hot';
+                        waterTank.style.backgroundColor = '#DBEAFE';
+                        waterText.style.opacity = '0';
+                        nextStepBtn.textContent = 'Start Process';
+                        exampleText.textContent = 'Initial State: Energy is concentrated in the ball. Low entropy.';
+                        updateBarChart([2, 0, 0]);
+                        break;
+                    case 1: // Drop ball
+                        metalBall.style.bottom = '20%';
+                        nextStepBtn.textContent = 'Disperse Energy';
+                        exampleText.textContent = 'Process: The ball enters the water. Heat begins to flow from hot to cold.';
+                        updateBarChart([1, 4, 0]);
+                        break;
+                    case 2: // Disperse
+                        metalBall.style.backgroundColor = '#60A5FA';
+                        metalBall.textContent = 'Warm';
+                        waterTank.style.backgroundColor = '#93C5FD';
+                        waterText.style.opacity = '1';
+                        nextStepBtn.textContent = 'View Final State';
+                        exampleText.textContent = 'Process: Energy disperses throughout the water, increasing the system\'s overall entropy.';
+                        updateBarChart([1, 2, 6]);
+                        break;
+                    case 3: // Final
+                        nextStepBtn.textContent = 'Reset Simulation';
+                        exampleText.textContent = 'Final State: The system reaches thermal equilibrium. Energy is now highly dispersed. Maximum entropy achieved.';
+                        updateBarChart([1, 1, 8]);
+                        break;
+                }
+            });
+
+            // --- Section 5: Levers of Entropy ---
+            const tempSlider = document.getElementById('tempSlider');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const tempValue = document.getElementById('tempValue');
+            const volumeValue = document.getElementById('volumeValue');
+            const leversText = document.getElementById('levers-text');
+
+            const lineCtx = document.getElementById('entropyLineChart').getContext('2d');
+            const entropyLineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Entropy (S)',
+                        data: [],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Relative Entropy (S)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'System State' }
+                        }
+                    }
+                }
+            });
+
+            function updateLeversChart() {
+                const T = parseFloat(tempSlider.value);
+                const V = parseFloat(volumeSlider.value);
+                tempValue.textContent = T;
+                volumeValue.textContent = V;
+
+                const n = 1, R = 8.314, Cv = 12.47; // Molar constants for a monatomic ideal gas
+                const T0 = 100, V0 = 1; // Reference state
+                
+                const S_T = n * Cv * Math.log(T / T0);
+                const S_V = n * R * Math.log(V / V0);
+                const totalS = S_T + S_V;
+
+                entropyLineChart.data.labels = ['Reference', 'Volume Effect', 'Temp Effect', 'Current State'];
+                entropyLineChart.data.datasets[0].data = [0, S_V, S_T, totalS];
+                entropyLineChart.update();
+                
+                if (T > 450 && V > 15) {
+                    leversText.textContent = "High temperature and large volume create a system with very high entropy. The energy is highly dispersed among many particle states and a large space.";
+                } else if (T < 150 && V < 5) {
+                    leversText.textContent = "Low temperature and small volume confine the system to a low entropy state. Energy is concentrated with fewer available arrangements.";
+                } else if (T > 450) {
+                    leversText.textContent = "High temperature greatly increases entropy by making higher energy levels accessible to particles, increasing the ways energy can be stored.";
+                } else {
+                    leversText.textContent = "Increasing volume gives particles more space to move, increasing the number of possible spatial arrangements and thus raising entropy.";
+                }
+            }
+
+            tempSlider.addEventListener('input', updateLeversChart);
+            volumeSlider.addEventListener('input', updateLeversChart);
+            updateLeversChart();
+
+        });
+    </script>
+</body>
+</html>

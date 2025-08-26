@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An Interactive Guide to Entropy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Fixed MathJax configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A "scrollytelling" single-page application that guides the user through the concepts of entropy in a narrative sequence. The structure is thematic, starting with the basic definition, moving to the physical mechanism of energy dispersal, illustrating with a case study, exploring influencing factors, and concluding with the broader implications (The Second Law). This structure was chosen to build understanding progressively, from simple to complex, using interactive visualizations at each step to make abstract concepts tangible and memorable, which is far more effective for educational content than a static layout. -->
+    <!-- Visualization & Content Choices: 
+        1. Microstate Shuffler: Report Info(S=kBlnW, microstates) -> Goal(Inform) -> Viz(HTML/CSS Grid + JS DOM manipulation) -> Interaction(Button click) -> Justification(Makes the abstract concept of 'W' concrete and countable) -> Library(Vanilla JS).
+        2. Energy Dispersal Sim: Report Info(Energy dispersal from hot to cold) -> Goal(Show Change) -> Viz(HTML/CSS boxes + JS animation) -> Interaction(Button click) -> Justification(Visually demonstrates why energy spreads and how this increases system options) -> Library(Vanilla JS).
+        3. Hot Ball Case Study: Report Info(Hot ball in water example) -> Goal(Compare/Change) -> Viz(Chart.js line chart + HTML/CSS diagram) -> Interaction(Slider) -> Justification(Dynamically shows the relationship between component and total system entropy over time in a classic, intuitive example) -> Library(Chart.js).
+        4. T/V vs. Entropy Charts & Simulations: Report Info(T & P/V effect on S) -> Goal(Show Relationship) -> Viz(Chart.js line/bar charts + HTML/CSS/JS particle simulations) -> Interaction(Sliders) -> Justification(Allows users to directly manipulate macroscopic variables and see the immediate impact on entropy, clarifying the formulas and providing intuitive visual feedback) -> Library(Chart.js, Vanilla JS).
+        5. Combined Effects Simulation: Report Info(Interplay of T, V, P on S) -> Goal(Show Relationship) -> Viz(HTML/CSS/JS particle simulation + Chart.js line chart) -> Interaction(Sliders for T and V) -> Justification(Provides a holistic view of how multiple factors simultaneously influence entropy, enhancing intuitive understanding of complex interactions) -> Library(Vanilla JS, Chart.js).
+        6. Equations Section: Report Info(Key entropy equations) -> Goal(Inform) -> Viz(Text/Markdown with LaTeX) -> Interaction(None) -> Justification(Provides a consolidated reference for the mathematical expressions) -> Library(None).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #374151;
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .nav-link.active {
+            color: #F76C6C;
+        }
+        .nav-link:not(.active):hover {
+            color: #4f5b70;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 50%;
+            background-color: #F76C6C;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .energy-packet {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #F76C6C;
+            border-radius: 50%;
+            transition: all 0.5s ease-in-out;
+        }
+        .particle-box {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            padding: 4px;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.5rem;
+            width: 150px;
+            height: 150px;
+        }
+        .particle-cell {
+            background-color: #F3F4F6;
+            border-radius: 0.25rem;
+            position: relative;
+        }
+        .particle-cell .energy-packet {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* New styles for Factors simulations */
+        .sim-container {
+            width: 100%;
+            height: 150px;
+            background-color: #F3F4F6;
+            border-radius: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #E5E7EB;
+        }
+        .sim-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #8C82FC;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        /* No specific animation for temp-particle here, animation handled by JS for dynamic speed */
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-gray-800">Entropy Explained</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 active">Introduction</a>
+                        <a href="#microstates" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Microstates</a>
+                        <a href="#dispersal" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Dispersal</a>
+                        <a href="#casestudy" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Case Study</a>
+                        <a href="#factors" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Factors</a>
+                        <a href="#combined-factors" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Combined Effects</a>
+                        <a href="#equations" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Equations</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
+        
+        <section id="intro" class="min-h-[80vh] flex items-center justify-center text-center">
+            <div class="max-w-3xl">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-gray-800 mb-4">The Unfolding Universe</h1>
+                <p class="text-lg md:text-xl text-gray-600">Entropy is more than just "disorder." It's a fundamental measure of probability and energy dispersal that governs everything from chemical reactions to the arrow of time. Let's explore why things naturally move from order to apparent randomness.</p>
+            </div>
+        </section>
+
+        <section id="microstates" class="py-16 md:py-24 space-y-12 fade-in">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800">1. Counting the Possibilities</h2>
+                <p class="mt-4 text-lg text-gray-600">At its heart, entropy ($S$) is about counting. The famous Boltzmann equation, $S = k_B \ln W$, tells us that entropy is proportional to the natural logarithm of '$W$' — the number of microscopic arrangements, or <strong class="text-orange-500">microstates</strong>, that correspond to the same observable macroscopic state.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-xl font-semibold text-gray-800">Interactive Microstates</h3>
+                        <p class="text-gray-600 mt-2">Imagine a tiny system with 25 possible positions (cells) and 3 packets of energy. How many ways can you arrange them? Click "Shuffle" to see different arrangements (microstates). While each specific arrangement is one microstate, the overall system (3 packets in 25 cells) is the macrostate.</p>
+                        <button id="shuffleBtn" class="mt-4 bg-[#F76C6C] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#f55a5a] transition-colors">Shuffle Energy</button>
+                    </div>
+                    <div class="w-full md:w-1/2 flex flex-col items-center">
+                        <div id="particleGrid" class="particle-box"></div>
+                        <p class="mt-4 text-center">Possible Arrangements ($W$): <strong id="wValue" class="text-2xl font-bold text-[#8C82FC]">2300</strong></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dispersal" class="py-16 md:py-24 space-y-12 fade-in">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800">2. The Drive Towards Dispersal</h2>
+                <p class="mt-4 text-lg text-gray-600">Why does entropy tend to increase? Because energy itself tends to spread out. A concentrated state has fewer possible arrangements (low '$W$'). When energy disperses into a larger system, it gains access to vastly more particles and energy levels, exploding the number of possible microstates. Nature favors probability, and dispersal is overwhelmingly more probable.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+                 <div class="flex flex-col items-center gap-8">
+                    <div class="w-full text-center">
+                        <h3 class="text-xl font-semibold text-gray-800">Energy Dispersal Simulation</h3>
+                        <p class="text-gray-600 mt-2">Below, a small, "hot" system with concentrated energy is isolated from a larger, "cold" system. Click "Connect Systems" to remove the barrier and watch the energy disperse to find more arrangements.</p>
+                    </div>
+                    <div class="w-full flex justify-center items-start gap-4">
+                        <div class="text-center">
+                            <p class="font-semibold">System A (Hot)</p>
+                            <div id="systemA" class="w-24 h-24 bg-red-100 border-2 border-red-300 rounded-lg relative"></div>
+                            <p class="text-sm mt-1">$W =$ Low</p>
+                        </div>
+                        <div id="barrier" class="w-2 h-24 bg-gray-700 rounded-full transition-opacity duration-500"></div>
+                        <div class="text-center">
+                            <p class="font-semibold">System B (Cold)</p>
+                            <div id="systemB" class="w-48 h-24 bg-blue-100 border-2 border-blue-300 rounded-lg relative"></div>
+                            <p class="text-sm mt-1">$W =$ Low</p>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button id="connectBtn" class="bg-[#A8D0E6] text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-[#92c0d8] transition-colors">Connect Systems</button>
+                        <p id="totalW" class="mt-4 text-lg font-semibold opacity-0 transition-opacity duration-1000">Total System $W$: <span class="text-[#8C82FC]">Dramatically Increased!</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="casestudy" class="py-16 md:py-24 space-y-12 fade-in">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800">3. Case Study: A Hot Ball in Water</h2>
+                <p class="mt-4 text-lg text-gray-600">Let's apply this to a classic example. When a hot metal ball is dropped into cool water, the energy from the ball (low entropy state) disperses into the vast number of water molecules. The ball's entropy decreases, but the water's entropy increases by a much larger amount. The total entropy of the combined system rises until thermal equilibrium is reached.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+                <div class="flex flex-col lg:flex-row items-center gap-8">
+                    <div class="w-full lg:w-1/3 flex flex-col items-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Simulate Over Time</h3>
+                        <div id="ball-water-viz" class="w-48 h-48 bg-blue-300 rounded-lg relative flex items-center justify-center overflow-hidden">
+                            <div id="ball-viz" class="w-16 h-16 bg-red-500 rounded-full transition-colors duration-300"></div>
+                        </div>
+                        <input id="timeSlider" type="range" min="0" max="100" value="0" class="w-full mt-4">
+                        <p class="text-sm mt-2">Time: <span id="timeValue">0</span>s</p>
+                    </div>
+                    <div class="w-full lg:w-2/3">
+                        <div class="chart-container">
+                            <canvas id="entropyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="factors" class="py-16 md:py-24 space-y-12 fade-in">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800">4. Influencing Entropy</h2>
+                <p class="mt-4 text-lg text-gray-600">Macroscopic properties directly affect the number of available microstates. Manipulating temperature, volume, and pressure allows us to control a system's entropy. Explore how these factors change the potential for energy dispersal.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 text-center">Temperature's Effect</h3>
+                    <p class="text-gray-600 mt-2 text-center mb-4">Higher temperature means more thermal energy, allowing particles to access a wider range of energy levels and increasing the ways energy can be arranged. Observe the particle speed and color change.</p>
+                    <div id="tempSimContainer" class="sim-container mb-4"></div>
+                    <div class="chart-container h-64">
+                        <canvas id="tempChart"></canvas>
+                    </div>
+                    <div class="mt-4">
+                        <label for="tempSlider" class="font-medium">Temperature (K): <span id="tempValue" class="font-bold text-[#F76C6C]">300</span></label>
+                        <input id="tempSlider" type="range" min="10" max="1000" value="300" class="w-full">
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 text-center">Volume & Pressure Effect</h3>
+                     <p class="text-gray-600 mt-2 text-center mb-4">Greater volume gives particles more space to move, increasing the number of possible spatial arrangements. As volume changes, observe the inverse effect on pressure.</p>
+                    <div id="volumeSimContainer" class="sim-container mb-4"></div>
+                    <div class="chart-container h-64">
+                        <canvas id="volumeChart"></canvas>
+                    </div>
+                    <div class="mt-4">
+                        <label for="volumeSlider" class="font-medium">Relative Volume: <span id="volumeValue" class="font-bold text-[#A8D0E6]">50</span>%</label>
+                        <input id="volumeSlider" type="range" min="10" max="100" value="50" class="w-full">
+                        <p class="text-sm mt-2 font-medium">Inferred Relative Pressure: <span id="pressureValue" class="font-bold text-[#F76C6C]">2.0</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="combined-factors" class="py-16 md:py-24 space-y-12 fade-in">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800">5. Combined Effects: T, V & P</h2>
+                <p class="mt-4 text-lg text-gray-600">Entropy is often influenced by multiple factors simultaneously. Explore how changes in both temperature and volume (and thus pressure) collectively impact the system's entropy and the behavior of its particles.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+                <div class="flex flex-col items-center gap-8">
+                    <div class="w-full text-center">
+                        <h3 class="text-xl font-semibold text-gray-800">Combined Simulation</h3>
+                        <p class="text-gray-600 mt-2">Adjust the sliders to see particles change speed (temperature) and available space (volume/pressure).</p>
+                    </div>
+                    <div id="combinedSimContainer" class="sim-container h-48 mb-4"></div>
+                    <div class="chart-container h-64">
+                        <canvas id="combinedEntropyChart"></canvas>
+                    </div>
+                    <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label for="combinedTempSlider" class="font-medium">Temperature (K): <span id="combinedTempValue" class="font-bold text-[#F76C6C]">300</span></label>
+                            <input id="combinedTempSlider" type="range" min="10" max="1000" value="300" class="w-full">
+                        </div>
+                        <div>
+                            <label for="combinedVolumeSlider" class="font-medium">Relative Volume: <span id="combinedVolumeValue" class="font-bold text-[#A8D0E6]">50</span>%</label>
+                            <input id="combinedVolumeSlider" type="range" min="10" max="100" value="50" class="w-full">
+                            <p class="text-sm mt-2 font-medium">Inferred Relative Pressure: <span id="combinedPressureValue" class="font-bold text-[#F76C6C]">2.0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="equations" class="py-16 md:py-24 space-y-12 fade-in">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800">6. Key Entropy Equations</h2>
+                <p class="mt-4 text-lg text-gray-600">These fundamental equations quantify entropy and its changes based on macroscopic properties and microscopic arrangements.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-3xl mx-auto text-lg leading-relaxed">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Boltzmann Equation (Statistical Definition)</h3>
+                <div class="font-mono bg-gray-100 text-gray-800 px-3 py-2 rounded-md mb-6 text-center">
+                    $$S = k_B \ln W$$
+                </div>
+                <p class="text-gray-700 mb-6">Where: <br>
+                    $S$ is entropy<br>
+                    $k_B$ is Boltzmann's constant<br>
+                    $W$ is the number of possible microstates corresponding to a given macrostate
+                </p>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Entropy Change with Temperature (Constant Volume)</h3>
+                <div class="font-mono bg-gray-100 text-gray-800 px-3 py-2 rounded-md mb-6 text-center">
+                    $$\Delta S = n C_v \ln\left(\frac{T_2}{T_1}\right)$$
+                </div>
+                <p class="text-gray-700 mb-6">Where: <br>
+                    $\Delta S$ is the change in entropy<br>
+                    $n$ is the number of moles<br>
+                    $C_v$ is the molar heat capacity at constant volume<br>
+                    $T_1$ and $T_2$ are initial and final temperatures
+                </p>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Entropy Change with Volume (Constant Temperature)</h3>
+                <div class="font-mono bg-gray-100 text-gray-800 px-3 py-2 rounded-md mb-6 text-center">
+                    $$\Delta S = n R \ln\left(\frac{V_2}{V_1}\right)$$
+                </div>
+                <p class="text-gray-700 mb-6">Where: <br>
+                    $\Delta S$ is the change in entropy<br>
+                    $n$ is the number of moles<br>
+                    $R$ is the ideal gas constant<br>
+                    $V_1$ and $V_2$ are initial and final volumes
+                </p>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Entropy Change with Pressure (Constant Temperature)</h3>
+                <p class="text-gray-700 mb-2">Given $V_2/V_1 = P_1/P_2$ (for ideal gases at constant temperature), the equation becomes:</p>
+                <div class="font-mono bg-gray-100 text-gray-800 px-3 py-2 rounded-md mb-6 text-center">
+                    $$\Delta S = n R \ln\left(\frac{P_1}{P_2}\right)$$
+                </div>
+                <p class="text-gray-700">Where: <br>
+                    $\Delta S$ is the change in entropy<br>
+                    $n$ is the number of moles<br>
+                    $R$ is the ideal gas constant<br>
+                    $P_1$ and $P_2$ are initial and final pressures
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-2xl font-bold">The Second Law of Thermodynamics</p>
+            <p class="mt-2 max-w-2xl mx-auto">The total entropy of an isolated system can never decrease over time. This simple, probability-driven rule is why heat flows from hot to cold, why gases expand to fill a volume, and why we perceive a one-way "arrow of time." The universe, as a whole, is moving towards a state of maximum probability.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- Navigation Logic ---
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.4
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                });
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+    
+    // --- Fade-in on Scroll Logic ---
+    const fadeElements = document.querySelectorAll('.fade-in');
+    const fadeObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    fadeElements.forEach(el => fadeObserver.observe(el));
+
+    // --- Section 1: Microstates Shuffler ---
+    const particleGrid = document.getElementById('particleGrid');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const wValueEl = document.getElementById('wValue');
+    const numCells = 25;
+    const numPackets = 3;
+
+    function nCr(n, r) {
+        let res = 1;
+        for (let i = 0; i < r; i++) {
+            res = res * (n - i) / (i + 1);
+        }
+        return Math.round(res);
+    }
+    wValueEl.textContent = nCr(numCells, numPackets).toLocaleString();
+
+    function setupGrid() {
+        particleGrid.innerHTML = '';
+        for (let i = 0; i < numCells; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('particle-cell');
+            particleGrid.appendChild(cell);
+        }
+    }
+
+    function shufflePackets() {
+        const cells = Array.from(particleGrid.children);
+        cells.forEach(cell => cell.innerHTML = '');
+        let availableIndices = [...Array(numCells).keys()];
+        for (let i = 0; i < numPackets; i++) {
+            const randomIndex = Math.floor(Math.random() * availableIndices.length);
+            const cellIndex = availableIndices.splice(randomIndex, 1)[0];
+            const packet = document.createElement('div');
+            packet.classList.add('energy-packet');
+            cells[cellIndex].appendChild(packet);
+        }
+    }
+    
+    setupGrid();
+    shufflePackets();
+    shuffleBtn.addEventListener('click', shufflePackets);
+
+    // --- Section 2: Energy Dispersal ---
+    const systemA = document.getElementById('systemA');
+    const systemB = document.getElementById('systemB');
+    const connectBtn = document.getElementById('connectBtn');
+    const barrier = document.getElementById('barrier');
+    const totalW = document.getElementById('totalW');
+    let connected = false;
+
+    function createPackets(container, count, isHot) {
+        container.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+            const packet = document.createElement('div');
+            packet.classList.add('energy-packet');
+            if(isHot) packet.style.backgroundColor = '#ef4444';
+            else packet.style.backgroundColor = '#60a5fa';
+            
+            packet.style.left = `${Math.random() * 90}%`;
+            packet.style.top = `${Math.random() * 90}%`;
+            container.appendChild(packet);
+        }
+    }
+
+    function animatePackets(container) {
+        const packets = container.children;
+        for(let packet of packets) {
+            const newX = Math.random() * 90;
+            const newY = Math.random() * 90;
+            packet.style.left = `${newX}%`;
+            packet.style.top = `${newY}%`;
+        }
+    }
+    
+    createPackets(systemA, 15, true);
+    createPackets(systemB, 5, false);
+    
+    const animInterval = setInterval(() => {
+        if(!connected) {
+            animatePackets(systemA);
+        } else {
+            animatePackets(systemA);
+            animatePackets(systemB);
+        }
+    }, 600);
+
+    connectBtn.addEventListener('click', () => {
+        if (connected) return;
+        connected = true;
+        barrier.style.opacity = '0';
+        totalW.style.opacity = '1';
+
+        const packetsA = Array.from(systemA.children);
+        const packetsToMove = Math.floor(packetsA.length / 2);
+
+        for(let i=0; i<packetsToMove; i++) {
+            systemB.appendChild(packetsA[i]);
+        }
+        connectBtn.textContent = 'Equilibrium Reached';
+        connectBtn.disabled = true;
+    });
+
+
+    // --- Section 3: Case Study Chart ---
+    const timeSlider = document.getElementById('timeSlider');
+    const timeValue = document.getElementById('timeValue');
+    const ballViz = document.getElementById('ball-viz');
+    const waterViz = document.getElementById('ball-water-viz');
+    const ctxEntropy = document.getElementById('entropyChart').getContext('2d');
+    let entropyChart;
+
+    const labels = Array.from({ length: 101 }, (_, i) => i);
+    const ballEntropyData = labels.map(x => 50 * Math.exp(-x / 25));
+    const waterEntropyData = labels.map(x => 10 + 90 * (1 - Math.exp(-x / 30)));
+    const totalEntropyData = labels.map((_, i) => ballEntropyData[i] + waterEntropyData[i]);
+
+    function createEntropyChart() {
+        if (entropyChart) entropyChart.destroy();
+        entropyChart = new Chart(ctxEntropy, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Ball Entropy',
+                        data: ballEntropyData,
+                        borderColor: '#F76C6C',
+                        backgroundColor: '#F76C6C20',
+                        tension: 0.3,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Water Entropy',
+                        data: waterEntropyData,
+                        borderColor: '#A8D0E6',
+                        backgroundColor: '#A8D0E620',
+                        tension: 0.3,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Total System Entropy',
+                        data: totalEntropyData,
+                        borderColor: '#8C82FC',
+                        backgroundColor: '#8C82FC20',
+                        tension: 0.3,
+                        borderWidth: 3,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Relative Entropy' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Time' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+    }
+
+    function updateCaseStudy(value) {
+        timeValue.textContent = value;
+        entropyChart.data.datasets.forEach(dataset => {
+            dataset.data = dataset.label === 'Ball Entropy' ? ballEntropyData.slice(0, value + 1) :
+                           dataset.label === 'Water Entropy' ? waterEntropyData.slice(0, value + 1) :
+                           totalEntropyData.slice(0, value + 1);
+        });
+        
+        if (entropyChart.options.plugins.annotation) {
+             entropyChart.options.plugins.annotation.annotations.line1.xMin = value;
+             entropyChart.options.plugins.annotation.annotations.line1.xMax = value;
+        }
+        
+        const t = value / 100; 
+        const ballTemp = 255 * (1 - t);
+        const waterTemp = 50 + 150 * t;
+        ballViz.style.backgroundColor = `rgb(239, 68, 68, ${1 - t*0.5})`; 
+        waterViz.style.backgroundColor = `rgb(147, 197, 253, ${0.5 + t*0.5})`; 
+        
+        entropyChart.update();
+    }
+
+    createEntropyChart();
+    timeSlider.addEventListener('input', (e) => updateCaseStudy(parseInt(e.target.value)));
+    updateCaseStudy(0);
+
+
+    // --- Section 4: Factors Charts & Simulations ---
+    const tempSlider = document.getElementById('tempSlider');
+    const tempValue = document.getElementById('tempValue');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeValue = document.getElementById('volumeValue');
+    const pressureValue = document.getElementById('pressureValue');
+    const ctxTemp = document.getElementById('tempChart').getContext('2d');
+    const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+    let tempChart, volumeChart;
+
+    const tempSimContainer = document.getElementById('tempSimContainer');
+    const volumeSimContainer = document.getElementById('volumeSimContainer');
+    const numSimParticles = 20;
+    let tempParticleAnimations = [];
+    let volumeParticleAnimations = [];
+
+    function createSimParticles(container, type) {
+        container.innerHTML = '';
+        for (let i = 0; i < numSimParticles; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('sim-particle');
+            particle.style.left = `${Math.random() * 90}%`;
+            particle.style.top = `${Math.random() * 90}%`;
+            particle.dataset.dx = (Math.random() - 0.5) * 2; 
+            particle.dataset.dy = (Math.random() - 0.5) * 2; 
+            container.appendChild(particle);
+        }
+    }
+
+    function animateParticlesInContainer(container, speedMultiplier = 1, volumeWidthRatio = 1) {
+        const particles = container.children;
+        const containerRect = container.getBoundingClientRect();
+        const effectiveWidth = containerRect.width * volumeWidthRatio;
+        const effectiveHeight = containerRect.height;
+
+        Array.from(particles).forEach(particle => {
+            let x = parseFloat(particle.style.left) / 100 * containerRect.width;
+            let y = parseFloat(particle.style.top) / 100 * containerRect.height;
+            let dx = parseFloat(particle.dataset.dx) * speedMultiplier;
+            let dy = parseFloat(particle.dataset.dy) * speedMultiplier;
+
+            function updateParticlePosition() {
+                x += dx;
+                y += dy;
+
+                if (x + particle.offsetWidth > effectiveWidth || x < 0) {
+                    dx *= -1;
+                    x = Math.max(0, Math.min(x, effectiveWidth - particle.offsetWidth));
+                }
+                if (y + particle.offsetHeight > effectiveHeight || y < 0) {
+                    dy *= -1;
+                    y = Math.max(0, Math.min(y, effectiveHeight - particle.offsetHeight));
+                }
+
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.backgroundColor = `hsl(240, 70%, ${50 - speedMultiplier * 10}%)`; // Blueish for lower temp, purplish for higher
+            }
+
+            if (container.id === 'tempSimContainer' || container.id === 'combinedSimContainer') {
+                if (particle.animationFrameId) cancelAnimationFrame(particle.animationFrameId);
+                const loop = () => {
+                    updateParticlePosition();
+                    particle.animationFrameId = requestAnimationFrame(loop);
+                };
+                particle.animationFrameId = requestAnimationFrame(loop);
+            } else if (container.id === 'volumeSimContainer') {
+                 // For volume, just set initial positions based on new volume, no continuous animation
+                 particle.style.left = `${Math.random() * (effectiveWidth - particle.offsetWidth)}px`;
+                 particle.style.top = `${Math.random() * (effectiveHeight - particle.offsetHeight)}px`;
+            }
+        });
+    }
+
+    createSimParticles(tempSimContainer, 'temp');
+    createSimParticles(volumeSimContainer, 'volume');
+
+    // Temperature Chart
+    function createTempChart() {
+        tempChart = new Chart(ctxTemp, {
+            type: 'line',
+            data: {
+                labels: [0],
+                datasets: [{
+                    label: 'Entropy',
+                    data: [0],
+                    borderColor: '#F76C6C',
+                    backgroundColor: '#F76C6C20',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Relative Entropy' } },
+                    x: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function updateTempChart(temp) {
+        const entropy = Math.log(temp) * 10;
+        tempChart.data.datasets[0].data = [entropy];
+        tempChart.data.labels = [temp];
+        tempChart.update();
+        tempValue.textContent = temp;
+        animateParticlesInContainer(tempSimContainer, temp / 100); 
+    }
+    
+    createTempChart();
+    tempSlider.addEventListener('input', (e) => updateTempChart(parseInt(e.target.value)));
+    updateTempChart(parseInt(tempSlider.value));
+
+    // Volume Chart
+    function createVolumeChart() {
+        volumeChart = new Chart(ctxVolume, {
+            type: 'bar',
+            data: {
+                labels: ['Entropy'],
+                datasets: [{
+                    label: 'Entropy',
+                    data: [0],
+                    backgroundColor: '#A8D0E6',
+                    borderColor: '#92c0d8',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: { beginAtZero: true, title: { display: true, text: 'Relative Entropy' }, max: 100 },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function updateVolumeChart(volume) {
+        const entropy = Math.log(volume) * 20;
+        volumeChart.data.datasets[0].data = [entropy];
+        volumeChart.update();
+        volumeValue.textContent = volume;
+        
+        const pressure = (100 / volume).toFixed(1);
+        pressureValue.textContent = pressure;
+
+        volumeSimContainer.style.width = `${volume}%`;
+        animateParticlesInContainer(volumeSimContainer, 1, volume / 100); 
+    }
+    
+    createVolumeChart();
+    volumeSlider.addEventListener('input', (e) => updateVolumeChart(parseInt(e.target.value)));
+    updateVolumeChart(parseInt(volumeSlider.value));
+
+
+    // --- Section 5: Combined Factors ---
+    const combinedTempSlider = document.getElementById('combinedTempSlider');
+    const combinedTempValue = document.getElementById('combinedTempValue');
+    const combinedVolumeSlider = document.getElementById('combinedVolumeSlider');
+    const combinedVolumeValue = document.getElementById('combinedVolumeValue');
+    const combinedPressureValue = document.getElementById('combinedPressureValue');
+    const combinedSimContainer = document.getElementById('combinedSimContainer');
+    const ctxCombinedEntropy = document.getElementById('combinedEntropyChart').getContext('2d');
+    let combinedEntropyChart;
+
+    createSimParticles(combinedSimContainer, 'combined');
+
+    function createCombinedEntropyChart() {
+        if (combinedEntropyChart) combinedEntropyChart.destroy();
+        combinedEntropyChart = new Chart(ctxCombinedEntropy, {
+            type: 'line',
+            data: {
+                labels: ['Combined Entropy'],
+                datasets: [{
+                    label: 'Total Entropy',
+                    data: [0],
+                    borderColor: '#8C82FC',
+                    backgroundColor: '#8C82FC20',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Relative Entropy' }, max: 100 },
+                    x: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function updateCombinedEffects() {
+        const temp = parseInt(combinedTempSlider.value);
+        const volume = parseInt(combinedVolumeSlider.value);
+        
+        combinedTempValue.textContent = temp;
+        combinedVolumeValue.textContent = volume;
+
+        const pressure = (100 / volume).toFixed(1);
+        combinedPressureValue.textContent = pressure;
+
+        // Simplified combined entropy calculation: S ~ ln(T) + ln(V)
+        // Adjust coefficients for reasonable visual range
+        const combinedEntropy = (Math.log(temp) * 5) + (Math.log(volume) * 10);
+        combinedEntropyChart.data.datasets[0].data = [combinedEntropy];
+        combinedEntropyChart.update();
+
+        // Update combined simulation
+        combinedSimContainer.style.width = `${volume}%`;
+        animateParticlesInContainer(combinedSimContainer, temp / 100, volume / 100);
+    }
+
+    createCombinedEntropyChart();
+    combinedTempSlider.addEventListener('input', updateCombinedEffects);
+    combinedVolumeSlider.addEventListener('input', updateCombinedEffects);
+    updateCombinedEffects(); // Initial update
+
+});
+</script>
+
+</body>
+</html>

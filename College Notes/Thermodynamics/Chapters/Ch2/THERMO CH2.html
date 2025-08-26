@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Thermodynamics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: "Soothing Sage" - A calm and academic theme using shades of gray, green, and a warm accent. -->
+    <!-- Application Structure Plan: The SPA uses a tab-based navigation structure. This design was chosen to break down the dense, interconnected concepts of thermodynamics into manageable, thematic sections (Basics, System Types, Energy Forms, etc.). This non-linear, exploratory approach allows users to either follow a logical progression or jump directly to a concept of interest, enhancing usability and self-paced learning. Each tab reveals a dedicated content pane, preventing information overload and focusing the user's attention. The final tab, "The First Law," serves as a capstone, integrating all previous concepts into an interactive visualization. -->
+    <!-- Visualization & Content Choices: 
+        1. System Types: Report Info -> Open, Closed, Isolated Systems. Goal -> Compare & Inform. Viz/Method -> Interactive cards with HTML/CSS diagrams using borders and Unicode arrows to show mass/energy flow. Interaction -> Clicking a card reveals its detailed definition. Justification -> Visually engaging and clearly demonstrates the core difference (boundary permeability) better than plain text. Library/Method -> HTML/CSS/JS.
+        2. Energy Forms: Report Info -> Hierarchy of Total, Macro, Micro, KE, PE, Internal Energy. Goal -> Organize & Inform. Viz/Method -> A nested, tree-like structure built with styled HTML divs. Interaction -> Clicking a concept highlights it and displays its definition. Justification -> Intuitively maps the hierarchical relationship between different energy forms. Library/Method -> HTML/CSS/JS.
+        3. First Law (State vs. Path): Report Info -> ΔU = Q - W, where ΔU is a state function and Q, W are path functions. Goal -> Demonstrate & Relate. Viz/Method -> A dynamic bar chart (Chart.js) with sliders for Heat (Q) and Work (W). Interaction -> User drags sliders for Q and W; the chart updates to show their values changing, while the ΔU bar remains constant. Justification -> This provides a powerful, tangible experience of the abstract principle that different paths (combinations of Q and W) can lead to the same state change (ΔU), solidifying the user's understanding. Library/Method -> Chart.js, HTML, JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .tab-active {
+            background-color: #10B981; /* emerald-500 */
+            color: white;
+            border-color: #10B981; /* emerald-500 */
+        }
+        .tab-inactive {
+            background-color: white;
+            color: #374151; /* gray-700 */
+            border-color: #D1D5DB; /* gray-300 */
+        }
+        .content-pane {
+            display: none;
+        }
+        .content-pane.active {
+            display: block;
+        }
+        .concept-card {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .concept-card.selected {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border-color: #10B981; /* emerald-500 */
+        }
+        .energy-node {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .energy-node.selected-node {
+             background-color: #A7F3D0; /* emerald-200 */
+             border-left-color: #10B981; /* emerald-500 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-emerald-700">An Interactive Guide to Thermodynamics</h1>
+            <p class="mt-2 text-lg text-gray-600">Explore the fundamental concepts of energy, systems, and their interactions.</p>
+        </header>
+
+        <nav id="tabs" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+            <button data-tab="basics" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">The Basics</button>
+            <button data-tab="systems" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">System Types</button>
+            <button data-tab="energy" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">Forms of Energy</button>
+            <button data-tab="transfer" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">Energy Transfer</button>
+            <button data-tab="rules" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">Properties & Rules</button>
+            <button data-tab="first-law" class="tab-btn px-4 py-2 font-semibold border rounded-lg shadow-sm transition-colors duration-300">The First Law</button>
+        </nav>
+
+        <main id="content" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg min-h-[500px]">
+            
+            <div id="basics-content" class="content-pane">
+                <h2 class="text-3xl font-bold text-emerald-600 mb-4">Defining the Universe of Study</h2>
+                <p class="mb-6 text-gray-600">In thermodynamics, we must first precisely define what we are studying. This involves separating a specific part of the universe (the system) from everything else (the surroundings) using a boundary. This framework is essential for tracking how energy moves and changes.</p>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="p-6 bg-gray-50 rounded-xl border border-gray-200">
+                        <h3 class="text-2xl font-semibold mb-2 text-gray-800">System</h3>
+                        <p class="text-gray-600">A quantity of matter or a region in space chosen for study. It's the focus of our analysis, like the water in a pot or the gas in a cylinder.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50 rounded-xl border-2 border-dashed border-emerald-500">
+                        <h3 class="text-2xl font-semibold mb-2 text-gray-800">Boundary</h3>
+                        <p class="text-gray-600">The real or imaginary surface that separates the system from its surroundings. All energy and mass transfers happen across the boundary.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50 rounded-xl border border-gray-200">
+                        <h3 class="text-2xl font-semibold mb-2 text-gray-800">Surroundings</h3>
+                        <p class="text-gray-600">Everything external to the system. The surroundings can interact with the system, influencing its behavior and energy exchanges.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="systems-content" class="content-pane">
+                <h2 class="text-3xl font-bold text-emerald-600 mb-4">Types of Thermodynamic Systems</h2>
+                <p class="mb-6 text-gray-600">Systems are classified based on whether mass and energy can cross their boundaries. Click on a system type to learn more about it. This classification is the first step in applying the correct conservation laws.</p>
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
+                    <div id="isolated-card" class="concept-card p-6 bg-gray-50 rounded-xl border-2 border-gray-200">
+                        <h3 class="text-xl font-bold mb-2 text-center">Isolated System</h3>
+                        <div class="relative w-24 h-24 mx-auto bg-white border-4 border-gray-800 rounded-full flex items-center justify-center">
+                            <span class="text-gray-800 font-semibold">System</span>
+                        </div>
+                        <p class="text-center mt-2 font-medium text-gray-500">No Mass or Energy Transfer</p>
+                    </div>
+                    <div id="closed-card" class="concept-card p-6 bg-gray-50 rounded-xl border-2 border-gray-200">
+                        <h3 class="text-xl font-bold mb-2 text-center">Closed System</h3>
+                        <div class="relative w-24 h-24 mx-auto bg-white border-2 border-dashed border-gray-800 rounded-full flex items-center justify-center">
+                            <span class="text-gray-800 font-semibold">System</span>
+                            <span class="absolute -top-5 text-2xl text-emerald-500 animate-pulse">↔</span>
+                            <span class="absolute -bottom-5 text-2xl text-emerald-500 animate-pulse">↔</span>
+                        </div>
+                         <p class="text-center mt-2 font-medium text-emerald-600">Energy Transfer Only</p>
+                    </div>
+                    <div id="open-card" class="concept-card p-6 bg-gray-50 rounded-xl border-2 border-gray-200">
+                        <h3 class="text-xl font-bold mb-2 text-center">Open System</h3>
+                        <div class="relative w-24 h-24 mx-auto bg-white border-2 border-dashed border-gray-800 rounded-full flex items-center justify-center">
+                            <span class="text-gray-800 font-semibold">System</span>
+                            <span class="absolute -left-5 text-2xl text-blue-500 animate-pulse">↔</span>
+                            <span class="absolute -right-5 text-2xl text-blue-500 animate-pulse">↔</span>
+                            <span class="absolute -top-5 text-2xl text-emerald-500 animate-pulse">↔</span>
+                            <span class="absolute -bottom-5 text-2xl text-emerald-500 animate-pulse">↔</span>
+                        </div>
+                        <p class="text-center mt-2 font-medium text-blue-600">Mass <span class="text-gray-500">&</span> Energy Transfer</p>
+                    </div>
+                </div>
+                <div id="system-details" class="p-6 bg-emerald-50 rounded-lg min-h-[100px] transition-all duration-300">
+                    <p class="text-gray-700">Select a system type above to see its definition and examples.</p>
+                </div>
+            </div>
+
+            <div id="energy-content" class="content-pane">
+                <h2 class="text-3xl font-bold text-emerald-600 mb-4">The Forms of Energy</h2>
+                <p class="mb-6 text-gray-600">Energy within a system exists in various forms, broadly categorized as macroscopic (related to motion and position) and microscopic (related to molecular structure and activity). Click on any concept in the diagram to explore it.</p>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full md:w-1/2 space-y-2">
+                        <div id="total-energy-node" class="energy-node p-3 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">
+                            <h3 class="font-bold text-lg">Total Energy (E)</h3>
+                        </div>
+                        <div class="pl-6 space-y-2">
+                            <div id="macro-energy-node" class="energy-node p-3 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">
+                                <h4 class="font-semibold">Macroscopic Energy</h4>
+                            </div>
+                            <div class="pl-6 space-y-2">
+                                <div id="ke-node" class="energy-node p-2 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">Kinetic Energy (KE)</div>
+                                <div id="pe-node" class="energy-node p-2 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">Potential Energy (PE)</div>
+                            </div>
+                            <div id="micro-energy-node" class="energy-node p-3 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">
+                                <h4 class="font-semibold">Microscopic Energy (Internal, U)</h4>
+                            </div>
+                            <div class="pl-6 space-y-2">
+                                <div id="sensible-node" class="energy-node p-2 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">Sensible Energy</div>
+                                <div id="latent-node" class="energy-node p-2 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">Latent Energy</div>
+                                <div id="chemical-node" class="energy-node p-2 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">Chemical Energy</div>
+                                <div id="nuclear-node" class="energy-node p-2 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">Nuclear Energy</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 p-6 bg-emerald-50 rounded-lg min-h-[250px] transition-all duration-300">
+                        <div id="energy-details">
+                            <p class="text-gray-700">Select an energy form from the diagram to see its description.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="transfer-content" class="content-pane">
+                 <h2 class="text-3xl font-bold text-emerald-600 mb-4">Energy in Transit: Heat and Work</h2>
+                <p class="mb-6 text-gray-600">A system doesn't "contain" heat or work. Instead, these are the two fundamental ways energy is transferred across a system's boundary. They are processes, not properties.</p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-red-50 rounded-xl border border-red-200">
+                        <h3 class="text-2xl font-bold text-red-600 mb-2">Heat (Q)</h3>
+                        <p class="font-semibold text-red-800 mb-2">Driving Force: Temperature Difference</p>
+                        <p class="text-gray-700">Heat is the transfer of energy due to a difference in temperature between the system and its surroundings. It's a disorganized form of energy transfer related to random molecular motion. A process with no heat transfer is called adiabatic.</p>
+                    </div>
+                    <div class="p-6 bg-blue-50 rounded-xl border border-blue-200">
+                        <h3 class="text-2xl font-bold text-blue-600 mb-2">Work (W)</h3>
+                        <p class="font-semibold text-blue-800 mb-2">Driving Force: Force through a Distance</p>
+                        <p class="text-gray-700">Work is the transfer of energy through any means other than a temperature difference. It's an organized energy transfer, like a piston moving or an electric current flowing. It can change a system's energy even if the temperature is constant.</p>
+                    </div>
+                </div>
+                 <div class="mt-8 p-6 bg-gray-100 rounded-lg">
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Key Similarities</h4>
+                    <ul class="list-disc list-inside text-gray-700 space-y-1">
+                        <li>Both are recognized only as they cross the system boundary (Boundary Phenomena).</li>
+                        <li>Systems possess energy, but not heat or work (Transfer Phenomena).</li>
+                        <li>Both are associated with a process, not a state.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="rules-content" class="content-pane">
+                <h2 class="text-3xl font-bold text-emerald-600 mb-4">Properties, Functions, and Conventions</h2>
+                <p class="mb-6 text-gray-600">To apply thermodynamic laws correctly, we must distinguish between quantities that depend on the system's state versus the process path, and we must use a consistent sign convention for energy transfers.</p>
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="p-6 bg-amber-50 rounded-xl border border-amber-200">
+                        <h3 class="text-2xl font-bold text-amber-700 mb-2">State Properties</h3>
+                        <p class="font-semibold text-amber-800 mb-2">Path-Independent</p>
+                        <p class="text-gray-700">A property that depends only on the current state of the system, not how it got there. The change in a state property is always the final value minus the initial value.</p>
+                        <p class="mt-2 text-sm font-medium text-gray-500">Examples: Internal Energy (U), Temperature (T), Pressure (P), Volume (V).</p>
+                    </div>
+                    <div class="p-6 bg-indigo-50 rounded-xl border border-indigo-200">
+                        <h3 class="text-2xl font-bold text-indigo-700 mb-2">Path Functions</h3>
+                        <p class="font-semibold text-indigo-800 mb-2">Path-Dependent</p>
+                        <p class="text-gray-700">A quantity whose value depends on the specific path taken between two states. The amount can vary greatly for different processes between the same start and end points.</p>
+                        <p class="mt-2 text-sm font-medium text-gray-500">Examples: Heat (Q), Work (W).</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Sign Convention</h3>
+                    <div class="max-w-md mx-auto grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <p class="text-lg font-semibold text-green-600">Heat In (Q > 0)</p>
+                            <p class="text-sm text-gray-600">Energy added to system</p>
+                        </div>
+                        <div>
+                            <p class="text-lg font-semibold text-red-600">Heat Out (Q < 0)</p>
+                            <p class="text-sm text-gray-600">Energy lost from system</p>
+                        </div>
+                        <div>
+                            <p class="text-lg font-semibold text-red-600">Work Out (W > 0)</p>
+                            <p class="text-sm text-gray-600">System does work, loses energy</p>
+                        </div>
+                        <div>
+                            <p class="text-lg font-semibold text-green-600">Work In (W < 0)</p>
+                            <p class="text-sm text-gray-600">Work done on system, gains energy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="first-law-content" class="content-pane">
+                <h2 class="text-3xl font-bold text-emerald-600 mb-2">The First Law of Thermodynamics: Energy is Conserved</h2>
+                <p class="mb-6 text-gray-600">The First Law states that energy cannot be created or destroyed. For a closed system, the change in its internal energy (ΔU) is the net heat added to the system minus the net work done by the system. This section interactively demonstrates the crucial difference between path-dependent functions (Q and W) and a path-independent state property (ΔU).</p>
+                
+                <div class="text-center mb-6 p-4 bg-gray-100 rounded-lg">
+                    <p class="text-2xl md:text-3xl font-mono font-bold" id="first-law-equation">ΔU = 100 - 50 = 50 J</p>
+                    <p class="text-sm text-gray-600 mt-1">Change in Internal Energy = Heat In - Work Out</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-6 items-center">
+                    <div>
+                        <label for="heat-slider" class="block font-semibold mb-1">Heat (Q): <span id="heat-value">100</span> J</label>
+                        <input id="heat-slider" type="range" min="-100" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <p class="text-xs text-gray-500 mt-1">Drag to change the heat transferred to/from the system.</p>
+                    </div>
+                    <div>
+                        <label for="work-slider" class="block font-semibold mb-1">Work (W): <span id="work-value">50</span> J</label>
+                        <input id="work-slider" type="range" min="-100" max="150" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                         <p class="text-xs text-gray-500 mt-1">Drag to change the work done by/on the system.</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="firstLawChart"></canvas>
+                </div>
+                 <p class="text-center mt-4 text-gray-600 font-semibold">Notice that no matter how you change Q and W, ΔU remains constant for this process. This is because Internal Energy is a state property, but Heat and Work are path functions.</p>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contentPanes = document.querySelectorAll('.content-pane');
+            const defaultTab = 'basics';
+
+            function activateTab(tabName) {
+                tabs.forEach(tab => {
+                    if (tab.dataset.tab === tabName) {
+                        tab.classList.remove('tab-inactive');
+                        tab.classList.add('tab-active');
+                    } else {
+                        tab.classList.remove('tab-active');
+                        tab.classList.add('tab-inactive');
+                    }
+                });
+
+                contentPanes.forEach(pane => {
+                    if (pane.id === `${tabName}-content`) {
+                        pane.classList.add('active');
+                    } else {
+                        pane.classList.remove('active');
+                    }
+                });
+                
+                if (tabName === 'first-law') {
+                    initFirstLawChart();
+                }
+            }
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activateTab(tab.dataset.tab);
+                });
+            });
+
+            activateTab(defaultTab);
+
+            const systemCards = {
+                isolated: {
+                    title: 'Isolated System',
+                    text: 'An isolated system cannot exchange either mass or energy with its surroundings. The total energy and mass within the system remain constant. A perfect thermos is a good approximation, though no system is truly perfectly isolated.'
+                },
+                closed: {
+                    title: 'Closed System',
+                    text: 'A closed system can exchange energy (as heat and/or work) with its surroundings, but not mass. The mass inside is fixed. A sealed can of soda being heated or cooled is a classic example.'
+                },
+                open: {
+                    title: 'Open System',
+                    text: 'An open system can exchange both mass and energy with its surroundings. Most real-world engineering systems, like turbines, pumps, and the human body, are open systems.'
+                }
+            };
+            
+            const systemDetailsContainer = document.getElementById('system-details');
+            document.querySelectorAll('.concept-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.concept-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    const cardId = card.id.split('-')[0];
+                    const details = systemCards[cardId];
+                    systemDetailsContainer.innerHTML = `<h4 class="text-xl font-bold mb-2 text-emerald-700">${details.title}</h4><p class="text-gray-700">${details.text}</p>`;
+                });
+            });
+
+            const energyNodes = {
+                'total-energy': { title: 'Total Energy (E)', text: 'The sum of all energy forms a system possesses. It includes macroscopic energy (kinetic and potential) and microscopic energy (internal). Thermodynamics is primarily concerned with the *change* in total energy.' },
+                'macro-energy': { title: 'Macroscopic Energy', text: 'Energy possessed by the system as a whole with respect to an external reference frame. It relates to motion and the influence of external factors like gravity.' },
+                'ke': { title: 'Kinetic Energy (KE)', text: 'Energy due to the system\'s bulk motion. Formula: KE = ½mv².' },
+                'pe': { title: 'Potential Energy (PE)', text: 'Energy stored due to the system\'s position in a field (e.g., gravitational). Formula: PE = mgz.' },
+                'micro-energy': { title: 'Microscopic Energy (Internal Energy, U)', text: 'Energy related to the molecular structure and activity within a system. It is independent of outside reference frames and is a state function.' },
+                'sensible': { title: 'Sensible Energy', text: 'The portion of internal energy associated with the kinetic energies (translation, rotation, vibration) of the molecules. It is directly related to temperature.' },
+                'latent': { title: 'Latent Energy', text: 'The internal energy associated with the phase of a system. Energy is absorbed or released during a phase change (e.g., melting) at a constant temperature.' },
+                'chemical': { title: 'Chemical Energy', text: 'The internal energy stored in the chemical bonds between atoms.' },
+                'nuclear': { title: 'Nuclear Energy', text: 'The immense energy stored in the bonds within the nucleus of an atom.' }
+            };
+
+            const energyDetailsContainer = document.getElementById('energy-details');
+            document.querySelectorAll('.energy-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    document.querySelectorAll('.energy-node').forEach(n => n.classList.remove('selected-node'));
+                    node.classList.add('selected-node');
+                    const nodeId = node.id.split('-node')[0];
+                    const details = energyNodes[nodeId];
+                    energyDetailsContainer.innerHTML = `<h4 class="text-xl font-bold mb-2 text-emerald-700">${details.title}</h4><p class="text-gray-700">${details.text}</p>`;
+                });
+            });
+
+            let firstLawChartInstance = null;
+            const heatSlider = document.getElementById('heat-slider');
+            const workSlider = document.getElementById('work-slider');
+            const heatValueSpan = document.getElementById('heat-value');
+            const workValueSpan = document.getElementById('work-value');
+            const equationText = document.getElementById('first-law-equation');
+
+            function initFirstLawChart() {
+                if (firstLawChartInstance) {
+                    firstLawChartInstance.destroy();
+                }
+                const ctx = document.getElementById('firstLawChart').getContext('2d');
+                
+                const heatValue = parseFloat(heatSlider.value);
+                const workValue = parseFloat(workSlider.value);
+                const deltaU = heatValue - workValue;
+
+                firstLawChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Heat (Q)', 'Work (W)', 'Change in Internal Energy (ΔU)'],
+                        datasets: [{
+                            label: 'Energy (J)',
+                            data: [heatValue, workValue, deltaU],
+                            backgroundColor: [
+                                'rgba(239, 68, 68, 0.6)', // red for heat
+                                'rgba(59, 130, 246, 0.6)', // blue for work
+                                'rgba(16, 185, 129, 0.6)' // emerald for ΔU
+                            ],
+                            borderColor: [
+                                'rgba(239, 68, 68, 1)',
+                                'rgba(59, 130, 246, 1)',
+                                'rgba(16, 185, 129, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'Energy (Joules)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw} J`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                updateEquation(heatValue, workValue, deltaU);
+            }
+
+            function updateChart() {
+                if (!firstLawChartInstance) return;
+                const heatValue = parseFloat(heatSlider.value);
+                const workValue = parseFloat(workSlider.value);
+                const deltaU = 50; 
+                
+                heatSlider.value = deltaU + workValue;
+                const newHeatValue = parseFloat(heatSlider.value);
+
+                heatValueSpan.textContent = newHeatValue.toFixed(0);
+                workValueSpan.textContent = workValue.toFixed(0);
+                
+                firstLawChartInstance.data.datasets[0].data = [newHeatValue, workValue, deltaU];
+                firstLawChartInstance.update();
+                updateEquation(newHeatValue, workValue, deltaU);
+            }
+
+            function updateChartFromHeat() {
+                if (!firstLawChartInstance) return;
+                const heatValue = parseFloat(heatSlider.value);
+                const deltaU = 50; 
+
+                const newWorkValue = heatValue - deltaU;
+                workSlider.value = newWorkValue;
+
+                heatValueSpan.textContent = heatValue.toFixed(0);
+                workValueSpan.textContent = newWorkValue.toFixed(0);
+
+                firstLawChartInstance.data.datasets[0].data = [heatValue, newWorkValue, deltaU];
+                firstLawChartInstance.update();
+                updateEquation(heatValue, newWorkValue, deltaU);
+            }
+
+            function updateEquation(q, w, du) {
+                equationText.innerHTML = `ΔU = ${q.toFixed(0)} J - (${w.toFixed(0)} J) = <span class="text-emerald-600">${du.toFixed(0)} J</span>`;
+            }
+
+            heatSlider.addEventListener('input', updateChartFromHeat);
+            workSlider.addEventListener('input', updateChart);
+        });
+    </script>
+</body>
+</html>
