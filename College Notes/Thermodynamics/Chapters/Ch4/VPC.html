@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Vapor Power Cycles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "Scholarly Neutrals" - A calm and academic palette using beige, slate, and a gentle blue for accents to create a focused learning environment. -->
+    <!-- Application Structure Plan: The SPA is designed as a progressive, single-column narrative journey, mirroring a student's learning path. It starts with fundamentals and builds complexity. A sticky navigation bar allows users to jump between topics, but the primary flow is top-to-bottom. Key sections include: 1) Fundamentals (Laws, Properties), 2) Core Cycles (Carnot vs. Rankine), 3) Cycle Optimization (Variables, Reheat, Regeneration), and 4) Advanced Integration (Reheat-Regenerative). This linear, yet navigable, structure is chosen to prevent cognitive overload and guide the student through the material logically. Interactive charts and diagrams are embedded directly within their relevant sections to provide immediate visual context and reinforcement of the text. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: T-s diagrams for Carnot, Rankine, Reheat cycles. Goal: Compare ideal cycle shapes and processes. Viz/Method: Chart.js Line charts on a shared canvas. Interaction: Buttons to toggle between cycles, dynamically updating the chart and a summary text block. Justification: This allows direct visual comparison of the cycles' thermodynamic paths on the same axes, which is more effective than static, separate images. Library: Chart.js.
+        - Report Info: Rankine cycle components (Pump, Boiler, Turbine, Condenser). Goal: Explain the cycle's physical layout and flow. Viz/Method: HTML/CSS diagram using Tailwind's flexbox and grid, with styled divs representing components and arrows showing flow. Interaction: Hovering over a component reveals a tooltip with its function. Justification: An HTML-based diagram is lightweight, responsive, and avoids static images or forbidden SVG, while hover interactions add a layer of discovery.
+        - Report Info: Impact of variables (Boiler Pressure, Superheat, Condenser Pressure) on Rankine efficiency. Goal: Show cause-and-effect relationships. Viz/Method: A dynamic bar chart (Chart.js) showing a baseline efficiency and how it changes. Interaction: Radio buttons allow the user to select a variable to change, which updates the chart and an accompanying text explanation of the trade-offs (e.g., higher pressure vs. blade erosion). Justification: This makes the abstract concepts of efficiency optimization tangible and interactive. Library: Chart.js.
+        - Report Info: Example Problems. Goal: Provide practical application. Viz/Method: Collapsible accordion sections (HTML/JS). Interaction: Clicking a "Show Problem" button expands the section to reveal the step-by-step solution. Justification: Hides complex calculations by default to maintain flow, allowing students to engage with them on demand.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7; /* Warm Neutral Background */
+            color: #334155; /* Slate Text */
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #3B82F6; /* Accent Blue */
+            border-bottom-color: #3B82F6;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+        .component-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .component {
+            border: 2px solid #94A3B8;
+            background-color: #F1F5F9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            position: relative;
+            min-width: 120px;
+        }
+        .arrow {
+            font-size: 2rem;
+            color: #64748B;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <h1 class="text-2xl font-bold text-slate-800">Vapor Power Cycles</h1>
+            </div>
+            <nav id="main-nav" class="flex items-center space-x-4 md:space-x-6 border-b border-slate-200 overflow-x-auto pb-2">
+                <a data-target="intro" class="nav-link text-sm md:text-base font-medium text-slate-600 border-b-2 border-transparent py-2 whitespace-nowrap">Introduction</a>
+                <a data-target="cycles" class="nav-link text-sm md:text-base font-medium text-slate-600 border-b-2 border-transparent py-2 whitespace-nowrap">Core Cycles</a>
+                <a data-target="optimization" class="nav-link text-sm md:text-base font-medium text-slate-600 border-b-2 border-transparent py-2 whitespace-nowrap">Optimization</a>
+                <a data-target="advanced" class="nav-link text-sm md:text-base font-medium text-slate-600 border-b-2 border-transparent py-2 whitespace-nowrap">Advanced Cycles</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <!-- Introduction Section -->
+        <section id="intro" class="content-section">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold mb-4 text-slate-800">I. Fundamentals of Vapor Power</h2>
+                <p class="mb-4 text-slate-600">This section introduces the foundational concepts governing all vapor power cycles. We'll explore the basic laws of thermodynamics that make power generation possible and understand the properties of water and steam, the most common working fluid. These principles are the building blocks for analyzing every cycle that follows.</p>
+                
+                <div class="mt-6 border-t pt-6">
+                    <h3 class="text-2xl font-semibold mb-3 text-slate-700">The Rankine Cycle: A Practical Model</h3>
+                    <p class="mb-4 text-slate-600">The Rankine cycle is the practical model for most steam power plants. It consists of four key components working in a continuous loop. Hover over each component below to see its function.</p>
+                    <div class="component-diagram bg-slate-50 p-6 rounded-lg">
+                        <div class="component">Boiler<div class="arrow mt-2">➔</div></div>
+                        <div class="component">Turbine<div class="arrow mt-2">➔</div></div>
+                        <div class="component">Condenser<div class="arrow mt-2">➔</div></div>
+                        <div class="component">Pump<div class="arrow mt-2">➔</div></div>
+                    </div>
+                     <div id="component-info" class="mt-4 text-center font-medium text-blue-600 h-6"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Core Cycles Section -->
+        <section id="cycles" class="content-section">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold mb-4 text-slate-800">II. Core Cycles: Carnot vs. Rankine</h2>
+                <p class="mb-4 text-slate-600">Here, we compare the theoretical ideal with the practical reality. The Carnot cycle represents the maximum possible efficiency, a perfect but unattainable benchmark. The Rankine cycle is the practical adaptation that powers the world. Use the buttons below to visualize each cycle on the Temperature-Entropy (T-s) diagram and see how their shapes and efficiencies differ.</p>
+                
+                <div class="text-center my-4">
+                    <button id="show-carnot" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Show Carnot Cycle</button>
+                    <button id="show-rankine" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Show Rankine Cycle</button>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="ts-diagram"></canvas>
+                </div>
+                <div id="cycle-info" class="mt-4 p-4 bg-slate-50 rounded-lg text-slate-700">
+                    <h3 id="cycle-title" class="text-xl font-semibold">Select a cycle to view details.</h3>
+                    <p id="cycle-description" class="mt-2"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Optimization Section -->
+        <section id="optimization" class="content-section">
+             <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold mb-4 text-slate-800">III. Optimizing the Rankine Cycle</h2>
+                <p class="mb-4 text-slate-600">How can we make the Rankine cycle more efficient? Engineers "tune" the cycle by adjusting key parameters. This section explores the effects of changing boiler pressure, superheating the steam, and lowering condenser pressure. Select an option to see its impact on cycle efficiency and learn about the real-world trade-offs involved.</p>
+                
+                <div class="my-6 p-4 bg-slate-50 rounded-lg">
+                    <div class="flex flex-wrap justify-center gap-4" id="optimization-controls">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="optimization" value="base" class="form-radio text-blue-600" checked>
+                            <span class="text-slate-700 font-medium">Base Cycle</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="optimization" value="pressure" class="form-radio text-blue-600">
+                            <span class="text-slate-700 font-medium">Increase Boiler Pressure</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="optimization" value="superheat" class="form-radio text-blue-600">
+                            <span class="text-slate-700 font-medium">Increase Superheat</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="optimization" value="condenser" class="form-radio text-blue-600">
+                            <span class="text-slate-700 font-medium">Decrease Condenser Pressure</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container h-64 md:h-80">
+                        <canvas id="efficiency-chart"></canvas>
+                    </div>
+                    <div id="optimization-info" class="p-4 bg-blue-50 rounded-lg text-blue-800">
+                        <h3 id="optimization-title" class="text-xl font-semibold">Base Rankine Cycle</h3>
+                        <p id="optimization-description" class="mt-2 text-sm">The standard Rankine cycle has a baseline efficiency. Select an optimization to see how it improves performance and what limitations apply.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advanced Cycles Section -->
+        <section id="advanced" class="content-section">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold mb-4 text-slate-800">IV. Advanced Cycle Modifications</h2>
+                <p class="mb-4 text-slate-600">To further boost efficiency and protect equipment, engineers combine modifications. The Reheat and Regenerative cycles are two key advancements. The ultimate is the Reheat-Regenerative cycle, which integrates both principles for maximum performance in modern power plants.</p>
+                
+                <div class="space-y-4">
+                    <div class="border border-slate-200 rounded-lg">
+                        <button class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 font-semibold text-slate-700 transition-colors" onclick="toggleAccordion('reheat')">
+                            The Reheat Cycle
+                        </button>
+                        <div id="reheat" class="p-4 border-t border-slate-200 hidden">
+                            <p class="mb-2"><strong>Concept:</strong> After partial expansion, steam is sent back to the boiler to be "reheated" before expanding in a second turbine stage.</p>
+                            <p class="mb-2"><strong>Primary Benefit:</strong> Increases the steam quality (dryness) at the turbine exit, preventing erosion of the turbine blades. It also slightly increases efficiency by raising the average temperature of heat addition.</p>
+                            <p><strong>Analogy:</strong> Like a long-distance runner taking an energy gel midway through a race to maintain performance.</p>
+                        </div>
+                    </div>
+                     <div class="border border-slate-200 rounded-lg">
+                        <button class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 font-semibold text-slate-700 transition-colors" onclick="toggleAccordion('regenerative')">
+                            The Regenerative Cycle
+                        </button>
+                        <div id="regenerative" class="p-4 border-t border-slate-200 hidden">
+                            <p class="mb-2"><strong>Concept:</strong> "Bleeds" or extracts a portion of steam from the turbine to preheat the feedwater before it enters the boiler.</p>
+                            <p class="mb-2"><strong>Primary Benefit:</strong> Significantly increases efficiency by raising the average temperature of heat addition. It "recycles" heat internally that would otherwise be wasted.</p>
+                            <p><strong>Analogy:</strong> Using the hot exhaust from an oven to preheat the next batch of ingredients, saving energy.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            let tsChart, efficiencyChart;
+
+            function showSection(targetId) {
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.target === targetId);
+                });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => showSection(link.dataset.target));
+            });
+
+            showSection('intro');
+
+            // Component Diagram Interaction
+            const components = document.querySelectorAll('.component');
+            const componentInfo = document.getElementById('component-info');
+            const componentDescriptions = {
+                'Boiler': 'Heats water into high-pressure steam.',
+                'Turbine': 'Steam expands, spinning the turbine to generate work.',
+                'Condenser': 'Cools steam back into liquid water, rejecting waste heat.',
+                'Pump': 'Increases the pressure of the liquid water.'
+            };
+            components.forEach(component => {
+                component.addEventListener('mouseenter', () => {
+                    componentInfo.textContent = componentDescriptions[component.textContent.replace('➔','').trim()];
+                });
+                component.addEventListener('mouseleave', () => {
+                    componentInfo.textContent = '';
+                });
+            });
+
+
+            // Core Cycles Chart (T-s Diagram)
+            const tsCtx = document.getElementById('ts-diagram').getContext('2d');
+            const cycleInfoTitle = document.getElementById('cycle-title');
+            const cycleInfoDescription = document.getElementById('cycle-description');
+
+            const saturationDome = {
+                label: 'Saturation Dome',
+                data: [
+                    {x: 1.3, y: 100}, {x: 2, y: 200}, {x: 4.1, y: 300}, {x: 6.4, y: 374}, 
+                    {x: 7.3, y: 300}, {x: 7.1, y: 200}, {x: 6.5, y: 100}
+                ],
+                borderColor: '#94A3B8',
+                backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+            };
+
+            const carnotData = {
+                label: 'Carnot Cycle',
+                data: [{x: 2.5, y: 350}, {x: 6, y: 350}, {x: 6, y: 50}, {x: 2.5, y: 50}, {x: 2.5, y: 350}],
+                borderColor: '#EF4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                borderWidth: 3,
+                fill: true,
+                pointRadius: 3
+            };
+
+            const rankineData = {
+                label: 'Rankine Cycle',
+                data: [{x: 1.3, y: 45}, {x: 1.35, y: 150}, {x: 2.5, y: 350}, {x: 7.0, y: 350}, {x: 7.0, y: 45}, {x: 1.3, y: 45}],
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderWidth: 3,
+                fill: true,
+                pointRadius: 3
+            };
+            
+            function createTsChart(datasets) {
+                 if (tsChart) {
+                    tsChart.destroy();
+                }
+                tsChart = new Chart(tsCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: [saturationDome, ...datasets]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: { display: true, text: 'Entropy (s) [kJ/kg·K]' }
+                            },
+                            y: {
+                                title: { display: true, text: 'Temperature (T) [°C]' }
+                            }
+                        },
+                        plugins: {
+                            legend: { position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: (s=${context.parsed.x.toFixed(2)}, T=${context.parsed.y.toFixed(0)}°C)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            createTsChart([]);
+            
+            document.getElementById('show-carnot').addEventListener('click', () => {
+                createTsChart([carnotData]);
+                cycleInfoTitle.textContent = 'The Carnot Cycle (Ideal)';
+                cycleInfoDescription.textContent = 'The Carnot cycle is a theoretical rectangle on the T-s diagram, representing the most efficient cycle possible between two temperatures. It features perfectly isothermal heat addition/rejection and isentropic compression/expansion. Its impracticality lies in compressing a wet mixture and achieving perfectly reversible processes.';
+            });
+
+            document.getElementById('show-rankine').addEventListener('click', () => {
+                createTsChart([rankineData]);
+                cycleInfoTitle.textContent = 'The Rankine Cycle (Practical)';
+                cycleInfoDescription.textContent = 'The Rankine cycle modifies the Carnot cycle for practical use. Heat addition is not isothermal, and it compresses a liquid instead of a wet mixture. This makes it achievable but less efficient than the theoretical Carnot limit. The area under the curve is smaller, representing less net work.';
+            });
+
+
+            // Optimization Chart
+            const efficiencyCtx = document.getElementById('efficiency-chart').getContext('2d');
+            const optimizationTitle = document.getElementById('optimization-title');
+            const optimizationDescription = document.getElementById('optimization-description');
+
+            const optimizationData = {
+                base: { efficiency: 38, title: 'Base Rankine Cycle', description: 'The standard Rankine cycle has a baseline efficiency. Select an optimization to see how it improves performance and what limitations apply.' },
+                pressure: { efficiency: 41, title: 'Increased Boiler Pressure', description: 'Increases the average temperature of heat addition, boosting efficiency. Trade-off: Can increase moisture at the turbine exit, causing blade erosion, and requires more expensive materials.' },
+                superheat: { efficiency: 42, title: 'Increased Superheat', description: 'Increases the average temperature of heat addition and work output. Critically, it also dries the steam, protecting turbine blades. Trade-off: Limited by the metallurgical temperature limits of the boiler and turbine materials.' },
+                condenser: { efficiency: 40, title: 'Decreased Condenser Pressure', description: 'Lowers the temperature of heat rejection, increasing the cycle\'s temperature differential and efficiency. Trade-off: Requires larger, more expensive condensers and is limited by the cooling medium\'s temperature.' }
+            };
+
+            function createEfficiencyChart(value) {
+                if (efficiencyChart) {
+                    efficiencyChart.destroy();
+                }
+                efficiencyChart = new Chart(efficiencyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Thermal Efficiency'],
+                        datasets: [{
+                            label: 'Efficiency (%)',
+                            data: [optimizationData[value].efficiency],
+                            backgroundColor: ['#3B82F6'],
+                            borderColor: ['#2563EB'],
+                            borderWidth: 1,
+                            maxBarThickness: 100
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 50,
+                                title: { display: true, text: 'Efficiency (%)' }
+                            },
+                            y: { display: false }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+                optimizationTitle.textContent = optimizationData[value].title;
+                optimizationDescription.textContent = optimizationData[value].description;
+            }
+
+            document.querySelectorAll('input[name="optimization"]').forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    createEfficiencyChart(event.target.value);
+                });
+            });
+
+            createEfficiencyChart('base');
+        });
+
+        function toggleAccordion(id) {
+            const element = document.getElementById(id);
+            element.classList.toggle('hidden');
+        }
+    </script>
+
+</body>
+</html>

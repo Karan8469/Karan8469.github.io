@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Gas Power Cycles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as a multi-section interactive dashboard. The user starts at a home screen and can navigate to two main learning paths: 'Reciprocating Cycles' (Otto, Diesel, Dual) and 'Gas Turbine Cycles' (Brayton). Each path has its own interactive dashboard allowing for cycle comparison and exploration of modifications. A separate 'Key Metrics' section allows users to interact with performance parameters like MEP and Work Ratio. This structure was chosen to break down a dense topic into manageable, interactive modules, promoting active learning over passive reading and allowing users to focus on specific areas of interest. The flow is non-linear, empowering the user to choose their learning journey. -->
+    <!-- Visualization & Content Choices: 
+        - Otto/Diesel/Dual Comparison: Report Info -> Efficiency comparison under different constraints. Goal -> Show the critical trade-off. Viz/Method -> Interactive Bar Chart (Chart.js). Interaction -> Buttons to toggle between 'Same Compression Ratio' and 'Same Peak Pressure' dynamically update the chart and an explanation text. Justification -> Visually demonstrates a core, often misunderstood, concept more effectively than static text.
+        - Brayton Cycle Optimization: Report Info -> Efficiency and Work Output vs. Pressure Ratio. Goal -> Visualize the conflict between maximizing efficiency and work. Viz/Method -> Interactive Line Chart (Chart.js) with a slider. Interaction -> Slider controls pressure ratio, updating points on the chart and data readouts. Justification -> Makes the abstract concept of competing optima tangible.
+        - Brayton Modifications: Report Info -> Effects of Regeneration, Reheating, Intercooling. Goal -> Compare cycle shapes and performance benefits. Viz/Method -> Layered T-S Diagram (Chart.js). Interaction -> Checkboxes toggle the visibility of each modification's T-S plot and update a summary card with benefits/drawbacks. Justification -> A powerful, direct visual comparison on a single canvas.
+        - Textual Content: Report Info -> Definitions, formulas, analogies. Goal -> Provide context on demand. Viz/Method -> Tailwind-styled cards. Interaction -> Content dynamically appears based on user navigation. Justification -> Keeps the UI clean and focused.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F7F4; color: #3D405B; }
+        .nav-button { transition: all 0.2s ease-in-out; }
+        .nav-button.active { background-color: #81B29A; color: white; }
+        .nav-button:not(.active):hover { background-color: #e8e6e1; }
+        .content-card { background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .interactive-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #81B29A; cursor: pointer; border-radius: 50%; }
+        .interactive-slider::-moz-range-thumb { width: 20px; height: 20px; background: #81B29A; cursor: pointer; border-radius: 50%; }
+        .diagram-box { border: 2px solid #81B29A; padding: 0.5rem 1rem; border-radius: 0.5rem; text-align: center; font-weight: 500; }
+        .diagram-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #E07A5F; padding: 0 0.5rem; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#3D405B]">Interactive Guide to Gas Power Cycles</h1>
+            <p class="mt-4 text-lg text-gray-600">An interactive exploration of thermodynamic principles for engineers.</p>
+        </header>
+
+        <nav class="flex justify-center flex-wrap gap-2 md:gap-4 mb-8">
+            <button data-view="home" class="nav-button active font-semibold py-2 px-4 rounded-full">Home</button>
+            <button data-view="reciprocating" class="nav-button font-semibold py-2 px-4 rounded-full">Reciprocating Cycles</button>
+            <button data-view="brayton" class="nav-button font-semibold py-2 px-4 rounded-full">Gas Turbine (Brayton) Cycles</button>
+            <button data-view="metrics" class="nav-button font-semibold py-2 px-4 rounded-full">Key Performance Metrics</button>
+            <button data-view="summary" class="nav-button font-semibold py-2 px-4 rounded-full">Summary & Study Guide</button>
+        </nav>
+
+        <main id="app-content">
+
+            <!-- Home View -->
+            <section id="view-home" class="space-y-6">
+                <div class="content-card">
+                    <h2 class="text-2xl font-bold mb-4 text-[#E07A5F]">Welcome to the Interactive Guide</h2>
+                    <p class="text-gray-700 leading-relaxed">This application translates the core concepts of gas power cycles from a static report into a dynamic, hands-on learning experience. The goal is to help you build an intuitive understanding of how these cycles work, how their performance is measured, and the critical engineering trade-offs involved in their design. Instead of just reading, you'll be able to interact with the concepts directly.</p>
+                    <p class="text-gray-700 leading-relaxed mt-4">Use the navigation buttons above to explore the two primary families of engines: <strong>Reciprocating Cycles</strong> (like those in cars) and <strong>Gas Turbine (Brayton) Cycles</strong> (like those in jet aircraft). You can also dive into the <strong>Key Performance Metrics</strong> that define their efficiency and power, or jump to the final <strong>Summary & Study Guide</strong> for a consolidated overview and exam tips.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="content-card">
+                        <h3 class="text-xl font-bold mb-2">Reciprocating Cycles</h3>
+                        <p class="mb-4">Explore the Otto, Diesel, and Dual cycles that power internal combustion engines. Interactively compare their efficiencies and understand the principles behind car engines.</p>
+                        <button onclick="document.querySelector('[data-view=reciprocating]').click()" class="bg-[#81B29A] text-white font-bold py-2 px-4 rounded-full hover:bg-opacity-80 transition">Explore Reciprocating</button>
+                    </div>
+                    <div class="content-card">
+                        <h3 class="text-xl font-bold mb-2">Gas Turbine (Brayton) Cycles</h3>
+                        <p class="mb-4">Dive into the continuous flow cycles that power jet aircraft and large-scale power plants. See how modifications like regeneration, reheating, and intercooling impact performance.</p>
+                        <button onclick="document.querySelector('[data-view=brayton]').click()" class="bg-[#81B29A] text-white font-bold py-2 px-4 rounded-full hover:bg-opacity-80 transition">Explore Brayton</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reciprocating Cycles View -->
+            <section id="view-reciprocating" class="hidden space-y-6">
+                <div class="content-card">
+                    <h2 class="text-2xl font-bold mb-4 text-[#E07A5F]">Reciprocating Engine Cycles: Otto, Diesel & Dual</h2>
+                    <p class="text-gray-700 leading-relaxed">This section focuses on the thermodynamic cycles that model reciprocating internal combustion (IC) engines, like those found in most cars and trucks. These cycles (Otto, Diesel, and Dual) are characterized by intermittent, batch processes occurring within a piston-cylinder arrangement. Here, you can interactively compare their performance and explore the key trade-offs that engineers face, particularly the relationship between compression ratio, peak pressure, and thermal efficiency.</p>
+                </div>
+                <div class="content-card">
+                    <h3 class="text-xl font-bold mb-4">Interactive Comparison: Efficiency</h3>
+                    <p class="mb-4 text-gray-600">Click the buttons below to see how the theoretical efficiencies of the Otto, Diesel, and Dual cycles compare under two different, critically important constraints. This comparison reveals a fundamental concept in engine design.</p>
+                    <div class="flex justify-center gap-4 mb-4">
+                        <button id="compare-same-cr" class="bg-[#81B29A] text-white font-bold py-2 px-4 rounded-full">Same Compression Ratio</button>
+                        <button id="compare-same-peak-p" class="bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-full">Same Peak Pressure</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="reciprocating-chart"></canvas>
+                    </div>
+                    <div id="reciprocating-explanation" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <!-- Explanation text will be dynamically inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Brayton Cycles View -->
+            <section id="view-brayton" class="hidden space-y-6">
+                <div class="content-card">
+                    <h2 class="text-2xl font-bold mb-4 text-[#E07A5F]">Gas Turbine (Brayton) Cycles</h2>
+                     <p class="text-gray-700 leading-relaxed">This section explores the Brayton cycle, the foundation for continuous-flow gas turbines used in jet engines and large-scale power generation. Unlike reciprocating engines, these systems operate in a steady state. The interactions here focus on two key areas: the trade-off between efficiency and work output in a simple cycle, and how advanced modifications like regeneration, reheating, and intercooling alter the cycle's shape and performance.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="content-card">
+                        <h3 class="text-xl font-bold mb-4">Optimization: Efficiency vs. Work Output</h3>
+                        <p class="mb-2 text-gray-600">Use the slider to adjust the pressure ratio ($r_p$) of a simple Brayton cycle. Notice how the pressure ratio that gives maximum thermal efficiency is different from the one that gives maximum net work output. This is a core trade-off in turbine design.</p>
+                        <label for="pressure-ratio-slider" class="font-semibold">Pressure Ratio ($r_p$): <span id="pr-value">10</span></label>
+                        <input id="pressure-ratio-slider" type="range" min="2" max="30" value="10" step="0.5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer interactive-slider mt-2">
+                        <div class="chart-container mt-4">
+                            <canvas id="brayton-optimization-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 class="text-xl font-bold mb-4">Cycle Modifications T-S Diagram</h3>
+                        <p class="mb-4 text-gray-600">Select the checkboxes to see how regeneration, reheating, and intercooling modify the simple Brayton cycle. The T-S (Temperature-Entropy) diagram will update to show the new cycle shape, and the card below will summarize the primary benefit of each modification.</p>
+                        <div class="flex flex-wrap justify-center gap-4 mb-4">
+                            <label class="flex items-center space-x-2"><input type="checkbox" id="regen-check" class="h-4 w-4 rounded"><span>Regeneration</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" id="reheat-check" class="h-4 w-4 rounded"><span>Reheating</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" id="intercool-check" class="h-4 w-4 rounded"><span>Intercooling</span></label>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="brayton-modification-chart"></canvas>
+                        </div>
+                        <div id="modification-explanation" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg min-h-[50px]">
+                            <!-- Explanation text will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Key Metrics View -->
+            <section id="view-metrics" class="hidden space-y-6">
+                 <div class="content-card">
+                    <h2 class="text-2xl font-bold mb-4 text-[#E07A5F]">Key Performance Metrics</h2>
+                     <p class="text-gray-700 leading-relaxed">This section provides a closer look at the key metrics used to evaluate and compare engine performance. These metrics go beyond simple efficiency and provide insight into an engine's power density (MEP), its practical, real-world efficiency (Brake Thermal), its performance relative to its theoretical best (Relative Efficiency), and its internal power distribution (Work Ratio). Understanding these metrics is crucial for a complete analysis of any gas power cycle.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="content-card">
+                        <h3 class="text-xl font-bold mb-2">Mean Effective Pressure (MEP)</h3>
+                        <p class="text-gray-600">A measure of an engine's power output per unit of displacement volume. It's a way to compare the "grunt" of different sized engines.</p>
+                        <p class="text-2xl font-bold mt-2">$MEP = \frac{W_{net}}{V_d}$</p>
+                    </div>
+                     <div class="content-card">
+                        <h3 class="text-xl font-bold mb-2">Brake Thermal Efficiency ($\eta_{bt}$)</h3>
+                        <p class="text-gray-600">The "real-world" efficiency. It's the ratio of useful power at the crankshaft to the fuel's energy input, accounting for all losses.</p>
+                        <p class="text-2xl font-bold mt-2">$\eta_{bt} = \frac{Brake Power}{Fuel Energy Rate}$</p>
+                    </div>
+                     <div class="content-card">
+                        <h3 class="text-xl font-bold mb-2">Relative Efficiency ($\eta_{relative}$)</h3>
+                        <p class="text-gray-600">A "grade" for the engine. It compares the actual (brake) efficiency to the theoretical (air-standard) efficiency, showing how close it gets to perfection.</p>
+                        <p class="text-2xl font-bold mt-2">$\eta_{relative} = \frac{\eta_{bt}}{\eta_{air-standard}}$</p>
+                    </div>
+                     <div class="content-card">
+                        <h3 class="text-xl font-bold mb-2">Work Ratio ($W_r$)</h3>
+                        <p class="text-gray-600">Specific to Brayton cycles. It shows how much of the turbine's work is left over as useful output after driving the compressor. A low work ratio means the compressor uses a lot of power.</p>
+                        <p class="text-2xl font-bold mt-2">$W_r = \frac{W_{net}}{W_t}$</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Summary View -->
+            <section id="view-summary" class="hidden space-y-6">
+                <div class="content-card">
+                    <h2 class="text-2xl font-bold mb-4 text-[#E07A5F]">Integrated Summary & Study Guide</h2>
+                    <p class="text-gray-700 leading-relaxed">This final section consolidates the key takeaways from the entire report. It provides an integrated summary showing how all the cycles relate, a comprehensive comparison table for quick reference, and a list of common exam traps with advice on how to avoid them. Use this section to review, reinforce your understanding, and prepare for assessments.</p>
+                </div>
+                <div class="content-card">
+                    <h3 class="text-xl font-bold mb-2">How All Cycles Relate</h3>
+                    <p class="text-gray-700 leading-relaxed">Reciprocating cycles (Otto, Diesel, Dual) are intermittent, piston-driven models ideal for variable loads like cars. Their performance is often limited by material constraints on peak pressure. In contrast, Brayton cycles are continuous-flow models for gas turbines, ideal for high, constant power applications like jets. Their performance is limited by the turbine inlet temperature materials can withstand. Advanced Brayton modifications (regeneration, reheating, intercooling) are engineering solutions to push these limits, trading increased complexity for higher efficiency or work output. Ultimately, all cycles are governed by thermodynamics, but their practical application is a story of materials science and engineering trade-offs.</p>
+                </div>
+                <div class="content-card">
+                    <h3 class="text-xl font-bold mb-2">Common Exam Traps & Advice</h3>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong>Trap:</strong> Forgetting to use absolute temperatures (Kelvin/Rankine) in calculations. <br><strong>Advice:</strong> Always convert temperatures first! It's the most common mistake.</li>
+                        <li><strong>Trap:</strong> Confusing efficiency comparisons (same compression ratio vs. same peak pressure). <br><strong>Advice:</strong> Remember the interactive chart. For the *same CR*, Otto is best. For the *same peak pressure* (a material limit), Diesel is best because it can use a much higher CR.</li>
+                        <li><strong>Trap:</strong> Believing Brayton modifications are always good for everything. <br><strong>Advice:</strong> Know the primary benefit of each. Regeneration -> Efficiency. Reheating/Intercooling -> Net Work. They all add cost, weight, and complexity.</li>
+                        <li><strong>Trap:</strong> Drawing T-S diagrams for actual cycles with vertical lines. <br><strong>Advice:</strong> Real processes are irreversible. Entropy always increases in an actual compression or expansion. Your lines should slant to the right on a T-S diagram.</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const views = {
+                home: document.getElementById('view-home'),
+                reciprocating: document.getElementById('view-reciprocating'),
+                brayton: document.getElementById('view-brayton'),
+                metrics: document.getElementById('view-metrics'),
+                summary: document.getElementById('view-summary'),
+            };
+
+            const navButtons = document.querySelectorAll('.nav-button');
+            let reciprocatingChart, braytonOptimizationChart, braytonModificationChart;
+
+            // Function to trigger MathJax typesetting
+            function typesetMath(element) {
+                if (typeof MathJax !== 'undefined' && MathJax.startup && MathJax.startup.promise) {
+                    MathJax.startup.promise.then(() => {
+                        MathJax.typesetPromise([element]);
+                    }).catch((err) => console.error("MathJax typesetting failed:", err));
+                }
+            }
+
+            function switchView(viewName) {
+                Object.values(views).forEach(view => view.classList.add('hidden'));
+                if (views[viewName]) {
+                    views[viewName].classList.remove('hidden');
+                }
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === viewName);
+                });
+
+                if (viewName === 'reciprocating' && !reciprocatingChart) {
+                    initReciprocatingChart();
+                }
+                if (viewName === 'brayton') {
+                    if (!braytonOptimizationChart) initBraytonOptimizationChart();
+                    if (!braytonModificationChart) initBraytonModificationChart();
+                }
+                // Re-typeset math in the newly visible view
+                if (views[viewName]) {
+                    typesetMath(views[viewName]);
+                }
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switchView(button.dataset.view);
+                });
+            });
+            
+            switchView('home');
+
+            // Reciprocating Chart Logic
+            const reciprocatingChartCtx = document.getElementById('reciprocating-chart').getContext('2d');
+            const compareSameCRBtn = document.getElementById('compare-same-cr');
+            const compareSamePeakPBtn = document.getElementById('compare-same-peak-p');
+            const reciprocatingExplanation = document.getElementById('reciprocating-explanation');
+
+            const dataSameCR = {
+                labels: ['Otto', 'Dual', 'Diesel'],
+                datasets: [{
+                    label: 'Efficiency',
+                    data: [60, 55, 50],
+                    backgroundColor: ['#81B29A', '#F9C74F', '#E07A5F'],
+                }]
+            };
+            const explanationSameCR = `
+                <h4 class="font-bold text-lg">For the Same Compression Ratio & Heat Input:</h4>
+                <p>The Otto cycle is the most efficient, followed by the Dual, and then the Diesel cycle ($\\eta_{Otto} > \\eta_{Dual} > \\eta_{Diesel}$). This is because constant volume heat addition (as in the Otto cycle) occurs at a higher average temperature than constant pressure heat addition, leading to higher theoretical efficiency.</p>`;
+
+            const dataSamePeakP = {
+                labels: ['Diesel', 'Dual', 'Otto'],
+                datasets: [{
+                    label: 'Efficiency',
+                    data: [65, 62, 50],
+                    backgroundColor: ['#E07A5F', '#F9C74F', '#81B29A'],
+                }]
+            };
+            const explanationSamePeakP = `
+                <h4 class="font-bold text-lg">For the Same Peak Pressure & Heat Input:</h4>
+                <p>The efficiency ranking reverses. The Diesel cycle becomes the most efficient ($\\eta_{Diesel} > \\eta_{Dual} > \\eta_{Otto}$). This is a critical real-world constraint. Since engine materials limit the maximum allowable pressure, a Diesel engine can be designed with a much higher compression ratio than an Otto engine for the same peak pressure, leading to superior overall efficiency.</p>`;
+            
+            function initReciprocatingChart() {
+                reciprocatingChart = new Chart(reciprocatingChartCtx, {
+                    type: 'bar',
+                    data: dataSameCR,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Efficiency Comparison (Same Compression Ratio)', font: { size: 16 } }
+                        },
+                        scales: { y: { beginAtZero: true, max: 70, title: { display: true, text: 'Air-Standard Efficiency (%)' } } }
+                    }
+                });
+                reciprocatingExplanation.innerHTML = explanationSameCR;
+                typesetMath(reciprocatingExplanation);
+            }
+
+            compareSameCRBtn.addEventListener('click', () => {
+                reciprocatingChart.data = dataSameCR;
+                reciprocatingChart.options.plugins.title.text = 'Efficiency Comparison (Same Compression Ratio)';
+                reciprocatingChart.update();
+                reciprocatingExplanation.innerHTML = explanationSameCR;
+                typesetMath(reciprocatingExplanation);
+                compareSameCRBtn.classList.add('bg-[#81B29A]', 'text-white');
+                compareSameCRBtn.classList.remove('bg-gray-300', 'text-gray-700');
+                compareSamePeakPBtn.classList.add('bg-gray-300', 'text-gray-700');
+                compareSamePeakPBtn.classList.remove('bg-[#81B29A]', 'text-white');
+            });
+
+            compareSamePeakPBtn.addEventListener('click', () => {
+                reciprocatingChart.data = dataSamePeakP;
+                reciprocatingChart.options.plugins.title.text = 'Efficiency Comparison (Same Peak Pressure)';
+                reciprocatingChart.update();
+                reciprocatingExplanation.innerHTML = explanationSamePeakP;
+                typesetMath(reciprocatingExplanation);
+                compareSamePeakPBtn.classList.add('bg-[#81B29A]', 'text-white');
+                compareSamePeakPBtn.classList.remove('bg-gray-300', 'text-gray-700');
+                compareSameCRBtn.classList.add('bg-gray-300', 'text-gray-700');
+                compareSameCRBtn.classList.remove('bg-[#81B29A]', 'text-white');
+            });
+
+            // Brayton Optimization Chart Logic
+            const braytonOptCtx = document.getElementById('brayton-optimization-chart').getContext('2d');
+            const prSlider = document.getElementById('pressure-ratio-slider');
+            const prValueSpan = document.getElementById('pr-value');
+            
+            function getBraytonOptData(rp) {
+                const rp_values = Array.from({length: 29}, (_, i) => i + 2);
+                const efficiency_values = rp_values.map(r => (1 - 1 / Math.pow(r, (1.4 - 1) / 1.4)) * 100);
+                const work_values = rp_values.map(r => {
+                    let t_ratio = Math.pow(r, (1.4 - 1) / 1.4);
+                    return (5 * t_ratio - t_ratio * t_ratio) / 5 * 80; // Scaled for visualization
+                });
+                return { rp_values, efficiency_values, work_values };
+            }
+
+            function initBraytonOptimizationChart() {
+                const { rp_values, efficiency_values, work_values } = getBraytonOptData();
+                braytonOptimizationChart = new Chart(braytonOptCtx, {
+                    type: 'line',
+                    data: {
+                        labels: rp_values,
+                        datasets: [
+                            {
+                                label: 'Thermal Efficiency',
+                                data: efficiency_values,
+                                borderColor: '#81B29A',
+                                yAxisID: 'y',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Net Work Output (Normalized)',
+                                data: work_values,
+                                borderColor: '#E07A5F',
+                                yAxisID: 'y1',
+                                tension: 0.1
+                            },
+                            {
+                                type: 'scatter',
+                                label: 'Current Efficiency',
+                                data: [],
+                                backgroundColor: '#81B29A',
+                                yAxisID: 'y',
+                                pointRadius: 6,
+                                pointHoverRadius: 8
+                            },
+                            {
+                                type: 'scatter',
+                                label: 'Current Work Output',
+                                data: [],
+                                backgroundColor: '#E07A5F',
+                                yAxisID: 'y1',
+                                pointRadius: 6,
+                                pointHoverRadius: 8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { position: 'top' } },
+                        scales: {
+                            x: { title: { display: true, text: 'Pressure Ratio (rp)' } }, // Removed LaTeX from Chart.js axis title
+                            y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Efficiency (%)' }, min: 0, max: 70 },
+                            y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Work Output' }, min: 0, max: 100, grid: { drawOnChartArea: false } }
+                        }
+                    }
+                });
+                updateBraytonOptChart(prSlider.value);
+            }
+
+            function updateBraytonOptChart(rp) {
+                prValueSpan.textContent = rp;
+                const { efficiency_values, work_values } = getBraytonOptData();
+                const index = Math.round(rp) - 2;
+                if (index >= 0 && index < efficiency_values.length) {
+                    braytonOptimizationChart.data.datasets[2].data = [{x: rp, y: efficiency_values[index]}];
+                    braytonOptimizationChart.data.datasets[3].data = [{x: rp, y: work_values[index]}];
+                    braytonOptimizationChart.update('none');
+                }
+            }
+            prSlider.addEventListener('input', (e) => updateBraytonOptChart(e.target.value));
+
+            // Brayton Modification Chart Logic
+            const braytonModCtx = document.getElementById('brayton-modification-chart').getContext('2d');
+            const modExplanation = document.getElementById('modification-explanation');
+            const checkRegen = document.getElementById('regen-check');
+            const checkReheat = document.getElementById('reheat-check');
+            const checkIntercool = document.getElementById('intercool-check');
+
+            // Define more representative T-S diagram points for each cycle
+            // These points are illustrative and not derived from exact thermodynamic calculations,
+            // but they aim to qualitatively represent the correct shape of T-S diagrams for these cycles.
+            // S (Entropy) values are chosen to show increase/decrease as expected.
+            // T (Temperature) values are chosen to show increase/decrease as expected.
+
+            // Simple Brayton Cycle (1-2-3-4-1)
+            // 1: Compressor Inlet (Low T, Low S)
+            // 2: Compressor Outlet (High T, Same S as 1 for ideal isentropic compression)
+            // 3: Turbine Inlet (Very High T, High S - due to heat addition at constant pressure)
+            // 4: Turbine Outlet (Medium T, Same S as 3 for ideal isentropic expansion)
+            // 1: Heat Rejection (Back to low T, low S)
+            const simpleCycle = {
+                label: 'Simple Brayton',
+                data: [
+                    {x: 0.8, y: 1.0},   // Point 1
+                    {x: 1.0, y: 2.5},   // Point 2 (Isentropic Compression)
+                    {x: 2.5, y: 4.5},   // Point 3 (Constant Pressure Heat Addition)
+                    {x: 2.3, y: 2.0},   // Point 4 (Isentropic Expansion)
+                    {x: 0.8, y: 1.0}    // Back to Point 1 (Constant Pressure Heat Rejection)
+                ],
+                borderColor: '#3D405B',
+                borderWidth: 3,
+                fill: false,
+                tension: 0 // Set tension to 0 for straight lines
+            };
+
+            // Regeneration Cycle (1-2-2'-3-4-4'-1)
+            const regenCycle = {
+                label: 'With Regeneration',
+                data: [
+                    {x: 0.8, y: 1.0},   // Point 1
+                    {x: 1.0, y: 2.5},   // Point 2
+                    {x: 1.8, y: 3.2},   // Point 2' (After regenerator)
+                    {x: 2.8, y: 4.5},   // Point 3
+                    {x: 2.6, y: 2.0},   // Point 4
+                    {x: 2.0, y: 1.5},   // Point 4' (Exhaust after regenerator)
+                    {x: 0.8, y: 1.0}    // Back to Point 1
+                ],
+                borderColor: '#81B29A',
+                borderWidth: 2,
+                hidden: true,
+                fill: 'start',
+                backgroundColor: 'rgba(129, 178, 154, 0.2)',
+                tension: 0 // Set tension to 0 for straight lines
+            };
+
+            // Reheating Cycle (1-2-3-4a-3'-4b-1)
+            const reheatCycle = {
+                label: 'With Reheating',
+                data: [
+                    {x: 0.8, y: 1.0},   // Point 1
+                    {x: 1.0, y: 2.5},   // Point 2
+                    {x: 2.5, y: 4.5},   // Point 3
+                    {x: 2.0, y: 3.0},   // Point 4a
+                    {x: 3.0, y: 4.5},   // Point 3'
+                    {x: 2.8, y: 1.5},   // Point 4b
+                    {x: 0.8, y: 1.0}    // Back to Point 1
+                ],
+                borderColor: '#E07A5F',
+                borderWidth: 2,
+                hidden: true,
+                fill: 'start',
+                backgroundColor: 'rgba(224, 122, 95, 0.2)',
+                tension: 0 // Set tension to 0 for straight lines
+            };
+
+            // Intercooling Cycle (1-1a-1b-2-3-4-1)
+            const intercoolCycle = {
+                label: 'With Intercooling',
+                data: [
+                    {x: 0.8, y: 1.0},   // Point 1
+                    {x: 1.0, y: 1.8},   // Point 1a
+                    {x: 1.2, y: 1.3},   // Point 1b
+                    {x: 1.4, y: 2.2},   // Point 2
+                    {x: 2.5, y: 4.5},   // Point 3
+                    {x: 2.3, y: 2.0},   // Point 4
+                    {x: 0.8, y: 1.0}    // Back to Point 1
+                ],
+                borderColor: '#F9C74F',
+                borderWidth: 2,
+                hidden: true,
+                fill: 'start',
+                backgroundColor: 'rgba(249, 199, 79, 0.2)',
+                tension: 0 // Set tension to 0 for straight lines
+            };
+
+
+            function initBraytonModificationChart() {
+                braytonModificationChart = new Chart(braytonModCtx, {
+                    type: 'line',
+                    data: { datasets: [simpleCycle, regenCycle, reheatCycle, intercoolCycle] },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { title: { display: true, text: 'Entropy (s)' }, min: 0.5, max: 3.5 }, /* Adjusted min/max for better fit */
+                            y: { title: { display: true, text: 'Temperature (T)' }, min: 0.5, max: 5 } /* Adjusted min/max for better fit */
+                        }
+                    }
+                });
+                updateModifications();
+            }
+
+            function updateModifications() {
+                braytonModificationChart.data.datasets[1].hidden = !checkRegen.checked;
+                braytonModificationChart.data.datasets[2].hidden = !checkReheat.checked;
+                braytonModificationChart.data.datasets[3].hidden = !checkIntercool.checked;
+                braytonModificationChart.update();
+                
+                let explanationHTML = '';
+                if (checkRegen.checked) explanationHTML += '<p><strong>Regeneration:</strong> Recovers exhaust heat to preheat compressed air. <strong>Primary Benefit: Increases thermal efficiency.</strong></p>';
+                if (checkReheat.checked) explanationHTML += '<p><strong>Reheating:</strong> Adds heat between turbine stages. <strong>Primary Benefit: Increases net work output.</strong></p>';
+                if (checkIntercool.checked) explanationHTML += '<p><strong>Intercooling:</strong> Cools air between compressor stages. <strong>Primary Benefit: Increases net work output</strong> (by reducing compressor work).</p>';
+                if (!explanationHTML) explanationHTML = 'Select a modification to see its effect.';
+                modExplanation.innerHTML = explanationHTML;
+                typesetMath(modExplanation);
+            }
+
+            [checkRegen, checkReheat, checkIntercool].forEach(check => check.addEventListener('change', updateModifications));
+        });
+    </script>
+</body>
+</html>
