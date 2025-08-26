@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: The Journey of a Vapor Power Cycle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <!-- Chosen Palette: Brilliant Blues -->
+    <!-- Application Structure Plan: The infographic is structured as a top-to-bottom vertical narrative, guiding the user through the concepts of vapor power cycles in a logical learning progression. The flow is: 1) Introduction with a hook stat and a simple flowchart of the basic Rankine cycle. 2) A direct visual comparison of the ideal Carnot vs. the practical Rankine cycle, now including a toggle for 'Actual' Rankine to show irreversibilities. 3) An interactive section allowing users to "tune" the Rankine cycle and see the effects on efficiency. 4) A section on essential "Tools for Analysis" (Steam Tables & Mollier Diagram). 5) A new section for "Key Formulas for Numerical Analysis" which now includes a guide on "Tackling Numerical Problems". 6) A clear breakdown of advanced modifications (Reheat & Regeneration) with simple data callouts. 7) A section on "Pushing the Limits" with the Supercritical Cycle. 8) A concluding section on "Beyond Power" with Cogeneration. This linear storytelling approach is chosen to build knowledge cumulatively, making it ideal for students encountering the topic for the first first time. -->
+    <!-- Visualization & Content Choices: 
+        - Data: The four core components of the Rankine Cycle. Goal: Organize. Viz/Method: HTML/CSS Flowchart. Justification: A simple, clear, and lightweight method to illustrate a process flow without using forbidden SVG/Mermaid.
+        - Data: Comparison of Carnot, Ideal Rankine, and Actual Rankine cycles. Goal: Compare. Viz/Method: Chart.js Line Chart (T-s Diagram) with toggle. Justification: This is the standard academic visualization. Using Chart.js allows for a dynamic and clean representation on a canvas, visually contrasting the cycle shapes and the net work (area), and now demonstrating real-world deviations.
+        - Data: Variables affecting Rankine efficiency. Goal: Show Change/Relationships. Viz/Method: Interactive Chart.js Bar Chart. Justification: Actively engaging the user to click buttons and see the immediate impact on efficiency and turbine quality makes the concept more memorable than static text.
+        - Data: Role of Steam Tables & Mollier Diagram. Goal: Inform. Viz/Method: Textual explanation with illustrative icons/symbols (Unicode). Justification: Briefly explains the tools without needing complex interactive tables/diagrams in an infographic format.
+        - Data: Formulas for numerical analysis. Goal: Inform. Viz/Method: HTML/CSS with LaTeX (rendered by MathJax). Justification: Provides a dedicated, easy-to-reference section for essential equations needed for problem-solving, ensuring proper mathematical typesetting.
+        - Data: Guide on tackling numerical problems. Goal: Inform. Viz/Method: Textual explanation with bullet points. Justification: Provides practical advice for students, addressing common pitfalls.
+        - Data: Efficiency gains from Reheat & Regeneration. Goal: Inform. Viz/Method: Chart.js Donut Charts. Justification: Provides a quick, visually digestible "at-a-glance" summary of the performance improvement offered by each modification.
+        - Data: Supercritical cycle characteristics. Goal: Inform. Viz/Method: Conceptual T-s diagram (Chart.js Line Chart) showing the absence of a distinct boiling phase. Justification: Visually differentiates it from subcritical cycles.
+        - Data: Cogeneration energy split. Goal: Inform/Organize. Viz/Method: Horizontal Bar Chart for energy utilization. Justification: Clearly shows the distribution of energy output and the overall efficiency.
+        - Data: Reheat-Regenerative cycle complexity. Goal: Organize. Viz/Method: Advanced HTML/CSS Flowchart. Justification: Effectively communicates the increased complexity and integration of multiple components in the most advanced cycle configuration.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* sky-50 */
+            color: #0c4a6e; /* sky-900 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            border: 1px solid #e0f2fe; /* sky-100 */
+        }
+        .flowchart-node {
+            background-color: #e0f2fe; /* sky-200 */
+            color: #0369a1; /* sky-700 */
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            flex-grow: 1;
+            min-width: 120px;
+        }
+        .flowchart-arrow {
+            font-size: 2rem;
+            color: #38bdf8; /* sky-400 */
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-16">
+
+        <!-- SECTION 1: INTRODUCTION -->
+        <section class="text-center mb-16 md:mb-24">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-sky-800 mb-4">The Journey of Steam</h1>
+            <p class="text-lg md:text-xl text-sky-700 max-w-3xl mx-auto mb-8">Vapor power cycles are the engines of our world, converting heat into the mechanical work that generates over 85% of global electricity.</p>
+            <div class="stat-card max-w-5xl mx-auto">
+                <h2 class="text-2xl font-bold text-sky-800 mb-6">The Basic Rankine Cycle: A Four-Step Process</h2>
+                <p class="text-sky-600 mb-8">The core of a steam power plant is the Rankine cycle, a continuous loop where water is transformed to produce work.</p>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-2">
+                    <div class="flowchart-node">1. PUMP</div>
+                    <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-node">2. BOILER</div>
+                    <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-node">3. TURBINE</div>
+                    <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-node">4. CONDENSER</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: IDEAL VS REAL -->
+        <section class="mb-16 md:mb-24">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="stat-card">
+                    <h2 class="text-3xl font-bold text-sky-800 mb-4">Ideal vs. Practical: Carnot, Rankine & Actual</h2>
+                    <p class="text-sky-600 mb-4">The Carnot cycle is the theoretical "perfect" engine—100% efficient but impossible to build. The Ideal Rankine cycle is a practical model, while the Actual Rankine cycle accounts for real-world losses.</p>
+                    <p class="text-sky-600 mb-4">Use the toggle to see how irreversibilities in real components (like friction in turbines and pumps) cause entropy to increase, reducing efficiency compared to the ideal Rankine cycle.</p>
+                    <div class="flex justify-center gap-4">
+                        <button id="show-ideal-rankine" class="bg-sky-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-600 transition-all">Ideal Rankine</button>
+                        <button id="show-actual-rankine" class="bg-sky-200 text-sky-800 font-semibold py-2 px-4 rounded-lg hover:bg-sky-300 transition-all">Actual Rankine</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="chart-container">
+                        <canvas id="tsDiagram"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: EFFICIENCY TUNING -->
+        <section class="mb-16 md:mb-24">
+            <div class="stat-card text-center">
+                <h2 class="text-3xl font-bold text-sky-800 mb-4">Tuning for Performance</h2>
+                <p class="text-sky-600 max-w-3xl mx-auto mb-8">Engineers improve Rankine cycle efficiency by adjusting key parameters. Click the buttons to see how changing each variable impacts efficiency and the quality of steam leaving the turbine (lower quality can damage blades).</p>
+                <div class="flex flex-wrap justify-center gap-3 mb-8" id="efficiency-tuning">
+                    <button id="btn-base" class="bg-sky-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-600 transition-all">Base Cycle</button>
+                    <button id="btn-pressure" class="bg-sky-200 text-sky-800 font-semibold py-2 px-4 rounded-lg hover:bg-sky-300 transition-all">Increase Boiler Pressure</button>
+                    <button id="btn-superheat" class="bg-sky-200 text-sky-800 font-semibold py-2 px-4 rounded-lg hover:bg-sky-300 transition-all">Increase Superheat</button>
+                    <button id="btn-condenser" class="bg-sky-200 text-sky-800 font-semibold py-2 px-4 rounded-lg hover:bg-sky-300 transition-all">Lower Condenser Pressure</button>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container h-64 md:h-80">
+                        <canvas id="efficiencyChart"></canvas>
+                    </div>
+                    <div id="efficiency-text" class="text-left p-6 bg-sky-50 rounded-lg">
+                        <h3 id="efficiency-title" class="text-xl font-bold text-sky-700 mb-2">Base Rankine Cycle</h3>
+                        <p id="efficiency-desc" class="text-sky-600">This is our starting point. Select an optimization to see how we can improve performance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TOOLS FOR ANALYSIS -->
+        <section class="mb-16 md:mb-24">
+            <div class="stat-card text-center">
+                <h2 class="text-3xl font-bold text-sky-800 mb-4">Tools for Analysis: Steam Tables & Mollier Diagram</h2>
+                <p class="text-sky-600 max-w-3xl mx-auto mb-8">To analyze vapor power cycles, engineers rely on precise thermodynamic data. These tools help quantify energy changes at each stage.</p>
+                <div class="grid md:grid-cols-2 gap-8 text-left">
+                    <div class="p-6 bg-sky-50 rounded-lg flex items-start space-x-4">
+                        <span class="text-4xl text-sky-600">📊</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-sky-700 mb-2">Steam Tables</h3>
+                            <p class="text-sky-600">Detailed numerical data for water and steam properties (enthalpy, entropy, specific volume) at various temperatures and pressures. Essential for accurate calculations.</p>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg flex items-start space-x-4">
+                        <span class="text-4xl text-sky-600">📈</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-sky-700 mb-2">Mollier Diagram (h-s)</h3>
+                            <p class="text-sky-600">A graphical representation of enthalpy vs. entropy, showing lines of constant pressure, temperature, and quality. Ideal for visualizing processes and quick estimations, especially for isentropic changes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4.5: FORMULAS -->
+        <section class="mb-16 md:mb-24">
+            <div class="stat-card text-center">
+                <h2 class="text-3xl font-bold text-sky-800 mb-4">Key Formulas for Numerical Analysis</h2>
+                <p class="text-sky-600 max-w-3xl mx-auto mb-8">These fundamental equations are essential for solving numerical problems related to vapor power cycles. Remember to use consistent units.</p>
+                <div class="text-left space-y-6">
+                    <div class="p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">General Thermodynamic Properties & Processes</h3>
+                        <ul class="list-disc list-inside text-sky-600 space-y-2 leading-relaxed">
+                            <li>Specific Enthalpy: $h = u + Pv$</li>
+                            <li>Specific Entropy for Wet Mixture: $s = s_f + x \cdot s_{fg}$</li>
+                            <li>Specific Enthalpy for Wet Mixture: $h = h_f + x \cdot h_{fg}$</li>
+                            <li>Quality (Dryness Fraction): $x = \frac{s - s_f}{s_g - s_f}$ (or using $h$, $v$, $u$)</li>
+                            <li>Pump Work (Ideal, Isentropic): $w_{pump} = v_1 (P_2 - P_1)$</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">Carnot Cycle Efficiency</h3>
+                        <ul class="list-disc list-inside text-sky-600 space-y-2 leading-relaxed">
+                            <li>$$\eta_{Carnot} = 1 - \frac{T_L}{T_H}$$ (Temperatures in absolute scale: Kelvin or Rankine)</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">Rankine Cycle (Ideal)</h3>
+                        <ul class="list-disc list-inside text-sky-600 space-y-2 leading-relaxed">
+                            <li>Heat Input (Boiler): $q_{in} = h_3 - h_2$</li>
+                            <li>Turbine Work Output: $w_{turbine} = h_3 - h_4$</li>
+                            <li>Pump Work Input: $w_{pump} = h_2 - h_1$</li>
+                            <li>Net Work Output: $w_{net} = w_{turbine} - w_{pump}$</li>
+                            <li>Thermal Efficiency: $$\eta_{th} = \frac{w_{net}}{q_{in}} = \frac{(h_3 - h_4) - (h_2 - h_1)}{(h_3 - h_2)}$$</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">Actual Rankine Cycle & Isentropic Efficiency</h3>
+                        <ul class="list-disc list-inside text-sky-600 space-y-2 leading-relaxed">
+                            <li>Turbine Isentropic Efficiency: $$\eta_{s,turbine} = \frac{\text{Actual Turbine Work}}{\text{Isentropic Turbine Work}} = \frac{h_3 - h_{4a}}{h_3 - h_{4s}}$$</li>
+                            <li>Pump Isentropic Efficiency: $$\eta_{s,pump} = \frac{\text{Isentropic Pump Work}}{\text{Actual Pump Work}} = \frac{h_{2s} - h_1}{h_{2a} - h_1}$$</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">Reheat Cycle</h3>
+                        <ul class="list-disc list-inside text-sky-600 space-y-2 leading-relaxed">
+                            <li>Total Heat Input: $q_{in,total} = (h_3 - h_2) + (h_5 - h_4)$</li>
+                            <li>Total Turbine Work Output: $w_{turbine,total} = (h_3 - h_4) + (h_5 - h_6)$</li>
+                            <li>Net Work Output: $w_{net} = w_{turbine,total} - w_{pump}$</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">Regenerative Cycle (Single Open FWH)</h3>
+                        <ul class="list-disc list-inside text-sky-600 space-y-2 leading-relaxed">
+                            <li>Mass Fraction Extracted ($y$): $$y = \frac{h_3 - h_2}{h_6 - h_2}$$ (Energy balance on FWH: $y \cdot h_{extracted} + (1-y) \cdot h_{pump1\_out} = h_{FWH\_out}$)</li>
+                            <li>Total Turbine Work: $w_{turbine,total} = (h_5 - h_6) + (1-y)(h_6 - h_7)$</li>
+                            <li>Total Pump Work: $w_{pump,total} = (1-y)w_{pump1} + w_{pump2}$</li>
+                            <li>Heat Input: $q_{in} = h_5 - h_4$</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">Cogeneration (CHP)</h3>
+                        <ul class="list-disc list-inside text-sky-600 space-y-2 leading-relaxed">
+                            <li>Energy Utilization Factor: $$\epsilon = \frac{\text{Net Electrical Power Output} + \text{Useful Heat Output}}{\text{Total Heat Input}}$$</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-blue-100 rounded-lg text-left">
+                    <h3 class="text-2xl font-bold text-sky-800 mb-4">Tackling Numerical Problems: A Step-by-Step Guide</h3>
+                    <p class="text-sky-700 mb-4">Solving thermodynamics numericals requires a systematic approach. Follow these steps to minimize errors and ensure clarity:</p>
+                    <ul class="list-decimal list-inside text-sky-600 space-y-3 mb-6 leading-relaxed">
+                        <li><strong>1. Understand the Problem:</strong> Read the problem statement carefully. Identify what is given (knowns) and what needs to be found (unknowns).</li>
+                        <li><strong>2. Sketch the Cycle & State Points:</strong> Draw a clear schematic diagram of the cycle (e.g., Rankine, Reheat, Regenerative) and a T-s or h-s diagram. Label all components (boiler, turbine, pump, condenser, FWHs, reheaters) and assign a number to each state point (e.g., 1, 2, 3...). This visual aid is invaluable.</li>
+                        <li><strong>3. List Given & Find:</strong> Create a table or list of all known values (pressures, temperatures, efficiencies, etc.) and clearly state what you need to calculate.</li>
+                        <li><strong>4. Identify the Cycle Type & Assumptions:</strong> Determine if it's an ideal or actual cycle. Note any assumptions (e.g., isentropic processes, ideal FWHs, negligible pump work).</li>
+                        <li><strong>5. Determine Properties at Each State Point:</strong> This is often the most crucial step. Use steam tables or Mollier diagrams to find enthalpy ($h$), entropy ($s$), specific volume ($v$), and quality ($x$) at each numbered state point. Pay close attention to whether the state is saturated liquid, saturated vapor, superheated, or a wet mixture. Interpolate when necessary.</li>
+                        <li><strong>6. Apply Conservation Laws & Formulas:</strong>
+                            <ul class="list-disc list-inside text-sky-600 space-y-2 mt-2 leading-relaxed">
+                                <li><strong>Mass Balance:</strong> For components with multiple inlets/outlets (like FWHs), apply mass conservation.</li>
+                                <li><strong>Energy Balance (First Law):</strong> Apply $\dot{Q} - \dot{W} = \dot{m}(h_{out} - h_{in})$ (for steady-flow) to each component.</li>
+                                <li><strong>Second Law/Isentropic Efficiency:</strong> Use isentropic efficiency formulas for actual turbines and pumps.</li>
+                                <li><strong>Cycle Efficiency:</strong> Use the overall cycle efficiency formulas.</li>
+                            </ul>
+                        </li>
+                        <li><strong>7. Check Units & Consistency:</strong> Ensure all units are consistent throughout your calculations (e.g., kPa for pressure, kJ/kg for enthalpy). Convert temperatures to absolute scale (Kelvin or Rankine) for efficiency calculations.</li>
+                        <li><strong>8. Solve Systematically:</strong> Break down complex problems into smaller, manageable steps. Solve for one unknown at a time.</li>
+                        <li><strong>9. Verify Results:</strong> Do your answers make sense? Is the efficiency less than 100%? Is the turbine work positive and pump work negative (or vice-versa depending on sign convention)? Is the quality within 0-1 for wet regions?</li>
+                    </ul>
+
+                    <h3 class="text-2xl font-bold text-sky-800 mb-4 mt-8">Common Mistakes During Numerical Solving</h3>
+                    <p class="text-sky-700 mb-4">Be aware of these frequent pitfalls to avoid losing marks in exams:</p>
+                    <ul class="list-disc list-inside text-sky-600 space-y-3 leading-relaxed">
+                        <li><strong>Unit Conversion Errors:</strong> The most common mistake! Forgetting to convert Celsius to Kelvin/Rankine, or kPa to MPa (or vice-versa) when using formulas or tables.</li>
+                        <li><strong>Incorrect Property Lookup/Interpolation:</strong>
+                            <ul class="list-disc list-inside text-sky-600 space-y-2 mt-2 leading-relaxed">
+                                <li>Using saturated table values for superheated steam, or vice-versa.</li>
+                                <li>Misidentifying the state (e.g., thinking a state is saturated vapor when it's superheated).</li>
+                                <li>Errors in linear interpolation calculations.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Sign Convention for Work/Heat:</strong> Confusing positive/negative signs for work done <em>by</em> the system vs. <em>on</em> the system, or heat added vs. heat rejected. Stick to a consistent convention (e.g., work output positive, heat input positive).</li>
+                        <li><strong>Neglecting Pump Work:</strong> While small, neglecting pump work can lead to inaccuracies, especially in high-pressure cycles.</li>
+                        <li><strong>Assuming Ideal Processes:</strong> Applying ideal (isentropic) assumptions to actual cycles without using isentropic efficiencies.</li>
+                        <li><strong>Mass Balance Errors (Regenerative Cycles):</strong> Incorrectly calculating or applying the mass fractions of extracted steam. This is critical for regenerative cycles.</li>
+                        <li><strong>Algebraic & Calculation Errors:</strong> Simple arithmetic mistakes, especially when dealing with multiple terms and subtractions. Double-check your calculations.</li>
+                        <li><strong>Drawing Incorrect Diagrams:</strong> A poorly drawn T-s or h-s diagram can lead to misinterpretation of processes and state points.</li>
+                        <li><strong>Lack of Clarity in Steps:</strong> Not showing all steps clearly, making it difficult to trace errors or for the examiner to award partial credit.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: ADVANCED MODIFICATIONS -->
+        <section class="mb-16 md:mb-24">
+            <h2 class="text-3xl font-bold text-sky-800 mb-8 text-center">Advanced Modifications: Reheat & Regeneration</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="stat-card">
+                    <h3 class="text-2xl font-bold text-sky-700 mb-4">The Reheat Cycle</h3>
+                    <p class="text-sky-600 mb-6">After partial expansion, steam is sent back to the boiler to be "reheated." This protects turbine blades from moisture damage and provides a moderate efficiency boost.</p>
+                    <div class="chart-container h-64">
+                        <canvas id="reheatDonut"></canvas>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3 class="text-2xl font-bold text-sky-700 mb-4">The Regenerative Cycle</h3>
+                    <p class="text-sky-600 mb-6">Steam is "bled" from the turbine to preheat the feedwater. This "recycles" internal heat, significantly increasing overall cycle efficiency.</p>
+                    <div class="chart-container h-64">
+                        <canvas id="regenDonut"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: PUSHING THE LIMITS -->
+        <section class="mb-16 md:mb-24">
+            <div class="stat-card text-center">
+                <h2 class="text-3xl font-bold text-sky-800 mb-4">Pushing the Limits: The Supercritical Cycle</h2>
+                <p class="text-sky-600 max-w-3xl mx-auto mb-8">Operating above water's critical pressure (22.06 MPa), the supercritical cycle eliminates the distinct boiling phase, allowing for even higher efficiencies.</p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container h-64 md:h-80">
+                        <canvas id="supercriticalTs"></canvas>
+                    </div>
+                    <div class="text-left p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">No Boiling, Just Smooth Transition</h3>
+                        <p class="text-sky-600 mb-2">Above the critical point, water transforms directly from a liquid-like fluid to a gas-like fluid without a distinct phase change. This means no latent heat of vaporization, leading to a higher average temperature of heat addition.</p>
+                        <p class="text-sky-600">This results in thermal efficiencies often exceeding 45%, but requires extremely robust and expensive materials due to the immense pressures and temperatures involved.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: BEYOND POWER - COGENERATION -->
+        <section class="mb-16 md:mb-24">
+            <div class="stat-card text-center">
+                <h2 class="text-3xl font-bold text-sky-800 mb-4">Beyond Power: Cogeneration (CHP)</h2>
+                <p class="text-sky-600 max-w-3xl mx-auto mb-8">Cogeneration plants simultaneously produce electricity and useful heat from a single fuel source, drastically improving overall energy utilization.</p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container h-64 md:h-80">
+                        <canvas id="chpEfficiency"></canvas>
+                    </div>
+                    <div class="text-left p-6 bg-sky-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-sky-700 mb-2">Maximizing Energy Use</h3>
+                        <p class="text-sky-600 mb-2">Instead of wasting heat to the environment, CHP systems capture it for industrial processes, district heating, or other applications. While electrical efficiency might be slightly lower than a dedicated power plant, the overall energy utilization can be 70-80% or higher.</p>
+                        <p class="text-sky-600">This makes CHP a cornerstone of sustainable energy, reducing fuel consumption and emissions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 8: CONCLUSION -->
+        <section>
+            <div class="stat-card text-center">
+                <h2 class="text-3xl font-bold text-sky-800 mb-4">The Pinnacle: Reheat-Regenerative Cycle</h2>
+                <p class="text-sky-600 max-w-3xl mx-auto mb-8">Modern power plants combine both reheat and regeneration. This creates a highly complex but extremely efficient system, representing the peak of vapor power cycle engineering.</p>
+                <div class="p-4 bg-sky-50 rounded-lg text-xs md:text-sm overflow-x-auto">
+                    <div class="flex items-center justify-center space-x-2 min-w-max">
+                        <div class="flowchart-node">Pump</div>
+                        <div class="flowchart-arrow">→</div>
+                        <div class="flowchart-node">FWH</div>
+                        <div class="flowchart-arrow">→</div>
+                        <div class="flowchart-node">Boiler</div>
+                        <div class="flowchart-arrow">→</div>
+                        <div class="flowchart-node">HP Turbine</div>
+                        <div class="flowchart-arrow">→</div>
+                        <div class="flowchart-node">Reheater</div>
+                        <div class="flowchart-arrow">→</div>
+                        <div class="flowchart-node">LP Turbine</div>
+                        <div class="flowchart-arrow">→</div>
+                        <div class="flowchart-node">Condenser</div>
+                    </div>
+                    <div class="text-center mt-2 text-sky-500 font-semibold">(Simplified View with Steam Bleeds to FWH)</div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const brilliantBlues = {
+                bg: 'rgba(2, 132, 199, 0.2)', // sky-500 with alpha
+                border: '#0ea5e9', // sky-500
+                text: '#0c4a6e', // sky-900
+                accentBg: 'rgba(239, 68, 68, 0.2)', // red-500 with alpha
+                accentBorder: '#ef4444', // red-500
+                lightBlue: '#bae6fd' // sky-200
+            };
+
+            const tooltipPlugin = {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                                return label.join(' ');
+                            }
+                            return label;
+                        }
+                    }
+                }
+            };
+            
+            // T-S Diagram (Carnot, Ideal Rankine, Actual Rankine)
+            const tsCtx = document.getElementById('tsDiagram').getContext('2d');
+            let tsChart;
+
+            const saturationDomeData = {
+                label: 'Saturation Dome',
+                data: [
+                    {x: 1.3, y: 100}, {x: 2, y: 200}, {x: 4.1, y: 300}, {x: 6.4, y: 374}, 
+                    {x: 7.3, y: 300}, {x: 7.1, y: 200}, {x: 6.5, y: 100}
+                ],
+                borderColor: '#94A3B8',
+                backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+            };
+
+            const carnotData = {
+                label: 'Carnot Cycle (Ideal)',
+                data: [{x: 2.5, y: 350}, {x: 6, y: 350}, {x: 6, y: 50}, {x: 2.5, y: 50}, {x: 2.5, y: 350}],
+                borderColor: brilliantBlues.accentBorder,
+                backgroundColor: brilliantBlues.accentBg,
+                borderWidth: 3,
+                fill: true,
+                tension: 0,
+                pointRadius: 3
+            };
+
+            const idealRankineData = {
+                label: 'Ideal Rankine Cycle',
+                data: [{x: 1.3, y: 45}, {x: 1.35, y: 150}, {x: 2.5, y: 350}, {x: 7.0, y: 350}, {x: 7.0, y: 45}, {x: 1.3, y: 45}],
+                borderColor: brilliantBlues.border,
+                backgroundColor: brilliantBlues.bg,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.1,
+                pointRadius: 3
+            };
+
+            const actualRankineData = {
+                label: 'Actual Rankine Cycle',
+                data: [{x: 1.3, y: 45}, {x: 1.4, y: 160}, {x: 2.6, y: 350}, {x: 7.5, y: 45}, {x: 1.3, y: 45}],
+                borderColor: '#fbbf24', // amber-400
+                backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.2,
+                pointRadius: 3
+            };
+            
+            function createTsChart(type) {
+                if (tsChart) {
+                    tsChart.destroy();
+                }
+                let datasets = [saturationDomeData, carnotData];
+                if (type === 'ideal') {
+                    datasets.push(idealRankineData);
+                } else if (type === 'actual') {
+                    datasets.push(actualRankineData);
+                }
+
+                tsChart = new Chart(tsCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: { display: true, text: 'Entropy (s) [kJ/kg·K]' }
+                            },
+                            y: {
+                                title: { display: true, text: 'Temperature (T) [°C]' }
+                            }
+                        },
+                        plugins: tooltipPlugin
+                    }
+                });
+            }
+            
+            createTsChart('ideal'); // Default view
+
+            document.getElementById('show-ideal-rankine').addEventListener('click', () => {
+                createTsChart('ideal');
+                document.getElementById('show-ideal-rankine').classList.add('bg-sky-500', 'text-white');
+                document.getElementById('show-ideal-rankine').classList.remove('bg-sky-200', 'text-sky-800');
+                document.getElementById('show-actual-rankine').classList.remove('bg-sky-500', 'text-white');
+                document.getElementById('show-actual-rankine').classList.add('bg-sky-200', 'text-sky-800');
+            });
+
+            document.getElementById('show-actual-rankine').addEventListener('click', () => {
+                createTsChart('actual');
+                document.getElementById('show-actual-rankine').classList.add('bg-sky-500', 'text-white');
+                document.getElementById('show-actual-rankine').classList.remove('bg-sky-200', 'text-sky-800');
+                document.getElementById('show-ideal-rankine').classList.remove('bg-sky-500', 'text-white');
+                document.getElementById('show-ideal-rankine').classList.add('bg-sky-200', 'text-sky-800');
+            });
+
+
+            // Efficiency Tuning Chart
+            const efficiencyCtx = document.getElementById('efficiencyChart').getContext('2d');
+            let efficiencyChart;
+            
+            const efficiencyData = {
+                base: { labels: ['Efficiency', ['Turbine Exit', 'Quality']], values: [38, 90], title: 'Base Rankine Cycle', desc: 'The standard cycle has a baseline efficiency and turbine exit quality. High quality (>90%) is desired to prevent blade damage.' },
+                pressure: { labels: ['Efficiency', ['Turbine Exit', 'Quality']], values: [41, 85], title: 'Increased Boiler Pressure', desc: 'Efficiency increases, but turbine exit quality drops, increasing the risk of blade erosion. A significant trade-off.' },
+                superheat: { labels: ['Efficiency', ['Turbine Exit', 'Quality']], values: [42, 98], title: 'Increased Superheat', desc: 'A win-win: Efficiency increases AND turbine exit quality improves, protecting the equipment. Limited by metallurgical temperature tolerance.' },
+                condenser: { labels: ['Efficiency', ['Turbine Exit', 'Quality']], values: [40, 88], title: 'Lowered Condenser Pressure', desc: 'Efficiency improves by rejecting heat at a lower temperature, but exit quality slightly worsens. Limited by cooling water temperature.' }
+            };
+
+            function updateEfficiencyChart(type) {
+                if (efficiencyChart) {
+                    efficiencyChart.destroy();
+                }
+                const data = efficiencyData[type];
+                document.getElementById('efficiency-title').innerText = data.title;
+                document.getElementById('efficiency-desc').innerText = data.desc;
+
+                efficiencyChart = new Chart(efficiencyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Value (%)',
+                            data: data.values,
+                            backgroundColor: [brilliantBlues.bg, brilliantBlues.lightBlue],
+                            borderColor: [brilliantBlues.border, '#7dd3fc'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, max: 100 } },
+                        plugins: { legend: { display: false }, ...tooltipPlugin }
+                    }
+                });
+                
+                document.querySelectorAll('#efficiency-tuning button').forEach(b => {
+                    b.classList.remove('bg-sky-500', 'text-white');
+                    b.classList.add('bg-sky-200', 'text-sky-800');
+                });
+                document.getElementById(`btn-${type}`).classList.add('bg-sky-500', 'text-white');
+                document.getElementById(`btn-${type}`).classList.remove('bg-sky-200', 'text-sky-800');
+            }
+            
+            document.getElementById('btn-base').addEventListener('click', () => updateEfficiencyChart('base'));
+            document.getElementById('btn-pressure').addEventListener('click', () => updateEfficiencyChart('pressure'));
+            document.getElementById('btn-superheat').addEventListener('click', () => updateEfficiencyChart('superheat'));
+            document.getElementById('btn-condenser').addEventListener('click', () => updateEfficiencyChart('condenser'));
+
+            updateEfficiencyChart('base');
+
+            // Donut Charts
+            const donutOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Efficiency Gain', font: {size: 16}, color: brilliantBlues.text },
+                    ...tooltipPlugin
+                }
+            };
+
+            new Chart(document.getElementById('reheatDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: [['Base', 'Efficiency'], ['Reheat', 'Gain']],
+                    datasets: [{
+                        data: [95, 5],
+                        backgroundColor: [brilliantBlues.bg, brilliantBlues.accentBorder],
+                        borderColor: '#f0f9ff',
+                        borderWidth: 4
+                    }]
+                },
+                options: donutOptions
+            });
+
+            new Chart(document.getElementById('regenDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: [['Base', 'Efficiency'], ['Regeneration', 'Gain']],
+                    datasets: [{
+                        data: [90, 10],
+                        backgroundColor: [brilliantBlues.bg, brilliantBlues.border],
+                        borderColor: '#f0f9ff',
+                        borderWidth: 4
+                    }]
+                },
+                options: donutOptions
+            });
+
+            // Supercritical T-s Diagram
+            const supercriticalCtx = document.getElementById('supercriticalTs').getContext('2d');
+            new Chart(supercriticalCtx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Supercritical Process',
+                        data: [{x: 1.5, y: 100}, {x: 2.5, y: 250}, {x: 3.5, y: 374}, {x: 4.5, y: 450}, {x: 5.5, y: 500}],
+                        borderColor: brilliantBlues.border,
+                        backgroundColor: brilliantBlues.bg,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }, {
+                        label: 'Critical Point',
+                        data: [{x: 6.4, y: 374}],
+                        backgroundColor: brilliantBlues.accentBorder,
+                        borderColor: brilliantBlues.accentBorder,
+                        pointRadius: 5,
+                        pointBackgroundColor: brilliantBlues.accentBorder,
+                        type: 'scatter'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Entropy (s)' } },
+                        y: { title: { display: true, text: 'Temperature (T)' }, min: 0 }
+                    },
+                    plugins: tooltipPlugin
+                }
+            });
+
+            // CHP Efficiency Chart
+            const chpCtx = document.getElementById('chpEfficiency').getContext('2d');
+            new Chart(chpCtx, {
+                type: 'bar',
+                data: {
+                    labels: [['Electrical', 'Output'], ['Useful Heat', 'Output'], ['Waste Heat', 'Rejected']],
+                    datasets: [{
+                        label: 'Energy (MW)',
+                        data: [5, 10, 5], // Example: 20MW input - 5MW electrical - 10MW useful = 5MW waste
+                        backgroundColor: [brilliantBlues.border, brilliantBlues.accentBorder, '#94a3b8'], // Electrical, Heat, Waste
+                        borderColor: ['#0ea5e9', '#ef4444', '#64748b'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            stacked: true,
+                            max: 20, // Total input
+                            title: { display: true, text: 'Energy (MW)' }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x + ' MW';
+                                    }
+                                    return label;
+                                },
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                        return label.join(' ');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

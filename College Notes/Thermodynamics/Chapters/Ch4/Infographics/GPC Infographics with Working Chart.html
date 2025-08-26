@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Gas Power Cycles Explained</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #F8F7F4; 
+            color: #1E293B;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .stat-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            padding: 2rem 1.5rem; 
+            min-height: 360px; 
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            text-align: center;
+            display: flex; 
+            flex-direction: column;
+            justify-content: space-between; 
+        }
+        .flow-box {
+            border: 3px solid #FF8C42;
+            background-color: #fff;
+            color: #1E293B;
+            font-weight: 600;
+        }
+        .flow-arrow {
+            color: #FF8C42;
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+        .combined-cycle-box {
+            border: 2px solid #3B82F6;
+            background-color: #E0F2FE;
+            color: #1E293B;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .combined-cycle-arrow {
+            color: #3B82F6;
+            font-size: 2rem;
+            line-height: 1;
+            margin: 0 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl space-y-12">
+
+        <header class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#FF3D7F]">A Visual Guide to Gas Power Cycles</h1>
+            <p class="mt-4 text-lg text-slate-600">Exploring the thermodynamics of engines, from your car to a jet fighter.</p>
+        </header>
+
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Reciprocating Engines: The Efficiency Showdown</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">Internal combustion engines, like those in cars, are modeled by cycles like Otto, Diesel, and Dual. Their efficiency isn't straightforward—it depends entirely on the design constraints. This chart reveals a critical trade-off that engineers face.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex justify-center gap-4 mb-6">
+                    <button id="compare-same-cr" class="bg-[#FF3D7F] text-white font-bold py-2 px-4 rounded-full transition-transform hover:scale-105">Same Compression Ratio</button>
+                    <button id="compare-same-peak-p" class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-full transition-transform hover:scale-105">Same Peak Pressure</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="reciprocating-chart"></canvas>
+                </div>
+                <div id="reciprocating-explanation" class="mt-6 p-4 bg-sky-50 border-l-4 border-sky-400 text-sky-800 rounded-r-lg">
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Gauging Performance: The Core Metrics</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">Engineers use specific metrics to evaluate and compare engine performance. These numbers tell the story of an engine's power density, real-world efficiency, and how close it gets to its theoretical best.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="stat-card">
+                    <h3 class="text-xl font-semibold text-slate-700">Mean Effective Pressure (MEP)</h3>
+                    <p class="text-5xl font-bold text-[#FF3D7F] my-2">High</p>
+                    <p class="text-slate-500">Indicates more power output for a given engine size. It's a measure of "grunt".</p>
+                    <p class="text-lg md:text-xl font-bold mt-2 text-slate-700">$$MEP = \frac{W_{net}}{V_d}$$</p>
+                </div>
+                <div class="stat-card">
+                    <h3 class="text-xl font-semibold text-slate-700">Brake Thermal Efficiency</h3>
+                    <p class="text-5xl font-bold text-[#FF3D7F] my-2">~30-55%</p>
+                    <p class="text-slate-500">The actual, real-world efficiency measured at the crankshaft. This is what determines fuel economy.</p>
+                    <p class="text-lg md:text-xl font-bold mt-2 text-slate-700">$$\eta_{bt} = \frac{\dot{W}_{brake}}{\dot{m}_{fuel} \times LHV}$$</p>
+                </div>
+                <div class="stat-card">
+                    <h3 class="text-xl font-semibold text-slate-700">Relative Efficiency</h3>
+                    <p class="text-5xl font-bold text-[#FF3D7F] my-2">~80-90%</p>
+                    <p class="text-slate-500">A "grade" for the engine, comparing its actual performance to its theoretical maximum potential.</p>
+                    <p class="text-lg md:text-xl font-bold mt-2 text-slate-700">$$\eta_{relative} = \frac{\eta_{bt}}{\eta_{air-standard}}$$</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Gas Turbines: The Brayton Cycle</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">Gas turbines, like jet engines, operate on the Brayton cycle, a continuous flow process. Air is compressed, heated, and expanded through a turbine to produce power. The key to its performance lies in the pressure ratio.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                 <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                    <div class="flow-box p-4 rounded-lg">Compressor</div>
+                    <div class="flow-arrow">&#10140;</div>
+                    <div class="flow-box p-4 rounded-lg">Combustor</div>
+                    <div class="flow-arrow">&#10140;</div>
+                    <div class="flow-box p-4 rounded-lg">Turbine</div>
+                </div>
+                <p class="mt-4 text-center text-slate-600 font-medium">Air-standard thermal efficiency for Simple Brayton Cycle:</p>
+                <p class="text-xl md:text-2xl font-bold mt-2 text-slate-700">$$\eta_{Brayton} = 1 - \frac{1}{r_p^{(k-1)/k}}$$</p>
+                <div class="chart-container mt-8">
+                    <canvas id="brayton-optimization-chart"></canvas>
+                </div>
+                <p class="mt-6 text-center text-slate-600 font-medium">Notice the trade-off: The pressure ratio that gives maximum work output is lower than the one for maximum efficiency. This is a critical design choice for engineers.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Upgrading the Brayton Cycle</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">Engineers use clever modifications to boost the Brayton cycle's performance. Select the checkboxes below to see how Regeneration, Reheating, and Intercooling visually alter the cycle's T-S (Temperature-Entropy) diagram and learn their primary benefit.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex flex-wrap justify-center gap-4 md:gap-6 mb-6">
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="regen-check" class="h-5 w-5 rounded"> <span class="font-semibold">Regeneration</span></label>
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="reheat-check" class="h-5 w-5 rounded"> <span class="font-semibold">Reheating</span></label>
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="intercool-check" class="h-5 w-5 rounded"> <span class="font-semibold">Intercooling</span></label>
+                </div>
+                <div class="chart-container">
+                    <canvas id="brayton-modification-chart"></canvas>
+                </div>
+                <div id="modification-explanation" class="mt-6 p-4 bg-amber-50 border-l-4 border-amber-400 text-amber-800 rounded-r-lg min-h-[50px]">
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Advanced Cycles: Pushing Efficiency Limits</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">To achieve even higher efficiencies, especially in power generation, gas turbines are often combined with other thermodynamic cycles or optimized for specific applications. Combined cycles are a prime example of this synergy.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-bold mb-4 text-[#FF3D7F]">Combined Cycle (Brayton-Rankine)</h3>
+                <p class="mb-4 text-slate-600">The Combined Cycle harnesses the waste heat from a gas turbine's exhaust to generate steam, which then drives a steam turbine (Rankine cycle). This significantly boosts overall plant efficiency, making it the most efficient method for large-scale power generation.</p>
+                <div class="flex flex-col items-center justify-center space-y-4 md:space-y-0 md:flex-row md:space-x-4 mb-6">
+                    <div class="combined-cycle-box">Gas Turbine (Brayton)</div>
+                    <div class="combined-cycle-arrow">&#10140;</div>
+                    <div class="combined-cycle-box">Heat Recovery Steam Generator (HRSG)</div>
+                    <div class="combined-cycle-arrow">&#10140;</div>
+                    <div class="combined-cycle-box">Steam Turbine (Rankine)</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="combined-cycle-chart"></canvas>
+                </div>
+                <p class="mt-6 text-center text-slate-600 font-medium">Combined cycles can achieve efficiencies over 60%, far surpassing simple gas turbine or steam power plants alone.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Specific Fuel Consumption: The Fuel Economy Metric</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">Beyond thermal efficiency, engineers also use Specific Fuel Consumption (SFC) to evaluate how efficiently an engine uses fuel to produce thrust (for aircraft) or power (for stationary engines). A lower SFC means better fuel economy.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="stat-card">
+                        <h3 class="text-xl font-semibold text-slate-700">Thrust Specific Fuel Consumption (TSFC)</h3>
+                        <p class="text-5xl font-bold text-[#FF3D7F] my-2">Lower is Better</p>
+                        <p class="text-slate-500">For jet engines, it's the fuel flow rate divided by the thrust produced. Directly impacts aircraft range.</p>
+                        <p class="text-lg md:text-xl font-bold mt-2 text-slate-700">$$TSFC = \frac{\dot{m}_{fuel}}{F_{thrust}}$$</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 class="text-xl font-semibold text-slate-700">Brake Specific Fuel Consumption (BSFC)</h3>
+                        <p class="text-5xl font-bold text-[#FF3D7F] my-2">Lower is Better</p>
+                        <p class="text-slate-500">For shaft power engines, it's the fuel flow rate divided by the brake power. Important for power plant economics.</p>
+                        <p class="text-lg md:text-xl font-bold mt-2 text-slate-700">$$BSFC = \frac{\dot{m}_{fuel}}{\dot{W}_{brake}}$$</p>
+                    </div>
+                </div>
+                <p class="mt-6 text-center text-slate-600 font-medium">Minimizing SFC is a primary goal in engine design, directly leading to reduced operating costs and environmental impact.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Environmental Impact: Emissions from Gas Turbines</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">While highly efficient, gas turbines produce emissions that contribute to air pollution and climate change. Engineers are continuously working on technologies to reduce these environmental impacts.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="chart-container">
+                    <canvas id="emissions-chart"></canvas>
+                </div>
+                <p class="mt-6 text-center text-slate-600 font-medium">Nitrogen Oxides (NOx) are a major concern, formed at high combustion temperatures. Carbon Monoxide (CO) and Unburned Hydrocarbons (UHC) result from incomplete combustion, especially at lower loads.</p>
+            </div>
+        </section>
+
+        <!-- New Section: How to Tackle Numerical Problems -->
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#FF8C42]">Tackling Numerical Problems: A Step-by-Step Guide</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8 text-slate-600">Solving numerical problems in Gas Power Cycles requires a systematic approach. Follow these steps to break down complex problems and arrive at accurate solutions.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg space-y-6">
+                <div class="flex items-start space-x-4">
+                    <div class="text-4xl font-bold text-[#FF3D7F]">1.</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-700">Understand the Problem & Identify the Cycle</h3>
+                        <p class="text-slate-600">Carefully read the problem statement. Identify the type of cycle (Otto, Diesel, Brayton, etc.) and whether it's ideal or actual. Note all given parameters and what needs to be found.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="text-4xl font-bold text-[#FF3D7F]">2.</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-700">Sketch T-S and P-V Diagrams</h3>
+                        <p class="text-slate-600">Drawing the temperature-entropy (T-S) and pressure-volume (P-V) diagrams is crucial. Label all states (1, 2, 3, etc.) and processes (isentropic compression, constant pressure heat addition, etc.). This helps visualize the cycle and identify relevant state points.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="text-4xl font-bold text-[#FF3D7F]">3.</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-700">List Assumptions & Properties</h3>
+                        <p class="text-slate-600">State all assumptions (e.g., air-standard assumptions, constant specific heats). Look up or calculate necessary thermodynamic properties of the working fluid (e.g., specific heat ratio $k$, gas constant $R$).</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="text-4xl font-bold text-[#FF3D7F]">4.</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-700">Apply Relevant Formulas (State-by-State Analysis)</h3>
+                        <p class="text-slate-600">Use the appropriate formulas for each process (e.g., isentropic relations, ideal gas law, heat transfer equations). Calculate properties at each state point sequentially. Remember to use absolute temperatures (Kelvin or Rankine).</p>
+                        <p class="text-sm text-slate-500 mt-2">Example Isentropic Relation: $\frac{T_2}{T_1} = \left(\frac{P_2}{P_1}\right)^{(k-1)/k} = \left(\frac{V_1}{V_2}\right)^{k-1}$</p>
+                        <p class="text-sm text-slate-500">Heat Transfer (Constant Pressure): $Q_{in} = c_p (T_3 - T_2)$</p>
+                        <p class="text-sm text-slate-500">Net Work: $W_{net} = Q_{in} - Q_{out}$</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="text-4xl font-bold text-[#FF3D7F]">5.</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-700">Calculate Performance Metrics</h3>
+                        <p class="text-slate-600">Once all state points are determined, calculate the required performance metrics like thermal efficiency, net work output, or specific fuel consumption using the relevant formulas provided in this infographic.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="text-4xl font-bold text-[#FF3D7F]">6.</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-700">Check Units & Sanity Check Results</h3>
+                        <p class="text-slate-600">Always double-check your units throughout the calculation. Finally, perform a "sanity check" on your answer. Does the efficiency make sense? Is the work output positive? Do the temperatures and pressures follow the expected trends?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        function wrapLabel(label, maxLen = 16) {
+            if (label.length <= maxLen) return label;
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + word).length <= maxLen) {
+                    currentLine += (currentLine === '' ? '' : ' ') + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            });
+            lines.push(currentLine);
+            return lines;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaultTooltipCallback = {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    }
+                    return label;
+                }
+            };
+
+            // Reciprocating Chart Logic
+            const reciprocatingChartCtx = document.getElementById('reciprocating-chart').getContext('2d');
+            const compareSameCRBtn = document.getElementById('compare-same-cr');
+            const compareSamePeakPBtn = document.getElementById('compare-same-peak-p');
+            const reciprocatingExplanation = document.getElementById('reciprocating-explanation');
+            let reciprocatingChart;
+
+            const dataSameCR = {
+                labels: ['Otto Cycle', 'Dual Cycle', 'Diesel Cycle'],
+                datasets: [{
+                    label: 'Efficiency',
+                    data: [60, 55, 50],
+                    backgroundColor: ['#FF3D7F', '#FF8C42', '#3B82F6'],
+                    borderColor: ['#fff'],
+                    borderWidth: 2
+                }]
+            };
+            const explanationSameCR = `<p class="font-bold">Result: Otto cycle is most efficient.</p><p>For the same compression ratio, adding heat at a constant volume (Otto) is thermodynamically more efficient than at constant pressure (Diesel).</p>`;
+
+            const dataSamePeakP = {
+                labels: ['Diesel Cycle', 'Dual Cycle', 'Otto Cycle'],
+                datasets: [{
+                    label: 'Efficiency',
+                    data: [65, 62, 50],
+                    backgroundColor: ['#3B82F6', '#FF8C42', '#FF3D7F'],
+                    borderColor: ['#fff'],
+                    borderWidth: 2
+                }]
+            };
+            const explanationSamePeakP = `<p class="font-bold">Result: Diesel cycle is most efficient.</p><p>This is the real-world constraint. For the same material strength (peak pressure limit), a Diesel engine can be designed with a much higher compression ratio, making it more efficient overall.</p>`;
+            
+            function initReciprocatingChart() {
+                reciprocatingChart = new Chart(reciprocatingChartCtx, {
+                    type: 'bar',
+                    data: dataSameCR,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { callbacks: defaultTooltipCallback }
+                        },
+                        scales: { 
+                            x: { beginAtZero: true, max: 70, title: { display: true, text: 'Air-Standard Efficiency (%)' } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+                reciprocatingExplanation.innerHTML = explanationSameCR;
+            }
+
+            compareSameCRBtn.addEventListener('click', () => {
+                reciprocatingChart.data = dataSameCR;
+                reciprocatingChart.update();
+                reciprocatingExplanation.innerHTML = explanationSameCR;
+                compareSameCRBtn.classList.add('bg-[#FF3D7F]', 'text-white');
+                compareSameCRBtn.classList.remove('bg-slate-200', 'text-slate-700');
+                compareSamePeakPBtn.classList.add('bg-slate-200', 'text-slate-700');
+                compareSamePeakPBtn.classList.remove('bg-[#FF3D7F]', 'text-white');
+            });
+
+            compareSamePeakPBtn.addEventListener('click', () => {
+                reciprocatingChart.data = dataSamePeakP;
+                reciprocatingChart.update();
+                reciprocatingExplanation.innerHTML = explanationSamePeakP;
+                compareSamePeakPBtn.classList.add('bg-[#FF3D7F]', 'text-white');
+                compareSamePeakPBtn.classList.remove('bg-slate-200', 'text-slate-700');
+                compareSameCRBtn.classList.add('bg-slate-200', 'text-slate-700');
+                compareSameCRBtn.classList.remove('bg-[#FF3D7F]', 'text-white');
+            });
+
+            initReciprocatingChart();
+
+            // Brayton Optimization Chart Logic
+            const braytonOptCtx = document.getElementById('brayton-optimization-chart').getContext('2d');
+            const rp_values = Array.from({length: 29}, (_, i) => i + 2);
+            const efficiency_values = rp_values.map(r => (1 - 1 / Math.pow(r, (1.4 - 1) / 1.4)) * 100);
+            const work_values = rp_values.map(r => {
+                let t_ratio = Math.pow(r, (1.4 - 1) / 1.4);
+                return (5 * t_ratio - t_ratio * t_ratio) / 5 * 80;
+            });
+
+            new Chart(braytonOptCtx, {
+                type: 'line',
+                data: {
+                    labels: rp_values,
+                    datasets: [
+                        { label: 'Thermal Efficiency', data: efficiency_values, borderColor: '#FF3D7F', yAxisID: 'y', tension: 0.1, borderWidth: 3 },
+                        { label: 'Net Work Output', data: work_values, borderColor: '#3B82F6', yAxisID: 'y1', tension: 0.1, borderWidth: 3 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'top' }, tooltip: { callbacks: defaultTooltipCallback } },
+                    scales: {
+                        x: { title: { display: true, text: 'Pressure Ratio (rp)' } },
+                        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Efficiency (%)' }, min: 0, max: 70, ticks: { color: '#FF3D7F' } },
+                        y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Work Output (Normalized)' }, min: 0, max: 100, grid: { drawOnChartArea: false }, ticks: { color: '#3B82F6' } }
+                    }
+                }
+            });
+
+            // Brayton Modification Chart Logic
+            const braytonModCtx = document.getElementById('brayton-modification-chart').getContext('2d');
+            const modExplanation = document.getElementById('modification-explanation');
+            const checkRegen = document.getElementById('regen-check');
+            const checkReheat = document.getElementById('reheat-check');
+            const checkIntercool = document.getElementById('intercool-check');
+
+            const simpleCycleData = [{x: 1.5, y: 1.0}, {x: 1.5, y: 2.5}, {x: 3.0, y: 4.5}, {x: 3.0, y: 2.0}, {x: 1.5, y: 1.0}];
+            const regenCycleData = [{x: 1.5, y: 1.0}, {x: 1.5, y: 2.5}, {x: 2.2, y: 3.2}, {x: 3.3, y: 4.5}, {x: 3.3, y: 2.0}, {x: 2.5, y: 1.5}, {x: 1.5, y: 1.0}];
+            const reheatCycleData = [{x: 1.5, y: 1.0}, {x: 1.5, y: 2.5}, {x: 3.0, y: 4.5}, {x: 2.5, y: 3.0}, {x: 3.5, y: 4.5}, {x: 3.5, y: 1.5}, {x: 1.5, y: 1.0}];
+            const intercoolCycleData = [{x: 1.5, y: 1.0}, {x: 1.5, y: 1.8}, {x: 1.2, y: 1.3}, {x: 1.2, y: 2.2}, {x: 3.0, y: 4.5}, {x: 3.0, y: 2.0}, {x: 1.5, y: 1.0}];
+
+            const braytonModificationChart = new Chart(braytonModCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        { label: 'Simple Brayton', data: simpleCycleData, borderColor: '#1E293B', borderWidth: 4, showLine: true, pointRadius: 4, pointBackgroundColor: '#1E293B' },
+                        { label: 'With Regeneration', data: [], borderColor: '#FF3D7F', borderWidth: 3, showLine: true, pointRadius: 0, fill: 'start', backgroundColor: 'rgba(255, 61, 127, 0.1)' },
+                        { label: 'With Reheating', data: [], borderColor: '#FF8C42', borderWidth: 3, showLine: true, pointRadius: 0, fill: 'start', backgroundColor: 'rgba(255, 140, 66, 0.1)' },
+                        { label: 'With Intercooling', data: [], borderColor: '#3B82F6', borderWidth: 3, showLine: true, pointRadius: 0, fill: 'start', backgroundColor: 'rgba(59, 130, 246, 0.1)' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: defaultTooltipCallback } },
+                    scales: {
+                        x: { title: { display: true, text: 'Entropy (s)' }, min: 1, max: 4 },
+                        y: { title: { display: true, text: 'Temperature (T)' }, min: 0.5, max: 5 }
+                    }
+                }
+            });
+
+            function updateModifications() {
+                braytonModificationChart.data.datasets[1].data = checkRegen.checked ? regenCycleData : [];
+                braytonModificationChart.data.datasets[2].data = checkReheat.checked ? reheatCycleData : [];
+                braytonModificationChart.data.datasets[3].data = checkIntercool.checked ? intercoolCycleData : [];
+                braytonModificationChart.update();
+                
+                let explanationHTML = '';
+                if (checkRegen.checked) explanationHTML += '<p><strong>Regeneration:</strong> Recovers exhaust heat to preheat compressed air. <strong>Primary Benefit: Increases Thermal Efficiency.</strong></p>';
+                if (checkReheat.checked) explanationHTML += '<p><strong>Reheating:</strong> Adds heat between turbine stages. <strong>Primary Benefit: Increases Net Work Output.</strong></p>';
+                if (checkIntercool.checked) explanationHTML += '<p><strong>Intercooling:</strong> Cools air between compressor stages. <strong>Primary Benefit: Increases Net Work Output.</strong></p>';
+                if (!explanationHTML) explanationHTML = 'Select a modification to see its effect.';
+                modExplanation.innerHTML = explanationHTML;
+            }
+
+            [checkRegen, checkReheat, checkIntercool].forEach(check => check.addEventListener('change', updateModifications));
+            updateModifications();
+
+            // Combined Cycle Chart Logic
+            const combinedCycleCtx = document.getElementById('combined-cycle-chart').getContext('2d');
+            const combinedCycleLabels = [
+                wrapLabel('Simple Gas Turbine (Brayton)'), 
+                wrapLabel('Steam Power Plant (Rankine)'), 
+                wrapLabel('Combined Cycle (Brayton-Rankine)')
+            ];
+            const combinedCycleData = [35, 40, 60]; 
+
+            new Chart(combinedCycleCtx, {
+                type: 'bar',
+                data: {
+                    labels: combinedCycleLabels,
+                    datasets: [{
+                        label: 'Efficiency (%)',
+                        data: combinedCycleData,
+                        backgroundColor: ['#FF8C42', '#3B82F6', '#FF3D7F'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: defaultTooltipCallback }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Cycle Type' }, grid: { display: false } },
+                        y: { beginAtZero: true, max: 70, title: { display: true, text: 'Thermal Efficiency (%)' } }
+                    }
+                }
+            });
+
+            // Emissions Chart Logic
+            const emissionsChartCtx = document.getElementById('emissions-chart').getContext('2d');
+            const emissionsLabels = [
+                wrapLabel('Nitrogen Oxides (NOx)'), 
+                wrapLabel('Carbon Monoxide (CO)'), 
+                wrapLabel('Unburned Hydrocarbons (UHC)')
+            ];
+            const emissionsData = [80, 40, 20]; 
+
+            new Chart(emissionsChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: emissionsLabels,
+                    datasets: [{
+                        label: 'Relative Impact',
+                        data: emissionsData,
+                        backgroundColor: ['#FF3D7F', '#FF8C42', '#3B82F6'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: defaultTooltipCallback }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Emission Type' }, grid: { display: false } },
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Relative Impact' } }
+                    }
+                }
+            });
+
+            // Ensure all static LaTeX on the page is typeset after DOM is ready
+            if (typeof MathJax !== 'undefined' && MathJax.startup && MathJax.startup.promise) {
+                MathJax.startup.promise.then(() => {
+                    MathJax.typesetPromise([document.body]);
+                }).catch((err) => console.error("MathJax typesetting failed on document.body:", err));
+            }
+        });
+    </script>
+</body>
+</html>
