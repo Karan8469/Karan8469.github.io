@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Design Against Fluctuating Loads</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Chosen Palette: Warm Neutrals with Blue Accent -->
+    <!-- Application Structure Plan: A single-page dashboard with a top navigation bar linking to thematic sections. The structure is designed for non-linear exploration, allowing users to jump between core concepts. It starts with a high-level introduction, then moves to three main interactive sections: 'The 'Why': Stress & Life' (covering Stress Concentration, S-N Diagrams, and Marin Factors), 'The 'How': Design Criteria', and new sections for 'Crack Growth', 'Environmental Effects', and 'Factor of Safety'. A final section provides summary tools like a Miner's Rule calculator, an updated concept map, and a new card for numerical problem-solving tips. This structure was chosen to make abstract concepts tangible through hands-on interaction and direct visual comparison, which is more effective for learning than a linear text format, while also providing a more complete picture of fatigue design. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: S-N Curve data for ferrous vs. non-ferrous materials. -> Goal: Compare. -> Viz: Interactive Line Chart (Chart.js). -> Interaction: Toggle button to switch between materials, updating the chart and explanatory text. -> Justification: Visually demonstrates the critical difference in fatigue behavior (presence/absence of endurance limit).
+        - Report Info: Marin Factors equation. -> Goal: Explore cause-and-effect. -> Viz: HTML sliders and a dynamic text output. -> Interaction: User adjusts sliders for surface finish, size, etc., and the corrected endurance limit recalculates instantly. -> Justification: Transforms a static formula into a tangible tool, showing the impact of each factor.
+        - Report Info: Soderberg, Goodman, Gerber criteria. -> Goal: Compare & Apply. -> Viz: Combined Line/Scatter Chart (Chart.js). -> Interaction: User inputs mean/alternating stress, which is plotted against all three criteria lines. The app provides instant feedback on whether the design is safe according to each. -> Justification: Allows for direct comparison of the criteria's conservatism and provides immediate application-based feedback.
+        - Report Info: Concept relationships. -> Goal: Organize & Synthesize. -> Viz: HTML/CSS diagram. -> Interaction: Static visual aid. -> Justification: Provides a clear, high-level overview of how all topics interconnect.
+        - New Content: Fatigue Crack Growth (Paris' Law). -> Goal: Explain propagation. -> Viz: Text with MathJax formula. -> Interaction: Static explanation. -> Justification: Essential next step after crack initiation.
+        - New Content: Surface Treatments & Residual Stresses. -> Goal: Explain practical improvements. -> Viz: Text. -> Interaction: Static explanation. -> Justification: Directly relates to improving fatigue life.
+        - New Content: Environmental Effects. -> Goal: Explain external influences. -> Viz: Text. -> Interaction: Static explanation. -> Justification: Crucial for real-world scenarios.
+        - New Content: Factor of Safety. -> Goal: Explain design margin. -> Viz: Text. -> Interaction: Static explanation. -> Justification: Fundamental for reliable design.
+        - New Content: Numerical Problem Solving Tips. -> Goal: Provide practical guidance for exams. -> Viz: Text. -> Interaction: Static explanation. -> Justification: Directly addresses user's request for exam preparation.
+        - Library/Method: All charts use Chart.js (Canvas). All diagrams use structured HTML/CSS with Tailwind. All formulas use MathJax for LaTeX rendering.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f5; /* Zinc 100 */
+            color: #18181b; /* Zinc 900 */
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .nav-link.active {
+            color: #2563eb; /* Blue 600 */
+            border-bottom-color: #2563eb;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: #e4e4e7;
+            color: #18181b;
+        }
+        .btn-secondary:hover {
+            background-color: #d4d4d8;
+        }
+        .btn.active {
+            background-color: #1d4ed8;
+            color: white;
+        }
+        .concept-map-item {
+            background-color: #fff;
+            border: 1px solid #d4d4d8;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .concept-map-arrow {
+            position: absolute;
+            background-color: #a1a1aa;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-zinc-800">Fatigue Design Explorer</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="nav-link px-3 py-2 text-sm font-medium text-zinc-500 hover:text-blue-600 border-b-2 border-transparent">Introduction</a>
+                        <a href="#stress-life" class="nav-link px-3 py-2 text-sm font-medium text-zinc-500 hover:text-blue-600 border-b-2 border-transparent">Stress & Life</a>
+                        <a href="#criteria" class="nav-link px-3 py-2 text-sm font-medium text-zinc-500 hover:text-blue-600 border-b-2 border-transparent">Design Criteria</a>
+                        <a href="#crack-growth" class="nav-link px-3 py-2 text-sm font-medium text-zinc-500 hover:text-blue-600 border-b-2 border-transparent">Crack Growth</a>
+                        <a href="#environmental-effects" class="nav-link px-3 py-2 text-sm font-medium text-zinc-500 hover:text-blue-600 border-b-2 border-transparent">Environmental</a>
+                        <a href="#safety-factor" class="nav-link px-3 py-2 text-sm font-medium text-zinc-500 hover:text-blue-600 border-b-2 border-transparent">Safety Factor</a>
+                        <a href="#summary" class="nav-link px-3 py-2 text-sm font-medium text-zinc-500 hover:text-blue-600 border-b-2 border-transparent">Summary & Tools</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="intro" class="scroll-mt-24 mb-16">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">Mastering Design Against Fluctuating Loads</h2>
+                <p class="mt-4 text-lg leading-8 text-zinc-600">An interactive guide to the core principles of fatigue failure in mechanical engineering.</p>
+            </div>
+            <div class="card p-8">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-zinc-800">The Silent Threat: Why Fatigue Matters</h3>
+                        <p class="mt-4 text-zinc-600">Most real-world machine parts don't fail because of a single, massive overload. They fail due to <strong>fatigue</strong>: the slow, progressive damage caused by millions of small, repeated stress cycles. This failure can happen suddenly and without warning, at stress levels far below the material's static strength.</p>
+                        <p class="mt-4 text-zinc-600 font-semibold">The Paperclip Analogy:</p>
+                        <p class="mt-2 text-zinc-600">Think of bending a paperclip. One bend won't break it. But bend it back and forth repeatedly in the same spot, and it will eventually snap. Each bend adds a tiny amount of damage. Fatigue is the accumulation of this microscopic damage until the component can no longer support the load. This interactive guide will help you understand how to design components that can withstand this silent threat.</p>
+                    </div>
+                    <div class="flex justify-center items-center h-48 bg-zinc-100 rounded-lg">
+                        <span class="text-6xl animate-pulse">📎</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="stress-life" class="scroll-mt-24 mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900">The 'Why': Stress, Life & Material Resistance</h2>
+                <p class="mt-2 text-lg text-zinc-600">Fatigue failure begins with a tiny crack. This section explores where cracks start (Stress Concentration), how a material's life is measured (S-N Diagram), and how real-world conditions affect its strength (Marin Factors).</p>
+            </div>
+
+            <div class="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-zinc-800">1. Stress Concentration (\(K_f\))</h3>
+                    <p class="text-zinc-600 mb-4">Geometric irregularities like holes, notches, and fillets act as "stress magnifiers," creating local hotspots where fatigue cracks initiate. We quantify this effect with the Fatigue Stress Concentration Factor, \(K_f\).</p>
+                    <div class="bg-zinc-100 p-4 rounded-lg">
+                        <p class="text-center font-mono text-lg">$$K_f = 1 + q(K_t - 1)$$</p>
+                    </div>
+                    <p class="mt-4 text-zinc-600">Where \(K_t\) is the theoretical stress concentration factor and \(q\) is the material's notch sensitivity.</p>
+                </div>
+
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-zinc-800">2. Marin Factors: From Lab to Reality</h3>
+                     <p class="text-zinc-600 mb-4">The endurance limit from a lab test (\(S_e'\)) isn't realistic for a real part. The Marin Equation corrects it for real-world conditions. Adjust the sliders below to see how the corrected endurance limit (\(S_e\)) changes.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="ka" class="block text-sm font-medium text-zinc-700">Surface Finish (\(k_a\)): <span id="ka_val">0.8</span></label>
+                            <input id="ka" type="range" min="0.5" max="1.0" value="0.8" step="0.01" class="w-full">
+                        </div>
+                        <div>
+                            <label for="kb" class="block text-sm font-medium text-zinc-700">Size (\(k_b\)): <span id="kb_val">0.85</span></label>
+                            <input id="kb" type="range" min="0.6" max="1.0" value="0.85" step="0.01" class="w-full">
+                        </div>
+                         <div>
+                            <label for="kc" class="block text-sm font-medium text-zinc-700">Load Type (\(k_c\)): <span id="kc_val">1.0</span></label>
+                            <input id="kc" type="range" min="0.577" max="1.0" value="1.0" step="0.001" class="w-full">
+                        </div>
+                    </div>
+                    <div class="mt-4 bg-blue-100 p-4 rounded-lg text-center">
+                        <p class="text-zinc-700">Corrected Endurance Limit:</p>
+                        <p class="font-bold text-2xl text-blue-800" id="se_result">S_e = 136.0 MPa</p>
+                        <p class="text-sm font-mono text-zinc-600 mt-1">$$S_e = k_a k_b k_c k_d k_e k_f S_e'$$</p>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="text-lg font-semibold text-zinc-800">Surface Treatments & Residual Stresses</h4>
+                        <p class="text-zinc-600 text-sm mt-2">Beyond surface finish, treatments like <strong>shot peening</strong> (introducing compressive residual stresses) or <strong>carburizing</strong> (creating a hard, wear-resistant surface) can significantly improve fatigue life. Compressive residual stresses at the surface effectively reduce the tensile mean stress experienced by the material, thus increasing its resistance to fatigue crack initiation and propagation. These effects are often implicitly or explicitly accounted for within the \(k_f\) (miscellaneous effects) factor or by direct modification of the mean stress.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6 mt-8">
+                <h3 class="text-xl font-semibold mb-2 text-zinc-800">3. The S-N Diagram: A Material's Fatigue Roadmap</h3>
+                <p class="text-zinc-600 mb-4">The S-N (Stress vs. Number of Cycles) Diagram is the fundamental map of a material's fatigue life. It's created by testing multiple specimens at different stress levels and recording how many cycles they survive. Toggle between materials to see a key difference in fatigue behavior.</p>
+                <div class="flex justify-center space-x-2 mb-4">
+                    <button id="btn-steel" class="btn btn-secondary active">Ferrous (e.g., Steel)</button>
+                    <button id="btn-aluminum" class="btn btn-secondary">Non-Ferrous (e.g., Aluminum)</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="snChart"></canvas>
+                </div>
+                <div id="sn-explanation" class="mt-4 p-4 bg-zinc-100 rounded-lg">
+                    <!-- Explanation will be dynamically inserted here -->
+                </div>
+                <h4 class="text-lg font-semibold text-zinc-800 mt-6">S-N Curve Equations (Finite Life Region)</h4>
+                <p class="text-zinc-600 mb-4">For the finite life region of the S-N curve, the relationship between stress amplitude (\(S\)) and cycles to failure (\(N\)) can often be approximated by a power law:</p>
+                <div class="bg-zinc-100 p-4 rounded-lg mb-2">
+                    <p class="text-center font-mono text-lg">$$S = a(N)^b$$</p>
+                </div>
+                <p class="text-zinc-600 mb-4">Alternatively, to find cycles for a given stress:</p>
+                <div class="bg-zinc-100 p-4 rounded-lg">
+                    <p class="text-center font-mono text-lg">$$N = \left(\frac{S}{a}\right)^{1/b}$$</p>
+                </div>
+                <p class="mt-4 text-zinc-600">Where \(a\) is the fatigue strength coefficient and \(b\) is the fatigue strength exponent (slope of the log-log S-N curve). These constants are determined experimentally from two points on the S-N curve (e.g., \(S_{1000}\) at \(N=1000\) cycles and \(S_e\) at \(N=10^6\) cycles for steels).</p>
+            </div>
+        </section>
+
+        <section id="criteria" class="scroll-mt-24 mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900">The 'How': Interactive Design Criteria</h2>
+                <p class="mt-2 text-lg text-zinc-600">When stresses aren't fully reversed (i.e., mean stress is not zero), we use design criteria to predict failure. This interactive diagram plots your design point against the most common criteria.</p>
+            </div>
+            <div class="card p-6">
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1 space-y-4">
+                        <h3 class="text-xl font-semibold text-zinc-800">Test Your Design</h3>
+                        <p class="text-zinc-600">Enter the mean and alternating stresses for your component. The point will be plotted on the graph to check for safety against fatigue.</p>
+                        <div>
+                            <label for="mean-stress" class="block text-sm font-medium text-zinc-700">Mean Stress, \(\sigma_m\) (MPa)</label>
+                            <input type="number" id="mean-stress" value="150" class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="alt-stress" class="block text-sm font-medium text-zinc-700">Alternating Stress, \(\sigma_a\) (MPa)</label>
+                            <input type="number" id="alt-stress" value="100" class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <button id="plot-stress-btn" class="btn btn-primary w-full">Check Safety</button>
+                        <div id="safety-results" class="space-y-2 mt-4">
+                            <!-- Results will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="chart-container" style="height: 450px; max-height: 500px;">
+                            <canvas id="meanStressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="text-lg font-semibold text-zinc-800 mt-6">Fluctuating Stress Components</h4>
+                <p class="text-zinc-600 mb-4">From maximum (\(\sigma_{max}\)) and minimum (\(\sigma_{min}\)) stresses:</p>
+                <div class="bg-zinc-100 p-4 rounded-lg mb-2">
+                    <p class="text-center font-mono text-lg">$$\sigma_m = \frac{\sigma_{max} + \sigma_{min}}{2}$$</p>
+                    <p class="text-center font-mono text-lg">$$\sigma_a = \frac{\sigma_{max} - \sigma_{min}}{2}$$</p>
+                    <p class="text-center font-mono text-lg">$$R = \frac{\sigma_{min}}{\sigma_{max}}$$ (Stress Ratio)</p>
+                </div>
+                <h4 class="text-lg font-semibold text-zinc-800 mt-6">Fatigue Failure Criteria (with Factor of Safety \(n_f\))</h4>
+                <div class="bg-zinc-100 p-4 rounded-lg space-y-4">
+                    <div>
+                        <p class="font-semibold">Soderberg Criterion:</p>
+                        <p class="text-center font-mono text-lg">$$\frac{\sigma_a}{S_e/n_f} + \frac{\sigma_m}{S_y/n_f} = 1 \quad \text{or} \quad \frac{\sigma_a}{S_e} + \frac{\sigma_m}{S_y} = \frac{1}{n_f}$$</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Gerber Criterion:</p>
+                        <p class="text-center font-mono text-lg">$$\frac{\sigma_a}{S_e/n_f} + \left(\frac{\sigma_m}{S_{ut}/n_f}\right)^2 = 1 \quad \text{or} \quad \frac{\sigma_a}{S_e} + \left(\frac{\sigma_m}{S_{ut}}\right)^2 = \frac{1}{n_f}$$</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Goodman Criterion:</p>
+                        <p class="text-center font-mono text-lg">$$\frac{\sigma_a}{S_e/n_f} + \frac{\sigma_m}{S_{ut}/n_f} = 1 \quad \text{or} \quad \frac{\sigma_a}{S_e} + \frac{\sigma_m}{S_{ut}} = \frac{1}{n_f}$$</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Modified Goodman Criterion:</p>
+                        <p class="text-center font-mono text-lg">For \(\sigma_m \ge 0\): $$\frac{\sigma_a}{S_e/n_f} + \frac{\sigma_m}{S_{ut}/n_f} = 1 \quad \text{or} \quad \frac{\sigma_a}{S_e} + \frac{\sigma_m}{S_{ut}} = \frac{1}{n_f}$$</p>
+                        <p class="text-center font-mono text-lg">For \(\sigma_m < 0\): $$\sigma_a = S_e / n_f$$</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="crack-growth" class="scroll-mt-24 mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900">Fatigue Crack Growth & Fracture Mechanics</h2>
+                <p class="mt-2 text-lg text-zinc-600">Once a fatigue crack initiates, its propagation determines the remaining useful life of a component. Fracture mechanics provides tools to predict this growth.</p>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4 text-zinc-800">Understanding Crack Propagation</h3>
+                <p class="text-zinc-600 mb-4">Fatigue failure isn't just about crack initiation; it's also about how quickly that crack grows until the component can no longer sustain the load. This is where <strong>Fracture Mechanics</strong> comes in, focusing on the behavior of materials containing cracks.</p>
+                <p class="text-zinc-600 mb-4 font-semibold">The Zipper Analogy:</p>
+                <p class="text-zinc-600 mb-4">Imagine a small tear in a piece of fabric. Each time you pull on the fabric (cyclic loading), that tear grows a little bit, like a zipper slowly unzipping. Eventually, the tear becomes so large that the fabric rips completely. Fatigue crack growth is similar: each stress cycle "unzips" the crack a tiny amount until catastrophic failure.</p>
+
+                <h4 class="text-lg font-semibold text-zinc-800 mt-6">Paris' Law (Paris-Erdogan Equation)</h4>
+                <p class="text-zinc-600 mb-4">The most widely used empirical relationship for predicting fatigue crack growth rate is Paris' Law:</p>
+                <div class="bg-zinc-100 p-4 rounded-lg">
+                    <p class="text-center font-mono text-lg">$$\frac{da}{dN} = C (\Delta K)^m$$</p>
+                </div>
+                <p class="mt-4 text-zinc-600">Where:</p>
+                <ul class="list-disc list-inside text-zinc-600 ml-4">
+                    <li>\(\frac{da}{dN}\): Crack growth rate (change in crack length \(a\) per cycle \(N\)).</li>
+                    <li>\(C\): Material constant (depends on material, environment, frequency, temperature).</li>
+                    <li>\(\Delta K\): Stress Intensity Factor Range. This is the range of the stress intensity factor during a load cycle, which characterizes the stress field at the crack tip.</li>
+                    <li>\(m\): Material constant (Paris exponent, typically between 2 and 4 for metals).</li>
+                </ul>
+                <p class="mt-4 text-zinc-600"><strong>Stress Intensity Factor (\(K\))</strong>: This parameter quantifies the stress state at the tip of a crack. It depends on the applied stress, crack size, and geometry of the component. \(\Delta K\) is the difference between the maximum and minimum stress intensity factors in a cycle.</p>
+                <p class="mt-4 text-zinc-600"><strong>Importance</strong>: Paris' Law allows engineers to predict how many cycles it will take for a crack of a certain size to grow to a critical length, leading to final fracture. This is crucial for damage-tolerant design, where components are designed to safely contain and tolerate existing flaws until they can be detected and repaired.</p>
+            </div>
+        </section>
+
+        <section id="environmental-effects" class="scroll-mt-24 mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900">Environmental & Other Effects on Fatigue</h2>
+                <p class="mt-2 text-lg text-zinc-600">Beyond mechanical loading, the operating environment can significantly accelerate fatigue damage, often leading to premature failure.</p>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4 text-zinc-800">1. Corrosion Fatigue</h3>
+                <p class="text-zinc-600 mb-4">When a component is subjected to cyclic stresses in a corrosive environment (e.g., saltwater, acidic solutions), the combined action of mechanical loading and chemical attack can drastically reduce fatigue life. The corrosive environment can pit the surface, creating stress concentration sites, and also accelerate crack initiation and propagation by weakening the material at the crack tip. This synergistic effect is far more damaging than either corrosion or fatigue acting alone.</p>
+                <p class="text-zinc-600 mb-4 font-semibold">Example:</p>
+                <p class="text-zinc-600 mb-4">Offshore oil platforms, marine structures, and chemical processing equipment are highly susceptible to corrosion fatigue due to exposure to harsh environments and fluctuating loads from waves or internal pressures.</p>
+
+                <h3 class="text-xl font-semibold mb-4 text-zinc-800 mt-6">2. Fretting Fatigue</h3>
+                <p class="text-zinc-600 mb-4">Fretting fatigue occurs at the contact interface between two surfaces that are nominally clamped together but experience small, oscillatory relative motion (e.g., vibration). This small movement causes wear and oxidation at the interface, generating debris and creating microscopic surface cracks. These cracks then act as stress concentrators, leading to fatigue crack initiation and propagation at stress levels much lower than expected. It's common in bolted or riveted joints, press-fit assemblies, and bearings.</p>
+                <p class="text-zinc-600 mb-4 font-semibold">Example:</p>
+                <p class="text-zinc-600 mb-4">Aircraft engine components, railway axles at wheel seats, and bolted connections in vibrating machinery are prone to fretting fatigue.</p>
+
+                <h3 class="text-xl font-semibold mb-4 text-zinc-800 mt-6">3. Temperature Effects (Revisited)</h3>
+                <p class="text-zinc-600 mb-4">While covered in Marin Factors, it's worth re-emphasizing that extreme temperatures, both high and low, can significantly alter a material's fatigue properties. High temperatures can lead to <strong>creep-fatigue interaction</strong>, where time-dependent deformation (creep) at elevated temperatures interacts with cyclic loading, accelerating damage. Low temperatures can increase material brittleness, making it more susceptible to crack propagation.</p>
+            </div>
+        </section>
+
+        <section id="safety-factor" class="scroll-mt-24 mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900">Factor of Safety in Fatigue Design</h2>
+                <p class="mt-2 text-lg text-zinc-600">The Factor of Safety (FS) is a critical concept in all engineering design, but it takes on particular importance in fatigue due to the inherent uncertainties.</p>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4 text-zinc-800">What is a Factor of Safety?</h3>
+                <p class="text-zinc-600 mb-4">A <strong>Factor of Safety (FS)</strong>, also known as a safety factor, is a ratio of the ultimate strength of a material or component to the actual stress or load that is applied during operation. In fatigue design, it's typically defined as the ratio of the material's fatigue strength (or endurance limit) to the actual alternating stress, or the ratio of the design life to the expected life.</p>
+                <p class="text-zinc-600 mb-4 font-semibold">Why is it essential in Fatigue Design?</p>
+                <p class="text-zinc-600 mb-4">Fatigue analysis involves numerous uncertainties:</p>
+                <ul class="list-disc list-inside text-zinc-600 ml-4">
+                    <li><strong>Material Variability:</strong> Fatigue properties can vary significantly even within the same material batch.</li>
+                    <li><strong>Loading Uncertainty:</strong> Actual operational loads can be higher or more complex than anticipated.</li>
+                    <li><strong>Manufacturing Imperfections:</strong> Surface finish, residual stresses, and geometric tolerances are never perfect.</li>
+                    <li><strong>Environmental Effects:</strong> Unforeseen corrosive agents, temperature fluctuations, or fretting conditions.</li>
+                    <li><strong>Approximations in Models:</strong> Fatigue models (like S-N curves, Marin factors, Miner's Rule, and mean stress criteria) are empirical and involve simplifications.</li>
+                </ul>
+                <p class="text-zinc-600 mb-4">The factor of safety provides a margin to account for these uncertainties, ensuring that the component will not fail prematurely. A higher factor of safety implies a more conservative (and often heavier/costlier) design.</p>
+
+                <h4 class="text-lg font-semibold text-zinc-800 mt-6">Application in Design Criteria</h4>
+                <p class="text-zinc-600 mb-4">For the mean stress criteria (Soderberg, Goodman, Gerber, Modified Goodman), the factor of safety ($n_f$) is typically incorporated by dividing the strength terms by $n_f$. For example, for the <strong>Goodman criterion</strong>:</p>
+                <div class="bg-zinc-100 p-4 rounded-lg">
+                    <p class="text-center font-mono text-lg">$$\frac{\sigma_a}{S_e/n_f} + \frac{\sigma_m}{S_{ut}/n_f} = 1$$</p>
+                    <p class="text-center font-mono text-lg">or equivalently: $$\frac{\sigma_a}{S_e} + \frac{\sigma_m}{S_{ut}} = \frac{1}{n_f}$$</p>
+                </div>
+                <p class="mt-4 text-zinc-600">This ensures that the design point (combination of \(\sigma_a\) and \(\sigma_m\)) falls well within the safe region, providing the desired margin against fatigue failure.</p>
+            </div>
+        </section>
+
+        <section id="combined-stresses" class="scroll-mt-24 mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900">Combined Stresses: Beyond Uniaxial Loading</h2>
+                <p class="mt-2 text-lg text-zinc-600">In real-world components, stresses rarely act in a single direction. This section covers how to handle complex loading conditions that result in combined normal and shear stresses.</p>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4 text-zinc-800">Equivalent Stress for Fluctuating Loads</h3>
+                <p class="text-zinc-600 mb-4">To apply uniaxial fatigue criteria to components under combined multiaxial stresses, we convert the complex stress state into equivalent uniaxial stresses using the von Mises concept, separating mean and alternating components.</p>
+                <div class="bg-zinc-100 p-4 rounded-lg mb-2">
+                    <p class="font-semibold text-zinc-800">Equivalent Mean Stress (\(\sigma_{m,eq}\)):</p>
+                    <p class="text-center font-mono text-lg">$$\sigma_{m,eq} = \sqrt{\sigma_{xm}^2 + 3\tau_{xym}^2}$$</p>
+                </div>
+                <div class="bg-zinc-100 p-4 rounded-lg">
+                    <p class="font-semibold text-zinc-800">Equivalent Alternating Stress (\(\sigma_{a,eq}\)):</p>
+                    <p class="text-center font-mono text-lg">$$\sigma_{a,eq} = \sqrt{\sigma_{xa}^2 + 3\tau_{xya}^2}$$</p>
+                </div>
+                <p class="mt-4 text-zinc-600">Where \(\sigma_{xm}\) and \(\sigma_{xa}\) are the mean and alternating normal stresses, and \(\tau_{xym}\) and \(\tau_{xya}\) are the mean and alternating shear stresses, respectively. Remember to apply appropriate fatigue stress concentration factors ($K_f$ for normal, $K_{fs}$ for shear) to the nominal stress components before calculating these equivalent stresses.</p>
+            </div>
+        </section>
+
+        <section id="summary" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-zinc-900">Summary & Tools</h2>
+                <p class="mt-2 text-lg text-zinc-600">Consolidate your understanding with a concept map and practical tools.</p>
+            </div>
+            <div class="grid md:grid-cols-1 lg:grid-cols-1 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-zinc-800">Miner's Rule: Cumulative Damage</h3>
+                    <p class="text-zinc-600 mb-4">Components often see varying loads. Miner's rule estimates total fatigue damage by summing the "damage fraction" of each load level. Failure is predicted if Total Damage (\(D\)) \(\ge 1\).</p>
+                    <div id="miner-inputs" class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <input type="number" placeholder="Cycles (ni)" class="miner-ni w-1/2 p-2 border rounded">
+                            <input type="number" placeholder="Cycles to Fail (Nfi)" class="miner-nfi w-1/2 p-2 border rounded">
+                        </div>
+                    </div>
+                    <button id="add-miner-level" class="btn btn-secondary mt-2 text-sm">Add Load Level</button>
+                    <div class="mt-4 bg-blue-100 p-4 rounded-lg text-center">
+                        <p class="text-zinc-700">Total Damage:</p>
+                        <p class="font-bold text-2xl text-blue-800" id="miner-result">D = 0.0</p>
+                        <p id="miner-status" class="font-semibold mt-1">Safe</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-zinc-800">Key Formulas for Numericals</h3>
+                    <p class="text-zinc-600 mb-4">Here's a quick reference for the essential formulas used in fatigue design numerical problems:</p>
+                    <ul class="list-disc list-inside text-zinc-600 ml-4 space-y-3">
+                        <li><strong>Stress Concentration:</strong>
+                            <p class="font-mono text-lg">$$K_f = 1 + q(K_t - 1)$$</p>
+                        </li>
+                        <li><strong>Corrected Endurance Limit (Marin Equation):</strong>
+                            <p class="font-mono text-lg">$$S_e = k_a k_b k_c k_d k_e k_f S_e'$$</p>
+                        </li>
+                        <li><strong>S-N Curve (Finite Life):</strong>
+                            <p class="font-mono text-lg">$$S = a(N)^b \quad \text{or} \quad N = \left(\frac{S}{a}\right)^{1/b}$$</p>
+                        </li>
+                        <li><strong>Fluctuating Stress Components:</strong>
+                            <p class="font-mono text-lg">$$\sigma_m = \frac{\sigma_{max} + \sigma_{min}}{2}$$</p>
+                            <p class="font-mono text-lg">$$\sigma_a = \frac{\sigma_{max} - \sigma_{min}}{2}$$</p>
+                            <p class="font-mono text-lg">$$R = \frac{\sigma_{min}}{\sigma_{max}}$$</p>
+                        </li>
+                        <li><strong>Cumulative Damage (Miner's Rule):</strong>
+                            <p class="font-mono text-lg">$$D = \sum_{i=1}^{n} \frac{N_i}{N_{f,i}}$$</p>
+                        </li>
+                        <li><strong>Fatigue Failure Criteria (with Factor of Safety \(n_f\)):</strong>
+                            <p class="font-mono text-lg">Soderberg: $$\frac{\sigma_a}{S_e/n_f} + \frac{\sigma_m}{S_y/n_f} = 1$$</p>
+                            <p class="font-mono text-lg">Gerber: $$\frac{\sigma_a}{S_e/n_f} + \left(\frac{\sigma_m}{S_{ut}/n_f}\right)^2 = 1$$</p>
+                            <p class="font-mono text-lg">Goodman: $$\frac{\sigma_a}{S_e/n_f} + \frac{\sigma_m}{S_{ut}/n_f} = 1$$</p>
+                            <p class="font-mono text-lg">Modified Goodman (\(\sigma_m \ge 0\)): $$\frac{\sigma_a}{S_e/n_f} + \frac{\sigma_m}{S_{ut}/n_f} = 1$$</p>
+                            <p class="font-mono text-lg">Modified Goodman (\(\sigma_m < 0\)): $$\sigma_a = S_e / n_f$$</p>
+                        </li>
+                        <li><strong>Equivalent Stresses (Combined Loading):</strong>
+                            <p class="font-mono text-lg">Mean: $$\sigma_{m,eq} = \sqrt{\sigma_{xm}^2 + 3\tau_{xym}^2}$$</p>
+                            <p class="font-mono text-lg">Alternating: $$\sigma_{a,eq} = \sqrt{\sigma_{xa}^2 + 3\tau_{xya}^2}$$</p>
+                        </li>
+                        <li><strong>Fatigue Crack Growth (Paris' Law):</strong>
+                            <p class="font-mono text-lg">$$\frac{da}{dN} = C (\Delta K)^m$$</p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-zinc-800">Tackling Numerical Problems & Common Mistakes</h3>
+                    <p class="text-zinc-600 mb-4">Solving fatigue numericals requires a systematic approach. Here's a guide to help you, along with common pitfalls to avoid:</p>
+                    <h4 class="text-lg font-semibold text-zinc-800 mt-4">Step-by-Step Approach:</h4>
+                    <ul class="list-disc list-inside text-zinc-600 ml-4 space-y-2">
+                        <li><strong>1. Understand the Problem:</strong> Read carefully. What's given (material properties, geometry, loads)? What needs to be found (safety factor, life, dimensions)?</li>
+                        <li><strong>2. Sketch & Free Body Diagram (FBD):</strong> A clear sketch helps visualize the geometry and applied loads. An FBD is crucial for determining internal forces and moments.</li>
+                        <li><strong>3. Calculate Nominal Stresses:</strong> Determine the maximum and minimum normal and shear stresses in the critical section, ignoring stress concentrations initially.</li>
+                        <li><strong>4. Decompose Stresses:</strong> Calculate the mean (\(\sigma_m\), \(\tau_m\)) and alternating (\(\sigma_a\), \(\tau_a\)) components from \(\sigma_{max}\) and \(\sigma_{min}\).</li>
+                        <li><strong>5. Account for Stress Concentrations:</strong> Identify all stress raisers. Determine \(K_t\) (from charts/tables) and \(q\) (from material properties). Calculate the fatigue stress concentration factor \(K_f = 1 + q(K_t - 1)\). Apply \(K_f\) to the *alternating* stress component, and sometimes to the mean stress if yielding occurs.</li>
+                        <li><strong>6. Determine Theoretical Endurance Limit (\(S_e'\)):</strong> Use empirical rules (e.g., \(0.5 S_{ut}\) for steel) or given data.</li>
+                        <li><strong>7. Apply Marin Factors:</strong> Systematically calculate \(k_a, k_b, k_c, k_d, k_e, k_f\) (where \(k_f\) often incorporates \(1/K_f\)). Multiply these to \(S_e'\) to get the corrected endurance limit \(S_e\).</li>
+                        <li><strong>8. Choose Fatigue Criterion:</strong> Select Soderberg, Goodman, Gerber, or Modified Goodman based on the problem statement, material (ductile/brittle), and desired conservatism.</li>
+                        <li><strong>9. Apply Factor of Safety (\(n_f\)):</strong> Ensure \(n_f\) is incorporated correctly into the chosen criterion's equation. If \(n_f\) is unknown, solve for it.</li>
+                        <li><strong>10. For Combined Stresses:</strong> If both normal and shear stresses are present, calculate equivalent mean (\(\sigma_{m,eq}\)) and alternating (\(\sigma_{a,eq}\)) stresses using the von Mises approach. Then use these equivalent stresses in the chosen fatigue criterion.</li>
+                        <li><strong>11. For Variable Amplitude Loading:</strong> If multiple stress levels are involved, use Miner's Rule. Ensure you have \(N_{f,i}\) for each stress level from the S-N curve.</li>
+                        <li><strong>12. State Assumptions & Check Units:</strong> Explicitly list any assumptions made (e.g., infinite life, material behavior). Double-check all units throughout the calculation.</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-zinc-800 mt-6">Common Mistakes to Avoid:</h4>
+                    <ul class="list-disc list-inside text-zinc-600 ml-4 space-y-2">
+                        <li><strong>Ignoring Stress Concentrations:</strong> A very common and dangerous oversight. Always account for them.</li>
+                        <li><strong>Neglecting Marin Factors:</strong> Using \(S_e'\) instead of \(S_e\) (the corrected endurance limit) for real components.</li>
+                        <li><strong>Confusing \(K_t\) and \(K_f\):</strong> \(K_t\) is theoretical, \(K_f\) is for fatigue and includes notch sensitivity. Use \(K_f\) in fatigue calculations.</li>
+                        <li><strong>Incorrect Stress Decomposition:</strong> Errors in calculating \(\sigma_m\) and \(\sigma_a\) from \(\sigma_{max}\) and \(\sigma_{min}\).</li>
+                        <li><strong>Mixing up \(S_y\) and \(S_{ut}\):</strong> Using yield strength where ultimate tensile strength is required (or vice-versa) in fatigue criteria.</li>
+                        <li><strong>Unit Inconsistencies:</strong> Not converting all values to a consistent set of units (e.g., MPa, N, mm).</li>
+                        <li><strong>Misinterpreting S-N Curves:</strong> Assuming an endurance limit for non-ferrous materials, or incorrectly reading \(N_{f,i}\) values.</li>
+                        <li><strong>Ignoring Compressive Mean Stresses:</strong> Assuming they are always detrimental (only Gerber does this incorrectly). Remember Modified Goodman for beneficial compressive effects.</li>
+                        <li><strong>Arithmetic Errors:</strong> Simple calculation mistakes can invalidate an entire solution. Double-check your numbers.</li>
+                        <li><strong>Not Stating Assumptions:</strong> Every fatigue problem involves assumptions. Make them explicit.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 mt-8">
+                    <h3 class="text-xl font-semibold mb-4 text-zinc-800">Concept Map</h3>
+                    <p class="text-zinc-600 mb-4">This map shows how the key concepts in fatigue design connect to form a complete analysis process.</p>
+                    <div class="space-y-2 relative">
+                        <div class="concept-map-item">Fluctuating Loads</div>
+                        <div class="text-center text-2xl">↓</div>
+                        <div class="concept-map-item">Stress Concentration (\(K_f\))</div>
+                        <div class="text-center text-2xl">↓</div>
+                        <div class="grid grid-cols-2 gap-4">
+                           <div class="concept-map-item">S-N Diagram</div>
+                           <div class="concept-map-item">Marin Factors</div>
+                        </div>
+                        <div class="text-center text-2xl">↘ ↙</div>
+                        <div class="concept-map-item">Corrected Endurance Limit (\(S_e\))</div>
+                        <div class="text-center text-2xl">↓</div>
+                        <div class="concept-map-item">Fatigue Design Criteria</div>
+                        <div class="text-center text-2xl">↓</div>
+                        <div class="concept-map-item">Fatigue Crack Growth</div>
+                        <div class="text-center text-2xl">↓</div>
+                        <div class="concept-map-item">Environmental Effects</div>
+                        <div class="text-center text-2xl">↓</div>
+                        <div class="concept-map-item">Factor of Safety</div>
+                        <div class="text-center text-2xl">↓</div>
+                        <div class="concept-map-item">Combined Stresses</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.4
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            const Se_prime = 200;
+
+            const ka_slider = document.getElementById('ka');
+            const kb_slider = document.getElementById('kb');
+            const kc_slider = document.getElementById('kc');
+            const ka_val = document.getElementById('ka_val');
+            const kb_val = document.getElementById('kb_val');
+            const kc_val = document.getElementById('kc_val');
+            const se_result = document.getElementById('se_result');
+
+            function updateSe() {
+                const ka = parseFloat(ka_slider.value);
+                const kb = parseFloat(kb_slider.value);
+                const kc = parseFloat(kc_slider.value);
+
+                ka_val.textContent = ka.toFixed(2);
+                kb_val.textContent = kb.toFixed(2);
+                kc_val.textContent = kc.toFixed(3);
+
+                const Se = ka * kb * kc * Se_prime;
+                se_result.textContent = `S_e = ${Se.toFixed(1)} MPa`;
+            }
+
+            [ka_slider, kb_slider, kc_slider].forEach(slider => slider.addEventListener('input', updateSe));
+            updateSe();
+
+            const snChartCtx = document.getElementById('snChart').getContext('2d');
+            let snChart;
+
+            const steelData = {
+                labels: [1e3, 1e4, 1e5, 1e6, 1e7, 1e8],
+                datasets: [{
+                    label: 'Steel S-N Curve',
+                    data: [550, 450, 350, 280, 280, 280],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    fill: false,
+                    tension: 0.1
+                }]
+            };
+
+            const aluminumData = {
+                labels: [1e3, 1e4, 1e5, 1e6, 1e7, 1e8],
+                datasets: [{
+                    label: 'Aluminum S-N Curve',
+                    data: [300, 250, 200, 160, 130, 110],
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    fill: false,
+                    tension: 0.1
+                }]
+            };
+
+            const snExplanationEl = document.getElementById('sn-explanation');
+            const steelExplanation = `
+                <h4 class="font-semibold text-zinc-800">Ferrous Materials (e.g., Steel)</h4>
+                <p class="text-zinc-600 text-sm">Notice how the curve flattens out around 10<sup>6</sup> cycles. This horizontal line is the <strong>Endurance Limit (\\(S_e\\))</strong>. Below this stress level, the material can theoretically withstand an infinite number of cycles without failure. This allows for "infinite life" design.</p>
+            `;
+            const aluminumExplanation = `
+                <h4 class="font-semibold text-zinc-800">Non-Ferrous Materials (e.g., Aluminum)</h4>
+                <p class="text-zinc-600 text-sm">This curve never becomes horizontal. It continues to slope downwards, meaning there is <strong>no endurance limit</strong>. Any cyclic stress, no matter how small, will eventually cause failure. Design must be for a "finite life" based on a specified number of cycles.</p>
+            `;
+
+            function createSnChart(data) {
+                if (snChart) {
+                    snChart.destroy();
+                }
+                snChart = new Chart(snChartCtx, {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'logarithmic',
+                                title: {
+                                    display: true,
+                                    text: 'Number of Cycles to Failure (N)'
+                                },
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return Number(value.toString()).toExponential()
+                                    }
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Stress Amplitude, S (MPa)'
+                                },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        return `N = ${Number(context[0].label).toExponential()} cycles`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('btn-steel').addEventListener('click', () => {
+                createSnChart(steelData);
+                snExplanationEl.innerHTML = steelExplanation;
+                document.getElementById('btn-steel').classList.add('active');
+                document.getElementById('btn-aluminum').classList.remove('active');
+            });
+
+            document.getElementById('btn-aluminum').addEventListener('click', () => {
+                createSnChart(aluminumData);
+                snExplanationEl.innerHTML = aluminumExplanation;
+                document.getElementById('btn-aluminum').classList.add('active');
+                document.getElementById('btn-steel').classList.remove('active');
+            });
+
+            createSnChart(steelData);
+            snExplanationEl.innerHTML = steelExplanation;
+
+            const meanStressChartCtx = document.getElementById('meanStressChart').getContext('2d');
+            let meanStressChart;
+            const Sut = 500;
+            const Sy = 400;
+            const Se_criteria = 200;
+
+            const gerberLine = {
+                label: 'Gerber (Parabola)',
+                data: Array.from({length: 51}, (_, i) => {
+                    const sm = i * (Sut / 50);
+                    const sa = Se_criteria * (1 - Math.pow(sm / Sut, 2));
+                    return {x: sm, y: sa};
+                }),
+                borderColor: '#16a34a',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                type: 'line'
+            };
+
+            const goodmanLine = {
+                label: 'Goodman (Line)',
+                data: [{x: 0, y: Se_criteria}, {x: Sut, y: 0}],
+                borderColor: '#2563eb',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                type: 'line'
+            };
+
+            const soderbergLine = {
+                label: 'Soderberg (Line)',
+                data: [{x: 0, y: Se_criteria}, {x: Sy, y: 0}],
+                borderColor: '#ca8a04',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                type: 'line'
+            };
+
+            const designPoint = {
+                label: 'Design Point',
+                data: [],
+                backgroundColor: '#dc2626',
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                type: 'scatter'
+            };
+
+            function createMeanStressChart() {
+                if(meanStressChart) {
+                    meanStressChart.destroy();
+                }
+                meanStressChart = new Chart(meanStressChartCtx, {
+                    data: {
+                        datasets: [gerberLine, goodmanLine, soderbergLine, designPoint]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: 'Mean Stress, \\(\\sigma_m\\) (MPa)'
+                                },
+                                min: 0,
+                                max: Sut + 50
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Alternating Stress, \\(\\sigma_a\\) (MPa)'
+                                },
+                                min: 0,
+                                max: Se_criteria + 50
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Fatigue Failure Criteria Comparison'
+                            },
+                            legend: {
+                                position: 'top',
+                            },
+                        }
+                    }
+                });
+            }
+
+            function plotDesignPoint() {
+                const meanStress = parseFloat(document.getElementById('mean-stress').value);
+                const altStress = parseFloat(document.getElementById('alt-stress').value);
+
+                if (isNaN(meanStress) || isNaN(altStress)) return;
+
+                meanStressChart.data.datasets[3].data = [{x: meanStress, y: altStress}];
+                meanStressChart.update();
+
+                checkSafety(meanStress, altStress);
+            }
+
+            function checkSafety(sm, sa) {
+                const resultsEl = document.getElementById('safety-results');
+                resultsEl.innerHTML = '';
+
+                const soderbergFS = 1 / (sa/Se_criteria + sm/Sy);
+                const goodmanFS = 1 / (sa/Se_criteria + sm/Sut);
+                const gerberFS = 1 / (sa/Se_criteria + Math.pow(sm/Sut, 2));
+
+                const criteria = [
+                    { name: 'Soderberg', fs: soderbergFS, color: 'yellow' },
+                    { name: 'Goodman', fs: goodmanFS, color: 'blue' },
+                    { name: 'Gerber', fs: gerberFS, color: 'green' }
+                ];
+
+                criteria.forEach(crit => {
+                    const isSafe = crit.fs >= 1.0;
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = `p-2 rounded-md text-sm flex justify-between items-center ${isSafe ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+                    resultDiv.innerHTML = `
+                        <span><strong>${crit.name}:</strong> ${isSafe ? 'Safe' : 'Failure'}</span>
+                        <span class="font-mono">FS = ${crit.fs.toFixed(2)}</span>
+                    `;
+                    resultsEl.appendChild(resultDiv);
+                });
+            }
+
+            document.getElementById('plot-stress-btn').addEventListener('click', plotDesignPoint);
+            createMeanStressChart();
+            plotDesignPoint();
+
+
+            const minerInputsContainer = document.getElementById('miner-inputs');
+            const addMinerLevelBtn = document.getElementById('add-miner-level');
+            const minerResultEl = document.getElementById('miner-result');
+            const minerStatusEl = document.getElementById('miner-status');
+
+            function addMinerInputRow() {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-2';
+                div.innerHTML = `
+                    <input type="number" placeholder="Cycles (ni)" class="miner-ni w-1/2 p-2 border rounded">
+                    <input type="number" placeholder="Cycles to Fail (Nfi)" class="miner-nfi w-1/2 p-2 border rounded">
+                `;
+                minerInputsContainer.appendChild(div);
+                addMinerEventListeners();
+            }
+
+            function calculateMinerDamage() {
+                let totalDamage = 0;
+                const ni_inputs = document.querySelectorAll('.miner-ni');
+                const nfi_inputs = document.querySelectorAll('.miner-nfi');
+
+                for (let i = 0; i < ni_inputs.length; i++) {
+                    const ni = parseFloat(ni_inputs[i].value);
+                    const nfi = parseFloat(nfi_inputs[i].value);
+                    if (!isNaN(ni) && !isNaN(nfi) && nfi > 0) {
+                        totalDamage += ni / nfi;
+                    }
+                }
+
+                minerResultEl.textContent = `D = ${totalDamage.toFixed(3)}`;
+                if (totalDamage >= 1) {
+                    minerStatusEl.textContent = 'Failure Predicted';
+                    minerStatusEl.className = 'font-semibold mt-1 text-red-700';
+                } else {
+                    minerStatusEl.textContent = 'Safe';
+                    minerStatusEl.className = 'font-semibold mt-1 text-green-700';
+                }
+            }
+
+            function addMinerEventListeners() {
+                document.querySelectorAll('.miner-ni, .miner-nfi').forEach(input => {
+                    input.removeEventListener('input', calculateMinerDamage);
+                    input.addEventListener('input', calculateMinerDamage);
+                });
+            }
+
+            addMinerLevelBtn.addEventListener('click', addMinerInputRow);
+            addMinerEventListeners();
+        });
+    </script>
+</body>
+</html>
