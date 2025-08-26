@@ -1,1 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Notes - Main Index</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 20px;
+            border: 1px solid #333;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2a2a2a;
+            color: #f0f0f0;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 40px;
+            background: #1a1a1a;
+        }
+
+        .subject-section {
+            margin-bottom: 50px;
+            background: #262626;
+            border: 1px solid #404040;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .subject-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .subject-header {
+            background: #333333;
+            color: #f0f0f0;
+            padding: 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-bottom: 1px solid #404040;
+        }
+
+        .subject-header.thermodynamics {
+            background: #383838;
+        }
+
+        .subject-header.material-science {
+            background: #353535;
+        }
+
+        .subject-content {
+            display: none;
+            padding: 0;
+        }
+
+        .subject-content.active {
+            display: block;
+        }
+
+        .chapter-group {
+            border-bottom: 1px solid #404040;
+        }
+
+        .chapter-group:last-child {
+            border-bottom: none;
+        }
+
+        .chapter-header {
+            background: #2a2a2a;
+            padding: 20px 25px;
+            font-weight: 600;
+            color: #e0e0e0;
+            border-left: 5px solid #666666;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chapter-content {
+            display: none;
+            padding: 20px 25px;
+            background: #1f1f1f;
+        }
+
+        .chapter-content.active {
+            display: block;
+        }
+
+        .file-group {
+            margin-bottom: 25px;
+        }
+
+        .file-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .file-group-title {
+            font-weight: 600;
+            color: #cccccc;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #404040;
+        }
+
+        .file-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+        }
+
+        .file-link {
+            display: block;
+            padding: 12px 18px;
+            background: #333333;
+            border: 2px solid #555555;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-link:hover {
+            background: #555555;
+            color: #ffffff;
+            border-color: #777777;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .file-link.infographic {
+            border-color: #666666;
+        }
+
+        .file-link.infographic:hover {
+            background: #4a4a4a;
+            border-color: #777777;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .file-icon {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #262626;
+            border: 1px solid #404040;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #888888;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #cccccc;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .file-links {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 College Notes</h1>
+            <p>Comprehensive Study Materials & Resources</p>
+        </div>
+
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Subjects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">64</div>
+                    <div class="stat-label">Total Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">25</div>
+                    <div class="stat-label">Infographics</div>
+                </div>
+            </div>
+
+            <!-- Machine Design Section -->
+            <div class="subject-section">
+                <div class="subject-header machine-design" onclick="toggleSubject('machine-design')">
+                    <span>🔧 Machine Design</span>
+                    <span class="toggle-icon" id="machine-design-icon">▼</span>
+                </div>
+                <div class="subject-content" id="machine-design-content">
+                    
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('md-ch1')">
+                            <span>Chapter 1</span>
+                            <span class="toggle-icon" id="md-ch1-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="md-ch1-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch1/Ch1.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 1
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('md-ch3')">
+                            <span>Chapter 3</span>
+                            <span class="toggle-icon" id="md-ch3-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="md-ch3-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch3/Ch3.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 3
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch3/Infographics/Ch3 Infographic.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch3 Infographic
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('md-ch4')">
+                            <span>Chapter 4</span>
+                            <span class="toggle-icon" id="md-ch4-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="md-ch4-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch4/Ch4.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 4
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch4/Infographics/Ch 4 Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch 4 Infographics
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('md-ch5')">
+                            <span>Chapter 5</span>
+                            <span class="toggle-icon" id="md-ch5-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="md-ch5-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch5/Ch5.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 5
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch5/Infographics/Ch5 Infographic 1.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch5 Infographic 1
+                                    </a>
+                                    <a href="College Notes/Machine Design/Chapters/Ch5/Infographics/Ch5 Infographic More Detailed.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch5 Infographic More Detailed
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('md-ch6')">
+                            <span>Chapter 6</span>
+                            <span class="toggle-icon" id="md-ch6-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="md-ch6-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch6/Ch6.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 6
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch6/Infographics/Ch6 Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch6 Infographics
+                                    </a>
+                                    <a href="College Notes/Machine Design/Chapters/Ch6/Infographics/Same Infographic with Better Presentation.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Same Infographic with Better Presentation
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('md-ch7')">
+                            <span>Chapter 7</span>
+                            <span class="toggle-icon" id="md-ch7-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="md-ch7-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch7/Ch7.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 7
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch7/Infographics/Ch7 Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch7 Infographics
+                                    </a>
+                                    <a href="College Notes/Machine Design/Chapters/Ch7/Infographics/Ch7 Infographics Better Representation.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch7 Infographics Better Representation
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('md-ch8')">
+                            <span>Chapter 8</span>
+                            <span class="toggle-icon" id="md-ch8-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="md-ch8-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch8/Ch8.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 8
+                                    </a>
+                                    <a href="College Notes/Machine Design/Chapters/Ch8/Ch8 Without Deep Research.html" class="file-link">
+                                        <span class="file-icon">📖</span>Ch8 Without Deep Research
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Machine Design/Chapters/Ch8/Infographics/Ch8.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch8 Infographics
+                                    </a>
+                                    <a href="College Notes/Machine Design/Chapters/Ch8/Infographics/Ch8 Infographics Without DeepSearch.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch8 Infographics Without DeepSearch
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Thermodynamics Section -->
+            <div class="subject-section">
+                <div class="subject-header thermodynamics" onclick="toggleSubject('thermodynamics')">
+                    <span>🔥 Thermodynamics</span>
+                    <span class="toggle-icon" id="thermodynamics-icon">▼</span>
+                </div>
+                <div class="subject-content" id="thermodynamics-content">
+                    
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('thermo-ch2')">
+                            <span>Chapter 2</span>
+                            <span class="toggle-icon" id="thermo-ch2-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="thermo-ch2-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/THERMO CH2.html" class="file-link">
+                                        <span class="file-icon">📖</span>THERMO CH2
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/Thermo CH2 2nd Law.html" class="file-link">
+                                        <span class="file-icon">📖</span>Thermo CH2 2nd Law
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/Entropy.html" class="file-link">
+                                        <span class="file-icon">📖</span>Entropy
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/Entropy 2.html" class="file-link">
+                                        <span class="file-icon">📖</span>Entropy 2
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/Entropy 3.html" class="file-link">
+                                        <span class="file-icon">📖</span>Entropy 3
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/Infographics/Thermo CH2 Infographic.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Thermo CH2 Infographic
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/Infographics/THERMO CH2 2nd Law Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>THERMO CH2 2nd Law Infographics
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch2/Infographics/Entropy Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Entropy Infographics
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('thermo-ch3')">
+                            <span>Chapter 3</span>
+                            <span class="toggle-icon" id="thermo-ch3-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="thermo-ch3-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch3/Ch3 Entropy.html" class="file-link">
+                                        <span class="file-icon">📖</span>Ch3 Entropy
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch3/Ch3 Exergy.html" class="file-link">
+                                        <span class="file-icon">📖</span>Ch3 Exergy
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch3/Ch3 Exergy More Simulations.html" class="file-link">
+                                        <span class="file-icon">📖</span>Ch3 Exergy More Simulations
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch3/Infographics/Entropy Infographic.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Entropy Infographic
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch3/Infographics/Exergy Infographic.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Exergy Infographic
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('thermo-ch4')">
+                            <span>Chapter 4</span>
+                            <span class="toggle-icon" id="thermo-ch4-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="thermo-ch4-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch4/VPC.html" class="file-link">
+                                        <span class="file-icon">📖</span>VPC (Vapor Power Cycle)
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch4/GPC.html" class="file-link">
+                                        <span class="file-icon">📖</span>GPC (Gas Power Cycle)
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch4/Infographics/VPC Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>VPC Infographics
+                                    </a>
+                                    <a href="College Notes/Thermodynamics/Chapters/Ch4/Infographics/GPC Infographics with Working Chart.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>GPC Infographics with Working Chart
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Material Science Section -->
+            <div class="subject-section">
+                <div class="subject-header material-science" onclick="toggleSubject('material-science')">
+                    <span>🧪 Material Science</span>
+                    <span class="toggle-icon" id="material-science-icon">▼</span>
+                </div>
+                <div class="subject-content" id="material-science-content">
+                    
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('ms-ch2')">
+                            <span>Chapter 2</span>
+                            <span class="toggle-icon" id="ms-ch2-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="ms-ch2-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch2/Chapter 2.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 2
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch2/Infographics/Ch 2 Infographic.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Ch 2 Infographic
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('ms-ch3')">
+                            <span>Chapter 3</span>
+                            <span class="toggle-icon" id="ms-ch3-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="ms-ch3-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch3/Chapter 3.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 3
+                                    </a>
+                                    <a href="College Notes/Material Science/Chapters/Ch3/Chapter 3 Detailed.html" class="file-link">
+                                        <span class="file-icon">📖</span>Chapter 3 Detailed
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch3/Infographics/Chapter 3 Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Chapter 3 Infographics
+                                    </a>
+                                    <a href="College Notes/Material Science/Chapters/Ch3/Infographics/Chapter 3 Infographics 2.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Chapter 3 Infographics 2
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('ms-ch4')">
+                            <span>Chapter 4</span>
+                            <span class="toggle-icon" id="ms-ch4-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="ms-ch4-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch4/Phase Transformation.html" class="file-link">
+                                        <span class="file-icon">📖</span>Phase Transformation
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch4/Infographics/Infographic.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Phase Transformation Infographic
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('ms-ch5')">
+                            <span>Chapter 5</span>
+                            <span class="toggle-icon" id="ms-ch5-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="ms-ch5-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch5/Metals - Ferrous and Non-Ferrous.html" class="file-link">
+                                        <span class="file-icon">📖</span>Metals - Ferrous and Non-Ferrous
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Chapters/Ch5/Infographics/Infographic 1.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Metals Infographic 1
+                                    </a>
+                                    <a href="College Notes/Material Science/Chapters/Ch5/Infographics/Infographic 2.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Metals Infographic 2
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('ms-material-selection')">
+                            <span>Material Selection</span>
+                            <span class="toggle-icon" id="ms-material-selection-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="ms-material-selection-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Material Selection Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Material Selection/Material_Selection_for_Halide_Environments.html" class="file-link">
+                                        <span class="file-icon">📖</span>Material Selection for Halide Environments
+                                    </a>
+                                    <a href="College Notes/Material Science/Material Selection/Brief Guide on Advanced Material Selection for Halide Enivronment.html" class="file-link">
+                                        <span class="file-icon">📖</span>Brief Guide - Advanced Material Selection
+                                    </a>
+                                    <a href="College Notes/Material Science/Material Selection/Advanced Material Selection for Halide Enivronment Moderate.html" class="file-link">
+                                        <span class="file-icon">📖</span>Advanced Material Selection (Moderate)
+                                    </a>
+                                    <a href="College Notes/Material Science/Material Selection/Most Advanced Material Selection for Halide Enivronment.html" class="file-link">
+                                        <span class="file-icon">📖</span>Most Advanced Material Selection
+                                    </a>
+                                    <a href="College Notes/Material Science/Material Selection/(Glassmorphic UI) Most Advanced Material Selection for Halide Enivronment.html" class="file-link">
+                                        <span class="file-icon">📖</span>Glassmorphic UI - Most Advanced Material Selection
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="file-group">
+                                <div class="file-group-title">🎨 Infographics</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Material Science/Material Selection/Infographics.html" class="file-link infographic">
+                                        <span class="file-icon">📊</span>Material Selection Infographics
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleSubject(subjectId) {
+            const content = document.getElementById(subjectId + '-content');
+            const icon = document.getElementById(subjectId + '-icon');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.classList.remove('rotated');
+            } else {
+                // Close all other subjects
+                document.querySelectorAll('.subject-content').forEach(sc => {
+                    sc.classList.remove('active');
+                });
+                document.querySelectorAll('.subject-header .toggle-icon').forEach(icon => {
+                    icon.classList.remove('rotated');
+                });
+                
+                // Open clicked subject
+                content.classList.add('active');
+                icon.classList.add('rotated');
+            }
+        }
+
+        function toggleChapter(chapterId) {
+            const content = document.getElementById(chapterId + '-content');
+            const icon = document.getElementById(chapterId + '-icon');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.classList.remove('rotated');
+            } else {
+                content.classList.add('active');
+                icon.classList.add('rotated');
+            }
+        }
+
+        // Add smooth scrolling for better UX
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading animation
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+            
+            // Add hover effects to stats cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.4)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+        });
+
+        // Add search functionality
+        function addSearchFunctionality() {
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Search files...';
+            searchInput.style.cssText = `
+                width: 100%;
+                max-width: 400px;
+                padding: 15px 20px;
+                border: 2px solid #555555;
+                border-radius: 25px;
+                font-size: 16px;
+                margin-bottom: 20px;
+                outline: none;
+                transition: all 0.3s ease;
+                background: #2a2a2a;
+                color: #e0e0e0;
+            `;
+            
+            searchInput.addEventListener('focus', function() {
+                this.style.borderColor = '#777777';
+                this.style.boxShadow = '0 0 15px rgba(119, 119, 119, 0.3)';
+            });
+            
+            searchInput.addEventListener('blur', function() {
+                this.style.borderColor = '#555555';
+                this.style.boxShadow = 'none';
+            });
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const fileLinks = document.querySelectorAll('.file-link');
+                
+                fileLinks.forEach(link => {
+                    const fileName = link.textContent.toLowerCase();
+                    const parentChapter = link.closest('.chapter-group');
+                    
+                    if (fileName.includes(searchTerm)) {
+                        link.style.display = 'block';
+                        parentChapter.style.display = 'block';
+                    } else {
+                        link.style.display = 'none';
+                    }
+                });
+                
+                // Hide empty chapters
+                document.querySelectorAll('.chapter-group').forEach(chapter => {
+                    const visibleLinks = chapter.querySelectorAll('.file-link[style*="block"], .file-link:not([style*="none"])');
+                    if (visibleLinks.length === 0 && searchTerm !== '') {
+                        chapter.style.display = 'none';
+                    } else {
+                        chapter.style.display = 'block';
+                    }
+                });
+            });
+            
+            const content = document.querySelector('.content');
+            const stats = document.querySelector('.stats');
+            stats.insertAdjacentElement('afterend', searchInput);
+        }
+        
+        // Initialize search after DOM loads
+        document.addEventListener('DOMContentLoaded', addSearchFunctionality);
+    </script>
+</body>
+</html>
