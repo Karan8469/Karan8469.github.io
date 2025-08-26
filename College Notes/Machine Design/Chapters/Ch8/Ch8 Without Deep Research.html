@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Power Screws</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A single-page application with a fixed sidebar navigation for non-linear topic exploration. The main content area will feature interactive modules: a 'Torque & Efficiency Calculator' to dynamically compute and visualize screw mechanics, a 'Stress Calculator' for structural analysis, and a dynamic 'Efficiency Curve' chart. This dashboard-like, tool-based structure is chosen over a linear document to promote active learning and experimentation, which is more effective for engineering students than passive reading. Users can jump between theory, calculation, and application seamlessly, reinforcing the connections between concepts. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Torque, Efficiency, Self-Locking. Goal: Allow experimentation. Viz/Method: Interactive form-based calculator. Interaction: User inputs parameters (load, dimensions, friction), outputs (torque, efficiency, status) update live. Justification: Actively reinforces formula relationships. Library: Vanilla JS.
+        - Report Info: Efficiency vs. Helix Angle. Goal: Visualize a key relationship. Viz/Method: Dynamic line chart. Interaction: A slider for the coefficient of friction updates the chart in real-time. Justification: More impactful than a static graph for showing variable interplay. Library: Chart.js.
+        - Report Info: Stresses. Goal: Demonstrate stress types. Viz/Method: A second calculator. Interaction: User inputs load/torque, sees calculated stresses. Justification: Quick analysis of failure modes. Library: Vanilla JS.
+        - Report Info: Applications. Goal: Compare real-world uses. Viz/Method: Interactive grid of cards. Interaction: Clicking a card reveals details. Justification: More engaging than a simple list. Library: Vanilla JS + Tailwind.
+        - Report Info: Concept Map. Goal: High-level summary. Viz/Method: Diagram from styled HTML/CSS divs. Interaction: Hover effects for tooltips. Justification: Visualizes the system's interconnectedness. Library: Vanilla JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #333333;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #F5F1EB;
+            border-left-color: #4A908A;
+            color: #4A908A;
+            transform: translateX(4px);
+        }
+        .interactive-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .interactive-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .btn-primary {
+            background-color: #4A908A;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #3B736D;
+        }
+        .result-box {
+            background-color: #F5F1EB;
+            border-left: 4px solid #D9A97E;
+        }
+        .concept-node {
+            border: 2px solid #D9A97E;
+            background-color: #fff;
+        }
+        .concept-line {
+            background-color: #D9A97E;
+        }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-white/80 backdrop-blur-sm border-r border-gray-200 p-4 md:p-6 md:sticky md:top-0 md:h-screen">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Power Screws</h1>
+        <nav>
+            <ul class="space-y-2">
+                <li><a href="#introduction" class="nav-link block p-2 rounded-md font-medium">Introduction</a></li>
+                <li><a href="#thread-forms" class="nav-link block p-2 rounded-md font-medium">Thread Forms</a></li>
+                <li><a href="#terminology" class="nav-link block p-2 rounded-md font-medium">Terminology</a></li>
+                <li><a href="#calculator" class="nav-link block p-2 rounded-md font-medium">Torque & Efficiency Calculator</a></li>
+                <li><a href="#efficiency-viz" class="nav-link block p-2 rounded-md font-medium">Efficiency Visualization</a></li>
+                <li><a href="#stresses" class="nav-link block p-2 rounded-md font-medium">Stresses & Calculator</a></li>
+                <li><a href="#design-considerations" class="nav-link block p-2 rounded-md font-medium">Design Considerations</a></li>
+                <li><a href="#applications" class="nav-link block p-2 rounded-md font-medium">Applications</a></li>
+                <li><a href="#summary" class="nav-link block p-2 rounded-md font-medium">Summary & Concept Map</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 md:p-10">
+        
+        <section id="introduction" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Welcome to the Interactive Guide to Power Screws</h2>
+            <p class="text-lg text-gray-600 leading-relaxed">
+                This guide is designed for mechanical engineering students to explore the principles of power screws in an interactive way. Power screws are fundamental components that convert rotational motion into linear motion, enabling tasks from lifting cars to clamping workpieces. Here, you can move beyond static text and formulas. Use the interactive calculators to see how changing parameters affects performance, visualize key concepts with dynamic charts, and explore real-world applications. The goal is to build an intuitive understanding of how these essential machine elements work.
+            </p>
+        </section>
+        
+        <hr class="my-12 border-gray-200">
+
+        <section id="thread-forms" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Forms of Power Screw Threads</h2>
+            <p class="text-lg text-gray-600 mb-8">While square threads are ideal for direct power transmission, other thread forms offer distinct advantages for specific applications. Understanding these differences is key to selecting the right screw for the job.</p>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Square Thread</h3>
+                    <p class="text-gray-600">Features a square cross-section with flanks perpendicular to the screw axis. Highly efficient for transmitting power and motion in both directions due to minimal radial pressure. Harder to manufacture.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Acme Thread</h3>
+                    <p class="text-gray-600">A trapezoidal thread form with a 29-degree included angle. Easier to manufacture than square threads and allows for the use of split nuts for wear compensation. Commonly used in lead screws and vises.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Buttress Thread</h3>
+                    <p class="text-gray-600">Asymmetrical, with one flank perpendicular to the axis and the other angled (typically 45 degrees). Designed for high axial loads in one direction only. Offers high efficiency in that direction and is strong. Used in vises and presses.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-gray-200">
+
+        <section id="terminology" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Core Terminology</h2>
+            <p class="text-lg text-gray-600 mb-8">Understanding the language of power screws is the first step. These key geometric parameters define a screw's performance and are the inputs for all our calculations.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Pitch (p)</h3>
+                    <p class="text-gray-600">The axial distance between adjacent threads. It defines the "fineness" of the thread.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Lead (L)</h3>
+                    <p class="text-gray-600">The axial distance the screw advances in one full revolution. For a single-start thread, L = p.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Mean Diameter (D<sub>m</sub>)</h3>
+                    <p class="text-gray-600">The effective diameter where the load is assumed to act, halfway between the major and minor diameters.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Helix Angle (&alpha;)</h3>
+                    <p class="text-gray-600">The angle of the thread's incline. A steeper angle means faster linear motion but less mechanical advantage.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Friction Angle (&phi;)</h3>
+                    <p class="text-gray-600">A representation of the coefficient of friction (&mu;). If &alpha; < &phi;, the screw is self-locking.</p>
+                </div>
+            </div>
+        </section>
+        
+        <hr class="my-12 border-gray-200">
+
+        <section id="calculator" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Torque & Efficiency Calculator</h2>
+            <p class="text-lg text-gray-600 mb-8">This calculator brings the core formulas to life. Adjust the inputs to see how they affect the torque needed to lift or lower a load, the screw's efficiency, and whether it becomes self-locking. This interaction demonstrates the trade-offs inherent in power screw design. Note that this calculator also accounts for **collar friction**, which is often present in real-world applications and adds to the total required torque.</p>
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100 grid md:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="load" class="block font-medium text-gray-700">Axial Load (W) [N]</label>
+                        <input type="number" id="load" value="10000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="meanDiameter" class="block font-medium text-gray-700">Mean Diameter (D<sub>m</sub>) [mm]</label>
+                        <input type="number" id="meanDiameter" value="50" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="lead" class="block font-medium text-gray-700">Lead (L) [mm]</label>
+                        <input type="number" id="lead" value="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="friction" class="block font-medium text-gray-700">Thread Coefficient of Friction (&mu;<sub>thread</sub>): <span id="frictionValue">0.15</span></label>
+                        <input type="range" id="friction" min="0.01" max="0.5" step="0.01" value="0.15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <label for="collarDiameter" class="block font-medium text-gray-700">Collar Diameter (D<sub>c</sub>) [mm]</label>
+                        <input type="number" id="collarDiameter" value="70" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="collarFriction" class="block font-medium text-gray-700">Collar Coefficient of Friction (&mu;<sub>collar</sub>): <span id="collarFrictionValue">0.10</span></label>
+                        <input type="range" id="collarFriction" min="0.01" max="0.5" step="0.01" value="0.10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+                <!-- Output Section -->
+                <div class="space-y-4">
+                    <h3 class="text-2xl font-semibold text-gray-800">Results</h3>
+                    <div class="result-box p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600">Total Lifting Torque (T<sub>L,total</sub>)</p>
+                        <p id="liftingTorque" class="text-2xl font-bold text-gray-800">0 Nm</p>
+                    </div>
+                    <div class="result-box p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600">Total Lowering Torque (T<sub>D,total</sub>)</p>
+                        <p id="loweringTorque" class="text-2xl font-bold text-gray-800">0 Nm</p>
+                    </div>
+                    <div class="result-box p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600">Screw Efficiency (&eta;<sub>screw</sub>)</p>
+                        <p id="efficiency" class="text-2xl font-bold text-gray-800">0 %</p>
+                    </div>
+                    <div class="result-box p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600">Overall Efficiency (&eta;<sub>overall</sub>)</p>
+                        <p id="overallEfficiency" class="text-2xl font-bold text-gray-800">0 %</p>
+                    </div>
+                    <div id="selfLockingStatus" class="p-4 rounded-lg text-center font-bold text-lg">
+                        -
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <hr class="my-12 border-gray-200">
+
+        <section id="efficiency-viz" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Efficiency Visualization</h2>
+            <p class="text-lg text-gray-600 mb-8">Efficiency is not constant. It depends heavily on the helix angle (&alpha;) and the coefficient of friction (&mu;). This chart shows that for any given friction, there is an optimal helix angle that maximizes efficiency. Use the slider to change the friction and observe how the entire curve shifts. This helps visualize why most power screws have efficiencies below 50% and the trade-off with self-locking.</p>
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                <div class="chart-container">
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
+                <div class="mt-6">
+                    <label for="frictionSliderViz" class="block font-medium text-gray-700 text-center">Adjust Thread Coefficient of Friction (&mu;<sub>thread</sub>): <span id="frictionValueViz">0.15</span></label>
+                    <input type="range" id="frictionSliderViz" min="0.01" max="0.5" step="0.01" value="0.15" class="w-full max-w-md mx-auto h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2 block">
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-gray-200">
+
+        <section id="stresses" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Stresses in Power Screws</h2>
+            <p class="text-lg text-gray-600 mb-8">A power screw must not only move a load but also withstand the resulting internal forces without failing. This section breaks down the primary stresses a screw experiences. Use the calculator to see how load and torque translate into tensile, torsional, and bearing stresses, which are critical for safe and reliable design.</p>
+             <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100 grid md:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="stressLoad" class="block font-medium text-gray-700">Axial Load (W) [N]</label>
+                        <input type="number" id="stressLoad" value="10000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+                    <div>
+                        <label for="stressTorque" class="block font-medium text-gray-700">Applied Torque (T) [Nm]</label>
+                        <input type="number" id="stressTorque" value="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+                    <div>
+                        <label for="minorDiameter" class="block font-medium text-gray-700">Minor Diameter (D<sub>i</sub>) [mm]</label>
+                        <input type="number" id="minorDiameter" value="42" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+                     <div>
+                        <label for="majorDiameter" class="block font-medium text-gray-700">Major Diameter (D<sub>o</sub>) [mm]</label>
+                        <input type="number" id="majorDiameter" value="58" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+                </div>
+                <!-- Output Section -->
+                <div class="space-y-4">
+                    <h3 class="text-2xl font-semibold text-gray-800">Calculated Stresses</h3>
+                    <div class="result-box p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600">Tensile Stress (&sigma;<sub>t</sub>)</p>
+                        <p id="tensileStress" class="text-2xl font-bold text-gray-800">0 MPa</p>
+                    </div>
+                    <div class="result-box p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600">Torsional Shear Stress (&tau;)</p>
+                        <p id="torsionalStress" class="text-2xl font-bold text-gray-800">0 MPa</p>
+                    </div>
+                    <div class="result-box p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600">Bearing Pressure (P<sub>b</sub>)</p>
+                        <p id="bearingStress" class="text-2xl font-bold text-gray-800">0 MPa</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-gray-200">
+
+        <section id="design-considerations" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Design Considerations & Lubrication</h2>
+            <p class="text-lg text-gray-600 mb-8">Beyond calculations, practical design of power screws involves selecting appropriate materials, ensuring proper lubrication, and applying safety factors to prevent failure and ensure longevity. Heat generation due to friction is also a key consideration.</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Materials</h3>
+                    <p class="text-gray-600">Common materials for screws include steel (e.g., medium carbon steel) for strength. Nuts are often made from softer, self-lubricating materials like bronze or cast iron to minimize wear on the more expensive screw and to allow for easier replacement.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Lubrication</h3>
+                    <p class="text-gray-600">Crucial for reducing friction, wear, and heat generation. Greases and oils are commonly used. Proper lubrication increases efficiency and extends the life of the screw and nut. The type of lubricant impacts the coefficient of friction.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Factor of Safety</h3>
+                    <p class="text-gray-600">Applied to design calculations to account for uncertainties in material properties, manufacturing tolerances, and actual operating conditions. It ensures that the screw can safely withstand loads beyond its expected maximum.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-xl mb-2 text-gray-800">Heat Generation & Wear</h3>
+                    <p class="text-gray-600">Friction generates heat, which can reduce efficiency, degrade lubricants, and cause thermal expansion or even seizure. Proper design considers heat dissipation. Wear is the gradual removal of material due to friction, necessitating material selection and lubrication to minimize it.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-gray-200">
+
+        <section id="applications" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Real-World Applications</h2>
+            <p class="text-lg text-gray-600 mb-8">Power screws are everywhere in mechanical design. This section highlights some common applications. Explore each one to understand how the principles of torque, efficiency, and self-locking are applied to solve practical engineering problems.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="interactive-card bg-white p-6 rounded-lg border border-gray-100 text-center">
+                    <div class="text-4xl mb-4">🔧</div>
+                    <h3 class="font-bold text-xl mb-2">Screw Jack</h3>
+                    <p class="text-gray-600">Lifts heavy loads like cars. <strong class="text-[#D9A97E]">Self-locking is critical for safety.</strong> Buckling is a concern for long screws.</p>
+                </div>
+                <div class="interactive-card bg-white p-6 rounded-lg border border-gray-100 text-center">
+                    <div class="text-4xl mb-4">🔩</div>
+                    <h3 class="font-bold text-xl mb-2">Vise / Clamp</h3>
+                    <p class="text-gray-600">Applies high clamping force. Relies on <strong class="text-[#D9A97E]">friction and self-locking</strong> to hold workpieces securely.</p>
+                </div>
+                <div class="interactive-card bg-white p-6 rounded-lg border border-gray-100 text-center">
+                    <div class="text-4xl mb-4">⚙️</div>
+                    <h3 class="font-bold text-xl mb-2">Lathe Lead Screw</h3>
+                    <p class="text-600">Provides precise, controlled linear motion for cutting tools. <strong class="text-[#D9A97E]">Accuracy of the lead</strong> is paramount.</p>
+                </div>
+                <div class="interactive-card bg-white p-6 rounded-lg border border-gray-100 text-center">
+                    <div class="text-4xl mb-4">🗜️</div>
+                    <h3 class="font-bold text-xl mb-2">Toggle Jack</h3>
+                    <p class="text-gray-600">Combines a screw with a linkage for high mechanical advantage. Force is <strong class="text-[#D9A97E]">amplified by the toggle mechanism</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-gray-200">
+
+        <section id="summary" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Summary & Concept Map</h2>
+            <p class="text-lg text-gray-600 mb-8">This concept map summarizes the relationships between the core principles of power screw design. It shows how fundamental inputs like geometry and friction influence performance metrics like torque and efficiency, which in turn determine the screw's structural requirements (stresses) and its suitability for various applications.</p>
+            <div class="p-8 bg-white rounded-xl shadow-lg border border-gray-100 relative overflow-x-auto">
+                <div class="flex flex-col items-center space-y-4 min-w-[600px]">
+                    <div class="concept-node p-3 rounded-lg font-bold">Power Screw Inputs</div>
+                    <div class="flex justify-center w-full">
+                        <div class="concept-line h-8 w-1"></div>
+                    </div>
+                    <div class="flex justify-around w-full">
+                        <div class="concept-node p-3 rounded-lg text-center">Load (W)</div>
+                        <div class="concept-node p-3 rounded-lg text-center">Geometry (D<sub>m</sub>, L)</div>
+                        <div class="concept-node p-3 rounded-lg text-center">Friction (&mu;<sub>thread</sub>, &mu;<sub>collar</sub>)</div>
+                    </div>
+                     <div class="flex justify-around w-full relative h-8">
+                        <div class="concept-line h-8 w-1 absolute left-1/4 -ml-0.5"></div>
+                        <div class="concept-line h-8 w-1 absolute left-1/2 -ml-0.5"></div>
+                        <div class="concept-line h-8 w-1 absolute left-3/4 -ml-0.5"></div>
+                    </div>
+                    <div class="concept-node p-4 rounded-lg font-bold text-xl bg-[#4A908A] text-white">Core Mechanics</div>
+                    <div class="flex justify-around w-full relative h-8">
+                        <div class="concept-line h-8 w-1 absolute left-1/4 -ml-0.5"></div>
+                        <div class="concept-line h-8 w-1 absolute left-1/2 -ml-0.5"></div>
+                        <div class="concept-line h-8 w-1 absolute left-3/4 -ml-0.5"></div>
+                    </div>
+                    <div class="flex justify-around w-full text-center">
+                        <div class="w-1/3">
+                            <div class="concept-node p-3 rounded-lg">Torque (T)</div>
+                            <div class="concept-line h-4 w-1 mx-auto"></div>
+                            <div class="concept-node p-2 rounded-lg text-sm">Self-Locking?</div>
+                        </div>
+                        <div class="w-1/3">
+                            <div class="concept-node p-3 rounded-lg">Efficiency (&eta;)</div>
+                        </div>
+                        <div class="w-1/3">
+                            <div class="concept-node p-3 rounded-lg">Stresses (&sigma;, &tau;)</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center w-full">
+                        <div class="concept-line h-8 w-1"></div>
+                    </div>
+                    <div class="concept-node p-4 rounded-lg font-bold text-xl">Application Performance</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // --- Navigation Logic ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.3
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // --- Torque & Efficiency Calculator ---
+            const loadInput = document.getElementById('load');
+            const meanDiameterInput = document.getElementById('meanDiameter');
+            const leadInput = document.getElementById('lead');
+            const frictionInput = document.getElementById('friction');
+            const frictionValueSpan = document.getElementById('frictionValue');
+            const collarDiameterInput = document.getElementById('collarDiameter');
+            const collarFrictionInput = document.getElementById('collarFriction');
+            const collarFrictionValueSpan = document.getElementById('collarFrictionValue');
+            
+            const liftingTorqueEl = document.getElementById('liftingTorque');
+            const loweringTorqueEl = document.getElementById('loweringTorque');
+            const efficiencyEl = document.getElementById('efficiency');
+            const overallEfficiencyEl = document.getElementById('overallEfficiency');
+            const selfLockingStatusEl = document.getElementById('selfLockingStatus');
+
+            function calculateTorqueAndEfficiency() {
+                const W = parseFloat(loadInput.value);
+                const Dm = parseFloat(meanDiameterInput.value);
+                const L = parseFloat(leadInput.value);
+                const mu_thread = parseFloat(frictionInput.value);
+                const Dc = parseFloat(collarDiameterInput.value);
+                const mu_collar = parseFloat(collarFrictionInput.value);
+
+                if (isNaN(W) || isNaN(Dm) || isNaN(L) || isNaN(mu_thread) || isNaN(Dc) || isNaN(mu_collar) || Dm <= 0 || Dc <= 0) {
+                    return;
+                }
+
+                const tanAlpha = L / (Math.PI * Dm);
+                const alpha = Math.atan(tanAlpha);
+
+                // Torque to overcome thread friction for lifting
+                const T_L_thread_num = tanAlpha + mu_thread;
+                const T_L_thread_den = 1 - mu_thread * tanAlpha;
+                const T_L_thread = W * (Dm / 2) * (T_L_thread_num / T_L_thread_den); // in N-mm
+
+                // Torque to overcome thread friction for lowering
+                const T_D_thread_num = mu_thread - tanAlpha;
+                const T_D_thread_den = 1 + mu_thread * tanAlpha;
+                const T_D_thread = W * (Dm / 2) * (T_D_thread_num / T_D_thread_den); // in N-mm
+
+                // Collar friction torque
+                const T_collar = W * mu_collar * (Dc / 2); // in N-mm
+
+                // Total Lifting Torque
+                const T_L_total = (T_L_thread + T_collar) / 1000; // in Nm
+
+                // Total Lowering Torque
+                const T_D_total = (T_D_thread + T_collar) / 1000; // in Nm
+
+                // Screw Efficiency (excluding collar friction)
+                const efficiency_screw = (W * L) / (T_L_thread * 2 * Math.PI) * 100;
+
+                // Overall Efficiency (including collar friction)
+                const overall_efficiency = (W * L) / ((T_L_thread + T_collar) * 2 * Math.PI) * 100;
+
+
+                // Self-locking
+                const isSelfLocking = mu_thread >= tanAlpha;
+
+                liftingTorqueEl.textContent = `${T_L_total.toFixed(2)} Nm`;
+                loweringTorqueEl.textContent = `${T_D_total.toFixed(2)} Nm`;
+                efficiencyEl.textContent = `${efficiency_screw.toFixed(1)} %`;
+                overallEfficiencyEl.textContent = `${overall_efficiency.toFixed(1)} %`;
+                
+                if (isSelfLocking) {
+                    selfLockingStatusEl.textContent = '✅ Self-Locking';
+                    selfLockingStatusEl.className = 'p-4 rounded-lg text-center font-bold text-lg bg-green-100 text-green-800';
+                    loweringTorqueEl.textContent = `${Math.abs(T_D_total).toFixed(2)} Nm (to unwind)`;
+                } else {
+                    selfLockingStatusEl.textContent = '❌ Not Self-Locking';
+                    selfLockingStatusEl.className = 'p-4 rounded-lg text-center font-bold text-lg bg-red-100 text-red-800';
+                    loweringTorqueEl.textContent = `${T_D_total.toFixed(2)} Nm (braking)`;
+                }
+                
+                frictionValueSpan.textContent = mu_thread.toFixed(2);
+                collarFrictionValueSpan.textContent = mu_collar.toFixed(2);
+            }
+
+            [loadInput, meanDiameterInput, leadInput, frictionInput, collarDiameterInput, collarFrictionInput].forEach(input => {
+                input.addEventListener('input', calculateTorqueAndEfficiency);
+            });
+            
+            // --- Stress Calculator ---
+            const stressLoadInput = document.getElementById('stressLoad');
+            const stressTorqueInput = document.getElementById('stressTorque');
+            const minorDiameterInput = document.getElementById('minorDiameter');
+            const majorDiameterInput = document.getElementById('majorDiameter');
+
+            const tensileStressEl = document.getElementById('tensileStress');
+            const torsionalStressEl = document.getElementById('torsionalStress');
+            const bearingStressEl = document.getElementById('bearingStress');
+
+            function calculateStresses() {
+                const W = parseFloat(stressLoadInput.value);
+                const T = parseFloat(stressTorqueInput.value);
+                const Di = parseFloat(minorDiameterInput.value);
+                const Do = parseFloat(majorDiameterInput.value);
+
+                if (isNaN(W) || isNaN(T) || isNaN(Di) || isNaN(Do) || Di <= 0 || Do <= Di) {
+                    return;
+                }
+
+                // Tensile Stress
+                const coreArea = (Math.PI / 4) * Math.pow(Di, 2);
+                const sigma_t = W / coreArea;
+
+                // Torsional Shear Stress (Torque in N-mm for formula)
+                const tau = (16 * T * 1000) / (Math.PI * Math.pow(Di, 3));
+
+                // Bearing Pressure (Approximate, considering projected area of contact)
+                const bearingArea = (Math.PI / 4) * (Math.pow(Do, 2) - Math.pow(Di, 2));
+                const Pb = W / bearingArea;
+
+                tensileStressEl.textContent = `${sigma_t.toFixed(2)} MPa`;
+                torsionalStressEl.textContent = `${tau.toFixed(2)} MPa`;
+                bearingStressEl.textContent = `${Pb.toFixed(2)} MPa`;
+            }
+
+            [stressLoadInput, stressTorqueInput, minorDiameterInput, majorDiameterInput].forEach(input => {
+                input.addEventListener('input', calculateStresses);
+            });
+
+
+            // --- Efficiency Chart ---
+            const ctx = document.getElementById('efficiencyChart').getContext('2d');
+            const frictionSliderViz = document.getElementById('frictionSliderViz');
+            const frictionValueVizSpan = document.getElementById('frictionValueViz');
+            let efficiencyChart;
+
+            function generateChartData(mu) {
+                const labels = [];
+                const data = [];
+                const selfLockingData = [];
+                const frictionAngle = Math.atan(mu) * 180 / Math.PI;
+
+                for (let alphaDeg = 0; alphaDeg <= 60; alphaDeg += 1) {
+                    labels.push(alphaDeg);
+                    const alphaRad = alphaDeg * Math.PI / 180;
+                    const tanAlpha = Math.tan(alphaRad);
+                    
+                    const eta_num = tanAlpha * (1 - mu * tanAlpha);
+                    const eta_den = tanAlpha + mu;
+                    let eta = (eta_den > 0) ? (eta_num / eta_den) * 100 : 0;
+                    eta = Math.max(0, eta);
+                    data.push(eta);
+
+                    selfLockingData.push(alphaDeg < frictionAngle ? 100 : 0);
+                }
+                return { labels, data, selfLockingData, frictionAngle };
+            }
+
+            function createOrUpdateChart() {
+                const mu = parseFloat(frictionSliderViz.value);
+                frictionValueVizSpan.textContent = mu.toFixed(2);
+                const { labels, data, selfLockingData, frictionAngle } = generateChartData(mu);
+
+                const chartData = {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Efficiency (%)',
+                            data: data,
+                            borderColor: '#4A908A',
+                            backgroundColor: 'rgba(74, 144, 138, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                        },
+                        {
+                            label: 'Self-Locking Region',
+                            data: selfLockingData,
+                            borderColor: 'rgba(217, 169, 126, 0.5)',
+                            backgroundColor: 'rgba(217, 169, 126, 0.2)',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: true,
+                            stepped: true,
+                        }
+                    ]
+                };
+
+                if (efficiencyChart) {
+                    efficiencyChart.data = chartData;
+                    efficiencyChart.update();
+                } else {
+                    efficiencyChart = new Chart(ctx, {
+                        type: 'line',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: 'Efficiency (%)'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Helix Angle (α) [degrees]'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                }
+                            },
+                            interaction: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                        }
+                    });
+                }
+            }
+
+            frictionSliderViz.addEventListener('input', createOrUpdateChart);
+
+            // Initial calculations on page load
+            calculateTorqueAndEfficiency();
+            calculateStresses();
+            createOrUpdateChart();
+        });
+    </script>
+</body>
+</html>
