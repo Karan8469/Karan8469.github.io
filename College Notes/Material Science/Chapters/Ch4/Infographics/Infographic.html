@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: A Mechanical Engineer's Guide to Phase Diagrams</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues & Oranges -->
+    <!-- Application Structure Plan: A single-page, scrollable infographic designed for a linear, educational narrative. The structure begins with a hook, moves to foundational concepts (System, Phase), introduces the Gibbs' Phase Rule, visualizes the Allotropy of Iron via a timeline, presents the core Fe-Fe3C diagram with callouts, illustrates cooling paths with a flowchart, compares alloy groups with a bar chart, and concludes with codification. This top-down approach builds knowledge progressively, making a complex topic digestible for students. -->
+    <!-- Visualization & Content Choices: The infographic uses a mix of visualizations to achieve its educational goals. Goal: Inform -> Styled HTML cards with Unicode icons for core concepts and a large text display for Gibbs' Rule. Goal: Change -> A vertical timeline built with HTML/CSS for Iron's Allotropy. Goal: Organize -> A simplified canvas drawing of the Fe-Fe3C diagram with HTML callouts, and a flowchart for cooling paths made with HTML/CSS. Goal: Compare -> A Chart.js horizontal bar chart for alloy carbon content. This variety maintains engagement and adheres to the NO SVG/Mermaid constraint. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .section-title {
+            color: #003f5c;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 3rem; /* Increased padding for more space */
+        }
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -31px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #ffa600;
+            border: 4px solid #003f5c;
+        }
+        .timeline-item .temp-label {
+            position: absolute;
+            left: -80px; /* Adjusted left position */
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            font-size: 1.125rem; /* Equivalent to text-lg */
+            color: #ffa600;
+            width: 70px; /* Give it a fixed width to prevent overlap */
+            text-align: right; /* Align text to the right */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+    </style>
+</head>
+<body class="text-gray-700 antialiased">
+
+    <!-- Header -->
+    <header class="bg-[#003f5c] text-white py-12 text-center">
+        <div class="container mx-auto px-6">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-2">The Engineer's Guide to Phase Diagrams</h1>
+            <p class="text-lg md:text-xl text-blue-200">Unlocking the Secrets of Steel and Material Behavior</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Section 1: The Language of Materials -->
+        <section id="fundamentals" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">The Language of Materials</h2>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="card p-6">
+                    <div class="text-5xl mb-4">📦</div>
+                    <h3 class="text-xl font-bold text-[#003f5c] mb-2">System</h3>
+                    <p>The specific portion of matter under study. Think of it as the entire "experiment in a box."</p>
+                </div>
+                <div class="card p-6">
+                    <div class="text-5xl mb-4">💧🧊💨</div>
+                    <h3 class="text-xl font-bold text-[#003f5c] mb-2">Phase</h3>
+                    <p>A physically distinct and chemically uniform region. A material can have multiple solid phases!</p>
+                </div>
+                <div class="card p-6">
+                    <div class="text-5xl mb-4">🧪</div>
+                    <h3 class="text-xl font-bold text-[#003f5c] mb-2">Component</h3>
+                    <p>The minimum number of chemical ingredients needed to define the system (e.g., Fe and C for steel).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Gibbs' Phase Rule -->
+        <section id="gibbs-rule" class="mb-20 text-center">
+            <h2 class="text-3xl font-bold mb-8 section-title">The Rule of Equilibrium: Gibbs' Phase Rule</h2>
+            <div class="card p-8 max-w-2xl mx-auto">
+                <p class="text-lg mb-4">This powerful formula predicts how many variables (like temperature or composition) you can change while keeping the phases in a system stable.</p>
+                <div class="bg-gray-100 rounded-lg p-6">
+                    <p class="text-4xl md:text-5xl font-mono font-bold text-[#003f5c]">F = C - P + 1</p>
+                    <p class="mt-2 text-gray-500">(Simplified for constant pressure, typical for material diagrams)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Allotropy of Iron -->
+        <section id="allotropy" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12 section-title">The Shape-Shifting Nature of Iron</h2>
+            <div class="max-w-xl mx-auto">
+                <div class="relative border-l-4 border-[#003f5c] pl-10">
+                    <div class="timeline-item">
+                        <p class="temp-label">1538°C</p>
+                        <h3 class="text-2xl font-bold text-[#ef5675]">Liquid (L)</h3>
+                        <p>Iron melts and becomes fully liquid.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <p class="temp-label">1394°C</p>
+                        <h3 class="text-2xl font-bold text-[#bc5090]">Delta (δ) Ferrite</h3>
+                        <p>A Body-Centered Cubic (BCC) structure, stable only at very high temperatures.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <p class="temp-label">912°C</p>
+                        <h3 class="text-2xl font-bold text-[#7a5195]">Gamma (γ) Austenite</h3>
+                        <p>A Face-Centered Cubic (FCC) structure. Crucially, it can dissolve a lot of carbon, which is key for heat treatment.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <p class="temp-label">Room Temp</p>
+                        <h3 class="text-2xl font-bold text-[#374c80]">Alpha (α) Ferrite</h3>
+                        <p>A Body-Centered Cubic (BCC) structure. It's soft, ductile, and magnetic.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Fe-Fe3C Diagram -->
+        <section id="fe-c-diagram" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">Steel's Blueprint: The Iron-Carbon Diagram</h2>
+            <div class="card p-6">
+                <p class="text-center mb-6 max-w-3xl mx-auto">This is the master map for steel. It shows which phases form at different temperatures and carbon contents, revealing three critical reactions.</p>
+                <div class="relative">
+                    <canvas id="fe-c-diagram-canvas" class="w-full h-auto"></canvas>
+                    <!-- Updated callout positions for the new diagram -->
+                    <div class="absolute" style="top: 70%; left: 30%;">
+                        <div class="p-2 bg-[#ffa600] text-white rounded-md shadow-lg text-xs md:text-sm font-bold">Eutectoid Point</div>
+                        <div class="w-px h-8 bg-[#ffa600] mx-auto"></div>
+                    </div>
+                     <div class="absolute" style="top: 40%; left: 80%;">
+                        <div class="p-2 bg-[#ff764a] text-white rounded-md shadow-lg text-xs md:text-sm font-bold">Eutectic Point</div>
+                        <div class="w-px h-8 bg-[#ff764a] mx-auto"></div>
+                    </div>
+                     <div class="absolute" style="top: 15%; left: 15%;">
+                        <div class="p-2 bg-[#ef5675] text-white rounded-md shadow-lg text-xs md:text-sm font-bold">Peritectic Point</div>
+                        <div class="w-px h-8 bg-[#ef5675] mx-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Cooling Paths -->
+        <section id="cooling-paths" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12 section-title">Microstructure Formation on Cooling</h2>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-[#374c80] mb-2">Hypo-eutectoid Steel</h3>
+                    <p class="font-semibold mb-4 text-gray-500">&lt; 0.76% Carbon</p>
+                    <div class="text-2xl mb-2">γ</div>
+                    <div class="text-xl font-bold text-[#ffa600]">↓</div>
+                    <p>Soft Ferrite (α) forms first</p>
+                    <div class="text-xl font-bold text-[#ffa600]">↓</div>
+                    <p class="font-bold text-lg">Ferrite + Pearlite</p>
+                </div>
+                <div class="card p-6 border-4 border-[#ffa600]">
+                    <h3 class="text-xl font-bold text-[#7a5195] mb-2">Eutectoid Steel</h3>
+                    <p class="font-semibold mb-4 text-gray-500">0.76% Carbon</p>
+                    <div class="text-2xl mb-2">γ</div>
+                    <div class="text-xl font-bold text-[#ffa600]">↓</div>
+                    <p>Transforms all at once at 727°C</p>
+                    <div class="text-xl font-bold text-[#ffa600]">↓</div>
+                    <p class="font-bold text-lg">100% Pearlite</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-[#bc5090] mb-2">Hyper-eutectoid Steel</h3>
+                    <p class="font-semibold mb-4 text-gray-500">&gt; 0.76% Carbon</p>
+                    <div class="text-2xl mb-2">γ</div>
+                    <div class="text-xl font-bold text-[#ffa600]">↓</div>
+                    <p>Hard Cementite (Fe₃C) forms first</p>
+                    <div class="text-xl font-bold text-[#ffa600]">↓</div>
+                    <p class="font-bold text-lg">Cementite + Pearlite</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Alloy Groups -->
+        <section id="alloy-groups" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">The Iron-Carbon Family</h2>
+            <div class="card p-6">
+                <p class="text-center mb-6 max-w-3xl mx-auto">Carbon content is the main ingredient that determines the properties and classification of iron-based alloys.</p>
+                <div class="chart-container">
+                    <canvas id="alloyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Codification -->
+        <section id="codification" class="text-center">
+            <h2 class="text-3xl font-bold mb-8 section-title">Decoding Steel: IS & ISO Standards</h2>
+            <div class="card p-8 max-w-2xl mx-auto">
+                <p class="text-lg mb-6">Standard codes are like a universal language for engineers, ensuring everyone is talking about the same material.</p>
+                <div class="bg-gray-100 rounded-lg p-6">
+                    <h3 class="text-2xl font-bold text-[#003f5c] mb-4">Example: AISI 1040 Steel</h3>
+                    <div class="flex justify-center items-center space-x-4">
+                        <div class="text-center">
+                            <p class="text-4xl font-extrabold text-[#ffa600]">10</p>
+                            <p class="text-sm">Plain Carbon Steel</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-4xl font-extrabold text-[#ef5675]">40</p>
+                            <p class="text-sm">~0.40% Carbon</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#003f5c] text-white py-8 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p>Infographic created to simplify complex material science concepts.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simplified Fe-C Diagram Canvas Drawing
+            const fe_c_canvas = document.getElementById('fe-c-diagram-canvas');
+            const fe_c_ctx = fe_c_canvas.getContext('2d');
+            
+            function drawFeCDiagram() {
+                const { width } = fe_c_canvas.parentElement.getBoundingClientRect();
+                const height = width * 0.6; // Maintain aspect ratio
+                fe_c_canvas.width = width;
+                fe_c_canvas.height = height;
+
+                fe_c_ctx.fillStyle = '#ffffff';
+                fe_c_ctx.fillRect(0, 0, width, height);
+                
+                // Define key points for the Fe-Fe3C diagram based on common values
+                // Temperatures (approximate, relative to canvas height)
+                const T_MELT_FE = 1538; // Pure Iron melting point
+                const T_DELTA_GAMMA = 1394; // Delta to Gamma transformation
+                const T_PERITECTIC = 1493;
+                const T_EUTECTIC = 1147;
+                const T_EUTECTOID = 727;
+                const T_ROOM = 25; // Approximate room temp for base of diagram
+
+                // Carbon Compositions (approximate, relative to canvas width)
+                const C_ALPHA_MAX = 0.022; // Max C in Alpha Ferrite at eutectoid temp
+                const C_PERITECTIC = 0.16;
+                const C_GAMMA_MAX = 2.14; // Max C in Gamma Austenite at eutectic temp
+                const C_EUTECTOID = 0.76;
+                const C_EUTECTIC = 4.3;
+                const C_CEMENTITE = 6.67; // Composition of Cementite (Fe3C)
+
+                // Scale functions
+                const tempToY = (t) => height - ((t - T_ROOM) / (T_MELT_FE - T_ROOM)) * height;
+                const carbonToX = (c) => (c / C_CEMENTITE) * width;
+
+                fe_c_ctx.strokeStyle = '#003f5c'; // Dark blue for lines
+                fe_c_ctx.lineWidth = 2;
+
+                // Draw Liquidus Line
+                fe_c_ctx.beginPath();
+                fe_c_ctx.moveTo(carbonToX(0), tempToY(T_MELT_FE)); // Pure Fe melting point
+                fe_c_ctx.lineTo(carbonToX(C_PERITECTIC), tempToY(T_PERITECTIC)); // Peritectic point
+                fe_c_ctx.lineTo(carbonToX(C_EUTECTIC), tempToY(T_EUTECTIC)); // Eutectic point
+                fe_c_ctx.lineTo(carbonToX(C_CEMENTITE * 0.9), tempToY(T_EUTECTIC + 150)); // Approximate liquidus for Fe3C side
+                fe_c_ctx.stroke();
+
+                // Draw Solidus Line and other high-temp lines
+                fe_c_ctx.beginPath();
+                fe_c_ctx.moveTo(carbonToX(0), tempToY(T_MELT_FE));
+                fe_c_ctx.lineTo(carbonToX(0), tempToY(T_DELTA_GAMMA)); // Delta-Gamma transformation pure Fe
+                fe_c_ctx.lineTo(carbonToX(C_PERITECTIC * 0.5), tempToY(T_PERITECTIC)); // Approx delta-gamma boundary
+                fe_c_ctx.lineTo(carbonToX(C_PERITECTIC), tempToY(T_PERITECTIC)); // Peritectic point (delta + L -> gamma)
+                fe_c_ctx.lineTo(carbonToX(C_GAMMA_MAX), tempToY(T_EUTECTIC)); // Max C in Austenite
+                fe_c_ctx.lineTo(carbonToX(C_EUTECTIC), tempToY(T_EUTECTIC)); // Eutectic point (L -> gamma + Fe3C)
+                fe_c_ctx.lineTo(carbonToX(C_CEMENTITE), tempToY(T_EUTECTIC)); // Cementite line at eutectic temp
+                fe_c_ctx.stroke();
+
+                // Draw Eutectoid Line
+                fe_c_ctx.beginPath();
+                fe_c_ctx.moveTo(carbonToX(C_ALPHA_MAX), tempToY(T_EUTECTOID)); // Max C in Ferrite at eutectoid temp
+                fe_c_ctx.lineTo(carbonToX(C_GAMMA_MAX), tempToY(T_EUTECTOID)); // Eutectoid horizontal line
+                fe_c_ctx.stroke();
+
+                // Draw A3 Line (Gamma to Alpha + Gamma)
+                fe_c_ctx.beginPath();
+                fe_c_ctx.moveTo(carbonToX(0), tempToY(912)); // Pure Fe Gamma to Alpha
+                fe_c_ctx.lineTo(carbonToX(C_EUTECTOID), tempToY(T_EUTECTOID)); // Eutectoid point
+                fe_c_ctx.stroke();
+
+                // Draw Acm Line (Gamma to Gamma + Fe3C)
+                fe_c_ctx.beginPath();
+                fe_c_ctx.moveTo(carbonToX(C_EUTECTOID), tempToY(T_EUTECTOID)); // Eutectoid point
+                fe_c_ctx.lineTo(carbonToX(C_GAMMA_MAX), tempToY(T_EUTECTIC)); // Max C in Austenite
+                fe_c_ctx.stroke();
+
+                // Draw vertical line for Cementite
+                fe_c_ctx.beginPath();
+                fe_c_ctx.moveTo(carbonToX(C_CEMENTITE), tempToY(T_EUTECTIC));
+                fe_c_ctx.lineTo(carbonToX(C_CEMENTITE), tempToY(T_ROOM));
+                fe_c_ctx.stroke();
+
+                // Phase labels
+                fe_c_ctx.font = `bold ${width * 0.025}px Inter`; // Adjust font size based on width
+                fe_c_ctx.fillStyle = '#003f5c';
+
+                // Adjusted positions for phase labels to avoid overlap
+                fe_c_ctx.fillText('L', carbonToX(3.0), tempToY(1450));
+                fe_c_ctx.fillText('δ', carbonToX(0.05), tempToY(1450));
+                fe_c_ctx.fillText('γ', carbonToX(1.0), tempToY(950));
+                fe_c_ctx.fillText('α', carbonToX(0.01), tempToY(600));
+                fe_c_ctx.fillText('Fe₃C', carbonToX(6.2), tempToY(600));
+
+                fe_c_ctx.font = `${width * 0.02}px Inter`; // Smaller font for dual-phase labels
+                fe_c_ctx.fillText('L + δ', carbonToX(0.1), tempToY(1510));
+                fe_c_ctx.fillText('L + γ', carbonToX(3.0), tempToY(1250));
+                fe_c_ctx.fillText('L + Fe₃C', carbonToX(5.5), tempToY(1250));
+                fe_c_ctx.fillText('δ + γ', carbonToX(0.1), tempToY(1420));
+                fe_c_ctx.fillText('α + γ', carbonToX(0.3), tempToY(800));
+                fe_c_ctx.fillText('γ + Fe₃C', carbonToX(1.5), tempToY(900));
+                fe_c_ctx.fillText('α + Fe₃C', carbonToX(0.4), tempToY(500)); // Pearlite region
+
+                // Axes labels - Adjusted positions
+                fe_c_ctx.font = `bold ${width * 0.025}px Inter`;
+                fe_c_ctx.fillText('Temperature (°C)', width * 0.01, height * 0.05); /* Moved to top-left corner */
+                fe_c_ctx.fillText('Carbon Content (wt%)', width * 0.35, height * 0.95); /* Moved up slightly */
+            }
+            
+            // Alloy Groups Chart
+            const alloyCtx = document.getElementById('alloyChart').getContext('2d');
+            const alloyChart = new Chart(alloyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Wrought Iron', ['Low Carbon', 'Steel'], ['Medium Carbon', 'Steel'], ['High Carbon', 'Steel'], 'Cast Iron'],
+                    datasets: [{
+                        label: 'Carbon Content (wt%)',
+                        data: [0.008, 0.25, 0.60, 2.14, 4.3],
+                        backgroundColor: ['#374c80', '#7a5195', '#bc5090', '#ef5675', '#ff764a'],
+                        borderColor: '#003f5c',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Max Carbon Content (wt%)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#003f5c'
+                            }
+                        },
+                        y: {
+                             ticks: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#003f5c'
+                            }
+                        }
+                    }
+                }
+            });
+
+            window.addEventListener('resize', drawFeCDiagram);
+            drawFeCDiagram();
+        });
+    </script>
+
+</body>
+</html>
