@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Screws: The Ultimate Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MathJax Configuration and Script -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFEA;
+            color: #00796B;
+        }
+        .section-title {
+            color: #00796B;
+        }
+        .card {
+            background-color: white;
+            border: 2px solid #00CECB;
+            box-shadow: 8px 8px 0px #00CECB;
+        }
+        .stat-card {
+            background-color: #00796B;
+            color: #FFFFEA;
+            border: 2px solid #FFED66;
+            box-shadow: 8px 8px 0px #FFED66;
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            height: 100%;
+            min-height: 250px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+
+        <!-- Header -->
+        <header class="text-center mb-20 md:mb-32">
+            <h1 class="text-4xl md:text-6xl font-extrabold section-title mb-4">Power Screws</h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">The Unseen Force Turning Rotation into Linear Power</p>
+        </header>
+
+        <!-- Section 1: Anatomy -->
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">1. The Anatomy of a Power Screw</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-6">Key Terminology</h3>
+                    <p class="mb-8 text-gray-600">A power screw is essentially a ramp wrapped around a cylinder. Its geometry dictates its performance. Understanding these terms is the first step to mastering their design.</p>
+                    <ul class="space-y-4 text-gray-600">
+                        <li class="flex items-start"><span class="font-bold text-teal-600 mr-2">Pitch ($p$):</span> <span class="text-sm">The distance between adjacent threads.</span></li>
+                        <li class="flex items-start"><span class="font-bold text-teal-600 mr-2">Lead ($L$):</span> <span class="text-sm">The linear distance the screw travels in one full revolution. For multi-start threads, $L = (\text{No. of starts}) \times p$.</span></li>
+                        <li class="flex items-start"><span class="font-bold text-teal-600 mr-2">Helix Angle ($\lambda$):</span> <span class="text-sm">The angle of the thread's incline. A smaller angle means more force multiplication.</span></li>
+                    </ul>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Thread Form Trade-offs</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">The shape of the thread determines its efficiency vs. its strength and ease of manufacturing. A comparison of the most common types.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="threadTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Core Mechanics -->
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">2. The Physics of Force</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">The core of power screw design is a trade-off between efficiency and friction. Friction is necessary for safety but reduces efficiency. This chart shows how increasing friction makes the screw safer but less efficient.</p>
+            <div class="card p-6 rounded-lg">
+                <h3 class="text-2xl font-semibold mb-4 text-center">Efficiency vs. Friction Angle</h3>
+                <p class="text-center text-sm text-gray-500 mb-4">Self-locking occurs when the friction angle exceeds the helix angle ($\phi \ge \lambda$).</p>
+                <div class="chart-container h-96">
+                    <canvas id="efficiencyFrictionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW Section 3: Advanced Considerations & Formulas -->
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">3. Deeper Dive: Advanced Considerations</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-6">Beyond the Basics</h3>
+                    <ul class="space-y-6 text-gray-600">
+                        <li>
+                            <h4 class="font-bold text-lg">Material & Lubrication</h4>
+                            <p class="text-sm">The choice of materials (e.g., steel screw with a bronze nut) and proper lubrication is crucial. Lubrication minimizes the coefficient of friction ($\mu$), which increases efficiency and reduces wear and heat generation.</p>
+                        </li>
+                        <li>
+                            <h4 class="font-bold text-lg">Back-driving & Overhauling</h4>
+                            <p class="text-sm">A power screw is "overhauling" if the load can drive the screw backward without any external torque. This occurs when the helix angle is greater than the friction angle ($\lambda > \phi$). This is a critical safety failure mode to prevent in applications like jacks.</p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Key Design Formulas</h3>
+                    <div class="space-y-6 text-sm text-gray-600">
+                        <div>
+                            <p class="font-bold text-base mb-1">Torque to Raise a Load ($T_R$)</p>
+                            <div class="overflow-x-auto p-2 bg-teal-100 border-2 border-teal-300 rounded-md">
+                                $$ T_R = \frac{W \cdot d_m}{2} \left( \frac{L + \pi \mu d_m}{\pi d_m - \mu L} \right) $$
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-bold text-base mb-1">Torque to Lower a Load ($T_L$)</p>
+                            <div class="overflow-x-auto p-2 bg-teal-100 border-2 border-teal-300 rounded-md">
+                                $$ T_L = \frac{W \cdot d_m}{2} \left( \frac{\pi \mu d_m - L}{\pi d_m + \mu L} \right) $$
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-bold text-base mb-1">Efficiency ($\eta$)</p>
+                             <div class="overflow-x-auto p-2 bg-teal-100 border-2 border-teal-300 rounded-md">
+                                $$ \eta = \frac{T_{ideal}}{T_{actual}} = \frac{W \cdot L}{2\pi T_R} $$
+                            </div>
+                        </div>
+                        <p class="text-xs mt-2 italic text-gray-500">where $W$ is the load, $d_m$ is the mean diameter, $L$ is the lead, and $\mu$ is the coefficient of friction.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OLD Section 3 (now Section 4): Stress Analysis -->
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">4. Will It Break? Understanding Stresses</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Where Does It Hurt?</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">A power screw experiences multiple types of stress simultaneously. An engineer must analyze all of them to prevent failure.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="stressChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-6">Primary Stress Types</h3>
+                    <ul class="space-y-4">
+                        <li>
+                            <h4 class="font-bold">Tensile/Compressive Stress</h4>
+                            <p class="text-gray-600 text-sm">Caused by the axial load trying to pull apart or crush the screw's core.</p>
+                        </li>
+                        <li>
+                            <h4 class="font-bold">Torsional Shear Stress</h4>
+                            <p class="text-gray-600 text-sm">Caused by the input torque trying to twist the screw shaft.</p>
+                        </li>
+                        <li>
+                            <h4 class="font-bold">Bearing Stress</h4>
+                            <p class="text-gray-600 text-sm">The crushing pressure on the contact surfaces of the screw and nut threads.</p>
+                        </li>
+                        <li>
+                            <h4 class="font-bold">Thread Shear Stress</h4>
+                            <p class="text-gray-600 text-sm">The stress that could cause the threads themselves to shear off from the screw body.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Applications -->
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">5. Power Screws in the Wild</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card p-6 rounded-lg text-center">
+                    <div class="text-5xl mb-4">🔩</div>
+                    <h3 class="text-xl font-bold mb-2">Vise & C-Clamp</h3>
+                    <p class="text-gray-600">Generates high clamping force. Relies on <strong>self-locking</strong> to hold the workpiece securely.</p>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <div class="text-5xl mb-4">🚗</div>
+                    <h3 class="text-xl font-bold mb-2">Screw Jack</h3>
+                    <p class="text-gray-600">Lifts and holds heavy loads. <strong>Self-locking</strong> is a critical safety feature to prevent the load from falling.</p>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <div class="text-5xl mb-4">⚙️</div>
+                    <h3 class="text-xl font-bold mb-2">Toggle Jack</h3>
+                    <p class="text-gray-600">Combines a screw with linkages for immense force multiplication, often for pressing or stamping.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Concept Map -->
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">6. The Big Picture: How It All Connects</h2>
+             <div class="card p-6 rounded-lg">
+                <div class="flex flex-col items-center space-y-4 text-center">
+                    <div class="p-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg shadow-sm">
+                        <h4 class="font-bold">1. Geometry & Materials</h4>
+                        <p class="text-xs text-gray-600">(Lead, Diameter, Friction $\mu$)</p>
+                    </div>
+                    <div class="h-8 w-px bg-gray-400"></div>
+                    <div class="p-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg shadow-sm">
+                        <h4 class="font-bold">2. Torque & Efficiency</h4>
+                        <p class="text-xs text-gray-600">(Input effort vs. energy loss)</p>
+                    </div>
+                    <div class="h-8 w-px bg-gray-400"></div>
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <div class="p-4 bg-teal-100 border-2 border-teal-300 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-teal-600">3a. Self-Locking</h4>
+                            <p class="text-xs text-gray-600">(Is it safe?)</p>
+                        </div>
+                        <div class="p-4 bg-red-100 border-2 border-red-300 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-red-600">3b. Stresses</h4>
+                            <p class="text-xs text-gray-600">(Is it strong enough?)</p>
+                        </div>
+                    </div>
+                    <div class="h-8 w-px bg-gray-400"></div>
+                     <div class="stat-card p-4 rounded-lg shadow-lg">
+                        <h4 class="font-bold text-lg">4. Successful Design</h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const energeticPalette = {
+                red: '#FF5E5B',
+                cream: '#FFFFEA',
+                teal: '#00CECB',
+                yellow: '#FFED66',
+                darkTeal: '#00796B'
+            };
+
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+
+            const commonChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: 'Inter', size: 12 },
+                            boxWidth: 20,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        callbacks: { title: tooltipTitleCallback },
+                        backgroundColor: energeticPalette.darkTeal,
+                        titleFont: { family: 'Inter', weight: 'bold' },
+                        bodyFont: { family: 'Inter' },
+                        padding: 10,
+                        cornerRadius: 4,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { font: { family: 'Inter' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        ticks: { font: { family: 'Inter' } },
+                        grid: { color: 'rgba(0, 121, 107, 0.2)' } /* Dark teal with opacity */
+                    }
+                }
+            };
+
+            // Chart 1: Thread Type Comparison
+            const threadTypeCtx = document.getElementById('threadTypeChart').getContext('2d');
+            new Chart(threadTypeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Square', 'Acme', 'Buttress'],
+                    datasets: [
+                        {
+                            label: 'Efficiency',
+                            data: [90, 75, 50],
+                            backgroundColor: energeticPalette.darkTeal,
+                            borderColor: energeticPalette.teal,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Strength',
+                            data: [70, 85, 95],
+                            backgroundColor: energeticPalette.red,
+                            borderColor: energeticPalette.red,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: { ...commonChartOptions, indexAxis: 'y' }
+            });
+
+            // Chart 2: Efficiency vs. Friction
+            const efficiencyFrictionCtx = document.getElementById('efficiencyFrictionChart').getContext('2d');
+            const frictionData = [];
+            for (let i = 0; i <= 20; i++) {
+                const mu = i * 0.015;
+                const efficiency = (1 - mu * 2) / (1 + mu / 2) * 60; // Simplified illustrative formula
+                frictionData.push({x: mu, y: efficiency > 0 ? efficiency : 0});
+            }
+            new Chart(efficiencyFrictionCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Efficiency vs. Friction',
+                        data: frictionData,
+                        borderColor: energeticPalette.yellow,
+                        backgroundColor: energeticPalette.yellow,
+                        showLine: true,
+                        tension: 0.4,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonChartOptions,
+                    plugins: {
+                        ...commonChartOptions.plugins,
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'box',
+                                    xMin: 0.1,
+                                    xMax: 0.3,
+                                    yMin: 0,
+                                    yMax: 100,
+                                    backgroundColor: 'rgba(0, 206, 203, 0.1)',
+                                    borderColor: 'rgba(0, 206, 203, 0.3)',
+                                    borderWidth: 1,
+                                },
+                                label1: {
+                                    type: 'label',
+                                    xValue: 0.2,
+                                    yValue: 80,
+                                    content: 'Self-Locking Zone',
+                                    font: { size: 14, weight: 'bold', family: 'Inter' },
+                                    color: energeticPalette.teal
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ...commonChartOptions.scales.x,
+                            title: { display: true, text: 'Coefficient of Friction $(\\mu)$', font: { family: 'Inter', weight: 'bold' } }
+                        },
+                        y: {
+                            ...commonChartOptions.scales.y,
+                            min: 0,
+                            max: 100,
+                            title: { display: true, text: 'Efficiency (%)', font: { family: 'Inter', weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+
+            // Chart 3: Stress Distribution
+            const stressCtx = document.getElementById('stressChart').getContext('2d');
+            new Chart(stressCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Tensile/Compressive Stress', 
+                        'Torsional Shear Stress', 
+                        'Bearing Stress on Threads'
+                    ],
+                    datasets: [{
+                        label: 'Stress Consideration',
+                        data: [45, 30, 25],
+                        backgroundColor: [
+                            energeticPalette.darkTeal,
+                            energeticPalette.red,
+                            energeticPalette.yellow
+                        ],
+                        borderColor: energeticPalette.cream,
+                        borderWidth: 4,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    ...commonChartOptions,
+                    cutout: '60%',
+                    plugins: {
+                        ...commonChartOptions.plugins,
+                        legend: { ...commonChartOptions.plugins.legend, position: 'bottom' }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
