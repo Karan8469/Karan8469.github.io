@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ch3 Entropy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Academic Blue and Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA uses a top-level navigation for the six core thermodynamic concepts, promoting non-linear exploration. Within each concept, a tabbed interface (e.g., Summary, Analogy, Math) breaks down the information into digestible chunks. This modular, user-driven structure is superior to a linear scroll because it allows students to focus on specific areas of difficulty, compare different facets of a concept easily, and use the tool for both initial learning and later review. A visual flowchart reinforces the logical connection between topics, providing a mental map for the user. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Turbine efficiency loss due to irreversibility. -> Goal: Compare. -> Viz: Bar Chart (Chart.js). -> Interaction: Static display. -> Justification: Clearly quantifies the abstract concept of "lost work" in a familiar engineering context.
+        - Report Info: Reversible vs. Irreversible processes. -> Goal: Organize/Compare. -> Viz: HTML/CSS Diagram. -> Interaction: Static visual. -> Justification: Provides a simple, clear visual distinction between ideal and real processes and the origin of entropy generation ($S_{gen}$).
+        - Report Info: Principle of Increase of Entropy (System vs. Universe). -> Goal: Inform/Organize. -> Viz: HTML/CSS Diagram. -> Interaction: Static visual. -> Justification: Visually resolves the common misconception that a system's entropy cannot decrease by showing the larger increase in the surroundings' entropy.
+        - Report Info: First vs. Second Law comparison. -> Goal: Compare. -> Viz: Radar Chart (Chart.js). -> Interaction: Hover tooltips. -> Justification: Visually summarizes multi-faceted differences effectively.
+        - Report Info: Kelvin-Planck/Clausius equivalence. -> Goal: Show equivalence. -> Viz: HTML/CSS/JS animated diagram. -> Interaction: Button-triggered transformations. -> Justification: Makes abstract logical proof concrete and easy to follow.
+        - Report Info: PMM2. -> Goal: Define & contrast. -> Viz: HTML/CSS diagram. -> Interaction: Static visual aid. -> Justification: Clearly illustrates the impossible energy flow.
+        - Report Info: Irreversibility causes. -> Goal: Organize causes. -> Viz: HTML/CSS/JS accordion cards. -> Interaction: Click to reveal details. -> Justification: Breaks down a dense list into digestible, user-controlled chunks.
+        - Report Info: Carnot Theorem & Efficiency. -> Goal: Explore efficiency formula. -> Viz: Sliders, JS-updated text, and a Chart.js T-S diagram. -> Interaction: Drag sliders to see real-time efficiency changes. -> Justification: Turns a static equation into a hands-on, intuitive learning tool.
+        - Report Info: Thermodynamic Scale. -> Goal: Explain absolutes. -> Viz: HTML/CSS comparison graphic. -> Interaction: Static visual aid. -> Justification: Clearly contrasts relative vs. absolute scales.
+        - All textual content is organized in JS objects and dynamically rendered, allowing for a clean, interactive single-page experience.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .nav-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-button.active {
+            background-color: #0369a1; /* sky-700 */
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab-button {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            color: #0369a1; /* sky-700 */
+            border-bottom-color: #0369a1; /* sky-700 */
+        }
+        .content-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            padding: 2rem;
+        }
+        .flowchart-step {
+            display: flex;
+            align-items: center;
+        }
+        .flowchart-arrow {
+            color: #94a3b8; /* slate-400 */
+            font-size: 1.5rem;
+            margin: 0 0.5rem;
+        }
+        .prose-custom {
+            color: #334155; /* slate-700 */
+        }
+        .prose-custom h3 {
+            color: #1e293b; /* slate-800 */
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .prose-custom p, .prose-custom li {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .prose-custom ul {
+            list-style-position: inside;
+            padding-left: 0;
+        }
+        .prose-custom code {
+            background-color: #e2e8f0; /* slate-200 */
+            color: #1e3a8a; /* blue-900 */
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .diagram-box {
+            border: 2px solid #D1D5DB;
+            background-color: #F9FAFB;
+            min-height: 150px;
+        }
+        .arrow {
+            position: relative;
+        }
+        .arrow::after {
+            content: '→';
+            position: absolute;
+            font-size: 2rem;
+            line-height: 1;
+            color: #3D405B;
+        }
+        .arrow-down::after {
+            content: '↓';
+        }
+        .work-out::after {
+            content: '→ W';
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .work-in::after {
+            content: '← W';
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #0369a1; /* sky-700 */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #0369a1; /* sky-700 */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease;
+            padding: 0 1.5rem;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Ch3 Entropy</h1>
+            <p class="text-sm text-slate-500 mt-1">For Mechanical Engineering & Material Science Students</p>
+        </div>
+    </header>
+
+    <nav id="main-nav" class="py-6 bg-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <section id="flowchart-section" class="mb-12">
+             <div class="bg-white p-4 rounded-lg shadow-sm">
+                <h2 class="text-center text-lg font-semibold text-slate-700 mb-3">Conceptual Pathway</h2>
+                <div class="flex flex-wrap items-center justify-center text-xs sm:text-sm">
+                    <div class="flowchart-step"><span class="font-medium bg-slate-200 px-2 py-1 rounded">Foundations</span></div>
+                    <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-step"><span class="font-medium bg-slate-200 px-2 py-1 rounded">Clausius Theorem</span></div>
+                    <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-step"><span class="font-medium bg-slate-200 px-2 py-1 rounded">Entropy Properties</span></div>
+                    <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-step"><span class="font-medium bg-slate-200 px-2 py-1 rounded">Clausius Inequality</span></div>
+                    <div class="flowchart-arrow mt-2 sm:mt-0 sm:rotate-0">→</div>
+                    <div class="flowchart-step"><span class="font-medium bg-slate-200 px-2 py-1 rounded">Irreversibility</span></div>
+                    <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-step"><span class="font-medium bg-slate-200 px-2 py-1 rounded">Principle of Increase</span></div>
+                     <div class="flowchart-arrow">→</div>
+                    <div class="flowchart-step"><span class="font-medium bg-slate-200 px-2 py-1 rounded">Applications</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="content-display" class="content-card">
+            <h2 id="content-title" class="text-2xl font-bold text-sky-800 mb-4"></h2>
+            <div id="content-tabs" class="border-b border-slate-200 mb-6">
+                <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
+                </nav>
+            </div>
+            <div id="content-body" class="prose-custom">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-6 text-slate-500 text-sm">
+        <p>An interactive learning tool. Select a topic to begin.</p>
+    </footer>
+
+    <script>
+        const appData = {
+            "foundations": {
+                title: "0. Foundations",
+                tabs: {
+                    intro: {
+                        title: "Introduction",
+                        content: `<h3>Beyond Energy Conservation</h3><p>Welcome! This hub explores the core principles of thermodynamics, moving beyond simple energy conservation to understand why processes happen the way they do. We'll see how the First Law accounts for the <span class="font-semibold text-sky-700">quantity</span> of energy, but why we need the Second Law to understand its <span class="font-semibold text-sky-700">quality</span> and the <span class="font-semibold text-sky-700">direction</span> of nature.</p><div class="card rounded-lg p-6 mt-6"><h3 class="text-xl font-semibold mb-3">Comparing the Two Pillars of Thermodynamics</h3><p class="mb-4 text-gray-600">The First and Second Laws provide the foundational rules for all energy interactions. The First Law is a universal accounting principle, while the Second Law is the director that determines which way the action flows. Use the chart below to see a direct comparison of their core functions.</p><div class="chart-container"><canvas id="lawsComparisonChart"></canvas></div></div>`
+                    },
+                    firstLawLimits: {
+                        title: "1st Law Limitations",
+                        content: `<h3>Limitations of the First Law</h3><p>The First Law is perfect for balancing the energy books, but it's silent on crucial aspects of reality. It can't tell us if a process is possible or which way it will spontaneously proceed.</p><div class="grid md:grid-cols-2 gap-6"><div class="card rounded-lg p-6"><h3 class="text-xl font-semibold mb-2 flex items-center"><span class="text-3xl mr-3">☕</span> Direction of Heat Flow</h3><p class="text-gray-600">A hot cup of coffee always cools down, transferring heat to the room. The reverse—the room spontaneously heating the coffee—never happens, even though it wouldn't violate energy conservation. The First Law offers no explanation for this one-way street.</p></div><div class="card rounded-lg p-6"><h3 class="text-xl font-semibold mb-2 flex items-center"><span class="text-3xl mr-3">⚙️</span> Efficiency Limits</h3><p class="text-gray-600">You can convert 100% of work into heat (e.g., through friction), but converting 100% of heat into work in a continuous cycle is impossible. The First Law doesn't explain this fundamental asymmetry or define the limits of engine efficiency.</p></div></div>`
+                    },
+                    secondLawOverview: {
+                        title: "The Second Law",
+                        content: `<h3>The Second Law: Nature's Directional Signpost</h3><p>The Second Law fills the gaps left by the First. It's an empirical law that introduces the concepts of energy quality and entropy, governing the direction and feasibility of all natural processes.</p><div class="card rounded-lg p-6"><h3 class="text-xl font-semibold mb-3">Key Principles of the Second Law</h3><ul class="list-disc list-inside space-y-3 text-gray-700"><li><span class="font-semibold">Directionality:</span> Processes occur in a certain direction. Heat flows spontaneously from hot to cold bodies.</li><li><span class="font-semibold">Energy Quality:</span> Energy has quality as well as quantity. High-temperature energy is higher quality as it has more potential to do work. This quality degrades in all real processes.</li><li><span class="font-semibold">Entropy (S):</span> Introduces a property to quantify the level of disorder or energy dispersal. For any spontaneous process in an isolated system, the total entropy always increases.</li></ul></div>`
+                    }
+                }
+            },
+            "clausius-theorem": {
+                title: "1. Clausius Theorem",
+                tabs: {
+                    summary: {
+                        title: "Concept Summary",
+                        content: `<h3>The Foundation of the Second Law</h3><p>The Clausius Theorem provides a mathematical criterion for the feasibility and nature (reversible or irreversible) of any cyclic thermodynamic process. It states that for any complete cycle, the sum of all heat transfers divided by their respective absolute temperatures will always be less than or equal to zero. This theorem is a direct consequence of the Second Law of Thermodynamics.</p>`
+                    },
+                    analogy: {
+                        title: "Intuitive Analogy",
+                        content: `<h3>Uphill Water Flow</h3><p>Imagine trying to make water flow uphill without a pump. It's impossible because it defies the natural tendency of water to flow downwards. Similarly, the Clausius Theorem explains why you can't build a refrigerator that cools a space without using any external power—it's like expecting heat to spontaneously flow from a cold place to a hot place, which is against its nature.</p>`
+                    },
+                    math: {
+                        title: "Mathematical Context",
+                        content: `<h3>The Core Equation</h3><p>The theorem is expressed as a cyclic integral: <code>∮ δQ/T ≤ 0</code></p><ul><li><code>∮</code>: A cyclic integral, meaning the process starts and ends at the same state.</li><li><code>δQ</code>: The infinitesimal heat transferred. It's positive for heat absorbed by the system and negative for heat rejected.</li><li><code>T</code>: The absolute temperature (in Kelvin) of the thermal reservoir where heat is exchanged.</li></ul><p>If the result is <code>= 0</code>, the cycle is reversible (ideal). If it's <code>< 0</code>, the cycle is irreversible (real and possible). If it's <code>> 0</code>, the cycle is impossible.</p>`
+                    },
+                    connection: {
+                        title: "Conceptual Connection",
+                        content: `<h3>Paving the Way for Entropy</h3><p>The Clausius Theorem is the bridge from the observational Second Law to the quantitative definition of entropy. The fact that <code>∮ δQ_rev/T = 0</code> for any reversible cycle allowed Clausius to define a new quantity, <code>dS = δQ_rev/T</code>, which must be a state function (a property). This was a monumental step, as it provided a way to mathematically measure the "quality" of energy and the direction of natural processes.</p>`
+                    },
+                    equivalence: {
+                        title: "Statements Equivalence",
+                        content: `<h3>Two Sides of the Same Coin</h3><p>The Second Law is expressed in two main statements that seem different but are perfectly equivalent. One focuses on producing work (engines), the other on moving heat (refrigerators). Violating one inevitably means you can violate the other. Explore their equivalence below.</p><div class="card rounded-lg p-6"><div class="flex justify-center space-x-4 mb-6"><button id="showValidBtn" class="px-4 py-2 rounded-md font-semibold text-white bg-sky-700">Show Valid Systems</button><button id="violateKPBtn" class="px-4 py-2 rounded-md font-semibold bg-gray-200 text-gray-800">Violate Kelvin-Planck</button></div><div id="equivalence-diagram" class="grid md:grid-cols-2 gap-8 items-center"></div><p id="equivalence-explanation" class="mt-6 text-center text-gray-600 italic"></p></div>`
+                    },
+                    misconceptions: {
+                        title: "Common Misconceptions",
+                        content: `<ul><li><strong>Clausius Theorem vs. Clausius Statement:</strong> They are not the same. The Statement is a qualitative declaration (heat doesn't flow from cold to hot spontaneously). The Theorem is the quantitative mathematical formula (<code>∮ δQ/T ≤ 0</code>) for cycles.</li><li><strong>The integral is always zero:</strong> This is a major error. The integral is only zero for *ideal, reversible* cycles. For all *real* cycles, it is strictly less than zero.</li></ul>`
+                    },
+                    errors: {
+                        title: "Typical Student Errors",
+                        content: `<ul><li><strong>Wrong Temperature:</strong> Using the system's internal temperature instead of the temperature of the external reservoir (the surroundings) at the boundary where heat transfer occurs.</li><li><strong>Sign Errors for δQ:</strong> Forgetting that heat absorbed by the system is positive (+) and heat rejected is negative (-).</li><li><strong>Applying to Non-Cycles:</strong> The cyclic integral form <code>∮</code> is only for full cycles.</li></ul>`
+                    },
+                    takeaways: {
+                        title: "Key Takeaways",
+                        content: `<ul><li>The Clausius Theorem tests if a thermodynamic cycle is possible and whether it's reversible or irreversible.</li><li>It is the mathematical foundation that led to the definition of entropy as a state property.</li><li>The integral <code>∮ δQ/T</code> can never be positive. It's zero for ideal cycles and negative for all real cycles.</li></ul>`
+                    }
+                }
+            },
+            "properties-of-entropy": {
+                title: "2. Properties of Entropy",
+                tabs: {
+                    summary: {
+                        title: "Concept Summary",
+                        content: `<h3>A Measure of Dispersal</h3><p>Entropy (S) is a fundamental thermodynamic property measuring the unavailability of a system's thermal energy for conversion into work. More intuitively, it quantifies the dispersal of energy and matter, or the number of possible microscopic arrangements (microstates) that correspond to a single macroscopic state.</p>`
+                    },
+                    analogy: {
+                        title: "Intuitive Analogy",
+                        content: `<h3>Shuffled Cards & Scattered Tools</h3><p>Think of a new, ordered deck of cards. This is a low-entropy state because there's only one way for it to be perfectly ordered. After shuffling, it's in a high-entropy state because there are countless ways the cards can be arranged to be considered "shuffled." Entropy measures this multiplicity of arrangements. Similarly, tools neatly organized in a toolbox (low entropy) become scattered on the floor after being dropped (high entropy).</p>`
+                    },
+                    math: {
+                        title: "Mathematical Context",
+                        content: `<h3>Two Key Definitions</h3><p>1. <strong>Thermodynamic Definition:</strong> <code>dS = δQ_rev/T</code>. This defines the change in entropy for a reversible process.</p><p>2. <strong>Statistical Definition (Boltzmann):</strong> <code>S = k_B ln(Ω)</code>. This links entropy (S) to the number of possible microstates (Ω) for a given macrostate, with <code>k_B</code> being Boltzmann's constant. This definition highlights the probabilistic nature of entropy.</p>`
+                    },
+                    connection: {
+                        title: "Conceptual Connection",
+                        content: `<h3>Entropy as a State Function</h3><p>Because it was derived from the Clausius Theorem (where <code>∮ dS = 0</code> for a cycle), entropy is a state function, just like pressure or volume. This is incredibly useful. It means the change in entropy (ΔS) between two states depends only on the start and end points, not the path taken. Therefore, we can calculate ΔS for a complex, irreversible process by imagining a simple, reversible path between the same two points.</p>`
+                    },
+                    thermoScale: {
+                        title: "Thermo. Scale",
+                        content: `<h3>The Thermodynamic Temperature Scale</h3><p>For thermodynamic laws to work universally, we need a temperature scale that's independent of the properties of any specific substance (like water). The Kelvin scale is this absolute scale, derived directly from the Second Law.</p><div class="card rounded-lg p-6"><h3 class="text-xl font-semibold mb-3">Why Absolute Temperature Matters</h3><p class="text-gray-600 mb-4">The ratio of heat transfer in a reversible engine is equal to the ratio of the absolute temperatures of the reservoirs (Q<sub>H</sub>/Q<sub>L</sub> = T<sub>H</sub>/T<sub>L</sub>). This relationship defines the Kelvin scale. Using Celsius or Fahrenheit in thermodynamic formulas will lead to incorrect results.</p><div class="bg-gray-100 p-4 rounded-lg"><div class="flex justify-between items-end text-center"><div class="w-1/3"><p class="font-bold">Kelvin (K)</p><div class="h-40 bg-blue-300 relative mt-2 rounded-t-lg flex items-end justify-center pb-2"><span class="font-semibold text-sm">0 K</span></div><p class="text-xs mt-2">Absolute Zero</p></div><div class="w-1/3"><p class="font-bold">Celsius (°C)</p><div class="h-20 bg-green-300 relative mt-2 rounded-t-lg flex items-end justify-center pb-2"><span class="font-semibold text-sm">0 °C</span></div><p class="text-xs mt-2">Water Freezes</p></div><div class="w-1/3"><p class="font-bold">Fahrenheit (°F)</p><div class="h-24 bg-orange-300 relative mt-2 rounded-t-lg flex items-end justify-center pb-2"><span class="font-semibold text-sm">32 °F</span></div><p class="text-xs mt-2">Water Freezes</p></div></div><p class="text-center mt-8 text-sm italic">Absolute zero (0 K) is the fundamental baseline where all molecular motion ceases. Relative scales like °C and °F are defined by arbitrary points.</p></div></div>`
+                    },
+                    misconceptions: {
+                        title: "Common Misconceptions",
+                        content: `<ul><li><strong>Entropy is only "disorder":</strong> This is an oversimplification. A more precise view is energy dispersal or multiplicity of microstates. For example, freezing water can look more "disordered," but its entropy is lower.</li><li><strong>Entropy is conserved:</strong> False. Unlike energy, entropy is *not* conserved. It is *generated* in all real processes.</li><li><strong>A system's entropy can never decrease:</strong> False. This is only true for *isolated* systems. The entropy of a non-isolated system (like a refrigerator's interior) can decrease, as long as the entropy of its surroundings increases by a greater amount.</li></ul>`
+                    },
+                    errors: {
+                        title: "Typical Student Errors",
+                        content: `<ul><li><strong>Using Celsius:</strong> Always use Kelvin for temperature in entropy calculations.</li><li><strong>Extensive vs. Intensive:</strong> Confusing total entropy (S, an extensive property that depends on mass) with specific entropy (s, an intensive property, S/mass).</li><li><strong>Assuming ΔS is always positive:</strong> The entropy of a *system* can decrease if heat is removed. The Principle of Increase applies to the *universe* (system + surroundings).</li></ul>`
+                    },
+                    takeaways: {
+                        title: "Key Takeaways",
+                        content: `<ul><li>Entropy is a state function; its change is path-independent.</li><li>It quantifies energy dispersal or the number of ways a state can be configured.</li><li>Entropy is an extensive property, and its change is linked to reversible heat transfer and absolute temperature.</li></ul>`
+                    }
+                }
+            },
+            "clausius-inequality": {
+                title: "3. Clausius Inequality",
+                tabs: {
+                    summary: {
+                        title: "Concept Summary",
+                        content: `<h3>The Universal Efficiency Limit</h3><p>The Clausius Inequality is the application of the Clausius Theorem to all cycles, both real and ideal. It reinforces that <code>∮ δQ/T ≤ 0</code> is a universal truth, establishing the fundamental performance limits for devices like heat engines and refrigerators. It's the mathematical statement of why 100% efficiency is impossible.</p>`
+                    },
+                    analogy: {
+                        title: "Intuitive Analogy",
+                        content: `<h3>Fuel Efficiency Regulator</h3><p>Think of the fuel efficiency of a car. You can never convert 100% of the fuel's chemical energy into motion; much is lost as heat through the engine and exhaust. The Clausius Inequality is the universe's "efficiency regulator." It mathematically proves that some energy will always be "wasted" as dissipated heat in any real-world engine, setting a hard ceiling on performance.</p>`
+                    },
+                    math: {
+                        title: "Mathematical Context",
+                        content: `<h3>Interpreting the Inequality</h3><p>The equation is <code>∮ δQ/T ≤ 0</code>.</p><ul><li>For a **reversible cycle** (like the ideal Carnot cycle), <code>∮ δQ/T = 0</code>. This defines the maximum possible efficiency.</li><li>For an **irreversible cycle** (any real engine), <code>∮ δQ/T < 0</code>. The negative value is a direct result of inefficiencies like friction and heat transfer across a finite temperature difference, which generate entropy.</li></ul>`
+                    },
+                    connection: {
+                        title: "Conceptual Connection",
+                        content: `<h3>From Theory to Reality</h3><p>The Clausius Inequality connects the abstract definition of entropy to the tangible performance of real machines. The inequality part (<code>< 0</code>) is the direct precursor to the Principle of Increase of Entropy. It shows that in any real cycle, there is a net "uncompensated transformation" (as Clausius called it), which we now understand as entropy generation. This is why a real engine's efficiency is always less than the ideal Carnot efficiency.</p>`
+                    },
+                    pmm2: {
+                        title: "PMM2",
+                        content: `<h3>Perpetual Motion of the Second Kind (PMM2)</h3><p>A PMM2 is a hypothetical machine that violates the Second Law, but not the First. It's a machine that could convert heat from a single source (like the ocean or atmosphere) into work with 100% efficiency. The impossibility of such a device is a cornerstone of the Second Law.</p><div class="grid md:grid-cols-2 gap-6"><div class="card rounded-lg p-6"><h3 class="text-xl font-semibold mb-3">Valid Heat Engine</h3><p class="mb-4 text-gray-600">Requires a hot and cold reservoir to produce work, necessarily rejecting waste heat.</p><div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around"><div class="text-center font-semibold">Hot Reservoir (T<sub>H</sub>)</div><div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div><div class="border-2 border-dashed border-gray-400 p-4 rounded-full bg-white">Engine</div><div class="flex w-full justify-around items-center mt-2"><div class="arrow-down text-center text-2xl">Q<sub>L</sub></div><div class="work-out text-center text-2xl"></div></div><div class="text-center font-semibold mt-2">Cold Reservoir (T<sub>L</sub>)</div></div></div><div class="card rounded-lg p-6 bg-red-50 border-red-200"><h3 class="text-xl font-semibold mb-3 text-red-700">PMM2 (Impossible)</h3><p class="mb-4 text-red-600">Hypothetically produces work from a single reservoir with no waste heat.</p><div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around border-red-300 bg-red-100"><div class="text-center font-semibold">Single Reservoir (T<sub>H</sub>)</div><div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div><div class="border-2 border-dashed border-red-400 p-4 rounded-full bg-white">Engine</div><div class="work-out text-center text-2xl mt-4">W = Q<sub>H</sub></div><div class="text-center font-semibold mt-2 text-red-700">Violation of Kelvin-Planck</div></div></div></div>`
+                    },
+                    carnot: {
+                        title: "Carnot Calculator",
+                        content: `<h3>Carnot's Theorem: The Ultimate Speed Limit</h3><p>Sadi Carnot established the maximum possible efficiency for any heat engine. This theoretical limit, the Carnot Efficiency, depends only on the absolute temperatures of the hot and cold reservoirs. No real engine can ever beat it. Use the sliders below to see how temperature dictates efficiency.</p><div class="card rounded-lg p-6"><div class="grid md:grid-cols-2 gap-8 items-center"><div><div class="mb-6"><label for="tempHot" class="block font-semibold mb-2">Hot Reservoir Temp (T<sub>H</sub>): <span id="tHotValue" class="font-bold text-sky-700"></span> K</label><input type="range" id="tempHot" min="300" max="1500" value="600" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"></div><div class="mb-6"><label for="tempCold" class="block font-semibold mb-2">Cold Reservoir Temp (T<sub>L</sub>): <span id="tColdValue" class="font-bold text-sky-700"></span> K</label><input type="range" id="tempCold" min="1" max="500" value="300" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"></div><div class="text-center bg-gray-100 p-4 rounded-lg"><h3 class="text-lg font-semibold">Max Theoretical Efficiency (η<sub>Carnot</sub>)</h3><p id="carnotEfficiencyValue" class="text-5xl font-bold text-sky-700 my-2"></p><p id="carnotFormula" class="text-gray-600 font-mono"></p></div></div><div><h3 class="text-xl font-semibold mb-3 text-center">Carnot Cycle (T-S Diagram)</h3><div class="chart-container h-[300px] max-h-[300px]"><canvas id="carnotCycleChart"></canvas></div></div></div></div>`
+                    },
+                    misconceptions: {
+                        title: "Common Misconceptions",
+                        content: `<ul><li><strong>Applying equality to all cycles:</strong> The <code>= 0</code> case is for ideal, reversible cycles only. All real-world cycles are irreversible and thus have a value less than zero.</li><li><strong>Integral equals system entropy change:</strong> The cyclic integral <code>∮ δQ/T</code> is not the entropy change of the system. For any cycle, the system's net entropy change is zero (<code>ΔS_sys = 0</code>) because it's a state function. The inequality reflects the entropy change of the surroundings or the universe.</li></ul>`
+                    },
+                    errors: {
+                        title: "Typical Student Errors",
+                        content: `<ul><li><strong>Wrong Temperature (T):</strong> Again, a common error is using the system's internal temperature instead of the external reservoir's temperature.</li><li><strong>Integral Simplification:</strong> For non-isothermal processes, the integral <code>∫ δQ/T</code> cannot be simplified to <code>Q/T_avg</code>. The integral must be properly evaluated.</li><li><strong>Forgetting Kelvin:</strong> All temperature values must be in Kelvin.</li></ul>`
+                    },
+                    takeaways: {
+                        title: "Key Takeaways",
+                        content: `<ul><li>The Clausius Inequality <code>∮ δQ/T ≤ 0</code> applies to all thermodynamic cycles, real or ideal.</li><li>It sets the theoretical performance limit (Carnot efficiency) for heat engines and refrigerators.</li><li>A negative value for the integral signifies a real, irreversible process, while zero signifies an ideal, reversible one.</li></ul>`
+                    }
+                }
+            },
+            "irreversible-processes": {
+                title: "4. Entropy Change in Irreversible Processes",
+                tabs: {
+                    summary: {
+                        title: "Concept Summary",
+                        content: `<h3>The Reality of All Processes</h3><p>Irreversible processes are real-world processes that cannot spontaneously reverse themselves to restore the original state of both the system and surroundings. They are defined by the *generation* of entropy. Examples include friction, unrestrained expansion, heat transfer across a finite temperature difference, and mixing.</p>`
+                    },
+                    analogy: {
+                        title: "Intuitive Analogy",
+                        content: `<h3>The Sandy Ramp</h3><p>Imagine rolling a ball down a perfectly smooth, frictionless ramp (a reversible ideal). It could theoretically roll back up to its exact starting height. Now, imagine a rough, sandy ramp (an irreversible reality). Friction converts some of the ball's kinetic energy into heat, warming the ball and ramp. This dissipated heat can't be used to push the ball back up. This "loss" of useful energy potential is entropy generation.</p><div class="mt-6 border border-slate-200 p-4 rounded-lg"><h4 class="font-semibold text-center mb-4">Visualizing Reversibility</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center"><div><h5 class="font-medium mb-2">Ideal Reversible Process</h5><div class="text-lg">State A <span class="text-sky-600 font-bold">⇌</span> State B</div><p class="text-sm mt-2 text-slate-500">No losses. Can return to State A perfectly. <code>S_gen = 0</code></p></div><div><h5 class="font-medium mb-2">Real Irreversible Process</h5><div class="text-lg">State A <span class="text-red-500 font-bold">→</span> State B</div><p class="text-sm mt-2 text-slate-500">Losses due to friction, etc. Cannot return spontaneously. <code>S_gen > 0</code></p></div></div></div>`
+                    },
+                    math: {
+                        title: "Mathematical Context",
+                        content: `<h3>The Entropy Balance Equation</h3><p>For any process, the change in a system's entropy is given by: <code>ΔS_sys = ∫(δQ/T_boundary) + S_gen</code></p><ul><li><code>∫(δQ/T_boundary)</code>: This is the entropy transferred into or out of the system via heat transfer.</li><li><code>S_gen</code>: This is the **entropy generated** within the system due to irreversibilities.</li></ul><p>The crucial point is that <code>S_gen</code> is *always* positive for irreversible processes (<code>S_gen > 0</code>) and zero for reversible processes (<code>S_gen = 0</code>). A process with <code>S_gen < 0</code> is impossible.</p>`
+                    },
+                    connection: {
+                        title: "Conceptual Connection",
+                        content: `<h3>Quantifying Inefficiency</h3><p>This concept directly builds on the Clausius Inequality. The <code>S_gen</code> term is the mathematical representation of the "inefficiency" or "lost work" in a real process. By quantifying <code>S_gen</code>, engineers can identify the sources of inefficiency in a system (like friction in a turbine or heat leaks in insulation) and work to minimize them. Minimizing entropy generation is the key to improving real-world system performance.</p>`
+                    },
+                    causes: {
+                        title: "Causes & Examples",
+                        content: `<h3>Why Real Processes Aren't Perfect</h3><p>A "reversible" process is a perfect, idealized process that can be reversed without leaving any trace on the universe. In reality, all processes are irreversible due to factors that generate entropy and degrade energy quality. Click on each cause to learn more.</p><div id="accordion" class="space-y-4"><div class="accordion-item card rounded-lg overflow-hidden"><button class="accordion-header w-full text-left p-6 flex justify-between items-center"><span class="text-xl font-semibold">Friction & Dissipation</span><span class="accordion-icon text-2xl font-light transform transition-transform">+</span></button><div class="accordion-content"><p class="pb-6 text-gray-600">Includes mechanical friction, fluid viscosity, and electrical resistance. These effects convert high-quality work or electrical energy into low-quality, disordered heat that cannot be fully recovered. Think of car brakes getting hot—that kinetic energy is lost as heat.</p></div></div><div class="accordion-item card rounded-lg overflow-hidden"><button class="accordion-header w-full text-left p-6 flex justify-between items-center"><span class="text-xl font-semibold">Heat Transfer (Finite ΔT)</span><span class="accordion-icon text-2xl font-light transform transition-transform">+</span></button><div class="accordion-content"><p class="pb-6 text-gray-600">Whenever heat moves between two objects at different temperatures, the process is irreversible. A perfectly reversible heat transfer would require an infinitely small temperature difference (ΔT → 0), which would take infinite time, making it impractical.</p></div></div><div class="accordion-item card rounded-lg overflow-hidden"><button class="accordion-header w-full text-left p-6 flex justify-between items-center"><span class="text-xl font-semibold">Unrestrained Expansion</span><span class="accordion-icon text-2xl font-light transform transition-transform">+</span></button><div class="accordion-content"><p class="pb-6 text-gray-600">When a gas expands rapidly into a vacuum, no work is done. The process is highly chaotic and increases the system's entropy significantly. It's impossible to make the gas spontaneously return to its original container without doing work on it.</p></div></div><div class="accordion-item card rounded-lg overflow-hidden"><button class="accordion-header w-full text-left p-6 flex justify-between items-center"><span class="text-xl font-semibold">Mixing of Substances</span><span class="accordion-icon text-2xl font-light transform transition-transform">+</span></button><div class="accordion-content"><p class="pb-6 text-gray-600">Mixing two different gases or liquids is an irreversible process. Think of adding milk to coffee. The components will not spontaneously un-mix. This process increases the overall entropy of the system.</p></div></div></div>`
+                    },
+                    misconceptions: {
+                        title: "Common Misconceptions",
+                        content: `<ul><li><strong>Irreversibility means ΔS_sys is always positive:</strong> Incorrect. A system's entropy can decrease (<code>ΔS_sys < 0</code>) during an irreversible process if it is cooled, as long as the total entropy of the universe increases. <code>S_gen</code> is always positive, but <code>ΔS_sys</code> is not.</li><li><strong>Entropy generation is a property:</strong> False. <code>S_gen</code> is path-dependent and measures the "inefficiency" of a specific process. Entropy (S) itself is a state property.</li></ul>`
+                    },
+                    errors: {
+                        title: "Typical Student Errors",
+                        content: `<ul><li><strong>Forgetting S_gen:</strong> Applying the simple <code>dS = δQ/T</code> to an irreversible process. This is wrong because it ignores the generated entropy.</li><li><strong>Confusing ΔS_sys with S_gen:</strong> Remember that <code>S_gen</code> is always positive for real processes, but the sign of <code>ΔS_sys</code> depends on the heat transfer as well.</li><li><strong>Adiabatic = Isentropic:</strong> A process with no heat transfer (adiabatic) is only isentropic (constant entropy) if it's also reversible. An irreversible adiabatic process (like flow through a valve) will generate entropy (<code>ΔS > 0</code>).</li></ul>`
+                    },
+                    takeaways: {
+                        title: "Key Takeaways",
+                        content: `<ul><li>Irreversible processes are all real-world processes and are defined by the generation of entropy.</li><li>Entropy generation (<code>S_gen > 0</code>) is a direct measure of inefficiency or "lost work potential."</li><li>The entropy change of a system depends on both heat transfer and internal entropy generation.</li></ul>`
+                    }
+                }
+            },
+            "principle-of-increase": {
+                title: "5. Principle of Increase of Entropy",
+                tabs: {
+                    summary: {
+                        title: "Concept Summary",
+                        content: `<h3>The Universe's One-Way Street</h3><p>The Principle of Increase of Entropy is one of the most fundamental laws of physics. It states that the total entropy of an **isolated system** can never decrease over time. It will always increase for real (irreversible) processes or, in the ideal case of a reversible process, remain constant. Since the universe can be considered the ultimate isolated system, its total entropy is always increasing.</p>`
+                    },
+                    analogy: {
+                        title: "Intuitive Analogy",
+                        content: `<h3>The Arrow of Time</h3><p>Why do we remember the past but not the future? Why do broken eggs never reassemble themselves? The Principle of Increase of Entropy provides the answer. It defines the "arrow of time." Processes naturally move in the direction of increasing total entropy. A state with higher entropy is always the "future" state for an isolated system. A sandcastle will erode; it will never spontaneously build itself from scattered sand.</p><div class="mt-6 border border-slate-200 p-4 rounded-lg"><h4 class="font-semibold text-center mb-4">Visualizing Local Order</h4><p class="text-sm text-center text-slate-500 mb-4">A system's entropy can decrease locally (e.g., freezing water), but only if the surroundings' entropy increases by more.</p><div class="bg-sky-100 p-4 rounded-lg text-center"><h5 class="font-medium">Universe (Isolated)</h5><div class="bg-white mt-2 p-4 rounded-md shadow-inner inline-block"><h6 class="font-medium">System (e.g., Refrigerator)</h6><p class="text-red-600 font-bold">ΔS_system = -10 J/K</p></div><div class="mt-2"><h6 class="font-medium">Surroundings (e.g., Kitchen)</h6><p class="text-green-600 font-bold">ΔS_surroundings = +12 J/K</p></div><hr class="my-3"><p class="font-bold">ΔS_universe = ΔS_sys + ΔS_surr = +2 J/K (≥ 0)</p><p class="text-sm mt-1 text-slate-600">The process is possible!</p></div></div>`
+                    },
+                    math: {
+                        title: "Mathematical Context",
+                        content: `<h3>The Universe's Bottom Line</h3><p>For an isolated system, the principle is stated as: <code>ΔS_isolated ≥ 0</code>.</p><p>More broadly, for any process, we consider the universe (system + surroundings) as the isolated system: <code>ΔS_universe = ΔS_system + ΔS_surroundings ≥ 0</code>.</p><ul><li>The <code>> 0</code> case applies to all real, irreversible processes.</li><li>The <code>= 0</code> case applies to ideal, reversible processes.</li></ul>`
+                    },
+                    connection: {
+                        title: "Conceptual Connection",
+                        content: `<h3>The Ultimate Consequence</h3><p>This principle is the final destination of the concepts we've discussed. It starts with the Clausius Inequality (<code>∮ δQ/T < 0</code> for real cycles), which implies entropy generation (<code>S_gen > 0</code>). When applied to an isolated system (the universe), this inevitably leads to the conclusion that its total entropy must always increase. This principle governs the direction of every spontaneous process, from a chemical reaction to the cooling of a star.</p>`
+                    },
+                    misconceptions: {
+                        title: "Common Misconceptions",
+                        content: `<ul><li><strong>A system's entropy *always* increases:</strong> This is the most common error. It only applies to *isolated* systems. A non-isolated system's entropy (like in a refrigerator's interior) can decrease, as long as the entropy of its surroundings increases by a greater amount.</li><li><strong>Order cannot emerge in the universe:</strong> False. Highly ordered structures like crystals or living organisms can form. This local decrease in entropy is possible because it is paid for by a much larger increase in the entropy of the surroundings (e.g., the Sun burning fuel to support life on Earth).</li></ul>`
+                    },
+                    errors: {
+                        title: "Typical Student Errors",
+                        content: `<ul><li><strong>Confusing the system and the universe:</strong> Students often incorrectly apply the "must increase" rule to the system instead of the universe (system + surroundings).</li><li><strong>Assuming ΔS_universe = 0 for real processes:</strong> This implies entropy is conserved, which is false. Only for ideal, reversible processes is the change in the universe's entropy zero.</li></ul>`
+                    },
+                    takeaways: {
+                        title: "Key Takeaways",
+                        content: `<ul><li>The total entropy of an isolated system (or the universe) never decreases.</li><li>This principle defines the direction of time and all spontaneous processes.</li><li>Local decreases in entropy are possible but must be compensated by a larger entropy increase in the surroundings.</li></ul>`
+                    }
+                }
+            },
+            "flow-processes": {
+                title: "6. Entropy Change in Flow & Non-Flow Processes",
+                tabs: {
+                    summary: {
+                        title: "Concept Summary",
+                        content: `<h3>Applying Entropy to Real Systems</h3><p>The method for calculating entropy change depends on the system type. For a **closed system** (non-flow, fixed mass), we track the change over time. For an **open system** (control volume, with mass flow), we use a rate balance. In both cases, the entropy balance equation accounts for entropy transfer (via heat and mass) and entropy generation.</p>`
+                    },
+                    analogy: {
+                        title: "Intuitive Analogy",
+                        content: `<h3>Pressure Cooker vs. Power Plant</h3><p><strong>Non-Flow (Closed):</strong> Think of a sealed pressure cooker on a stove. The mass of water inside is fixed. Its entropy changes as you add heat. This is a closed system analysis.</p><p><strong>Flow (Open):</strong> Think of a hydroelectric dam. Water continuously flows through the turbine (the control volume). We analyze the rate of entropy change as water enters and leaves. This is an open system analysis.</p>`
+                    },
+                    math: {
+                        title: "Mathematical Context",
+                        content: `<h3>The Entropy Balance Equations</h3><p><strong>Closed System (Non-Flow):</strong><br><code>S_2 - S_1 = ∫(δQ/T_boundary) + S_gen</code><br>Total entropy change = Entropy transferred with heat + Entropy generated.</p><p><strong>Open System (Steady-Flow Rate Form):</strong><br><code>Σ(ṁ_e * s_e) - Σ(ṁ_i * s_i) = Σ(Q̇_cv/T_boundary) + Ṡ_gen</code><br>Rate of entropy out (mass) - Rate of entropy in (mass) = Rate of entropy in (heat) + Rate of entropy generation.</p><ul><li><code>ṁ</code> is mass flow rate, <code>s</code> is specific entropy.</li><li>The dot (·) over a symbol indicates a rate.</li></ul>`
+                    },
+                    connection: {
+                        title: "Conceptual Connection",
+                        content: `<h3>The Engineer's Accountability Tool</h3><p>The entropy balance equation is the practical application of everything learned. It's an accountability tool. The First Law tracks energy quantity, but the Second Law (via the entropy balance) tracks energy *quality*. The <code>Ṡ_gen</code> term tells an engineer exactly how much useful work potential is being destroyed by irreversibilities per second. This allows for the calculation of the **isentropic efficiency** of devices like turbines and compressors, comparing their actual performance to an ideal, reversible (<code>Ṡ_gen = 0</code>) benchmark.</p>`
+                    },
+                    visualization: {
+                        title: "Isentropic Efficiency",
+                        content: `<h3>Visualizing Lost Work in a Turbine</h3><p>An isentropic process is an ideal, reversible adiabatic process where entropy is constant (<code>Δs = 0</code>). It represents the maximum possible work output from a device like a turbine. Real turbines are irreversible and generate entropy, resulting in less work output.</p><div class="chart-container mt-6"><canvas id="efficiencyChart"></canvas></div><p class="text-center text-sm mt-2 text-slate-500">The difference between ideal and actual work is the "lost work" due to entropy generation.</p>`
+                    },
+                    errors: {
+                        title: "Typical Student Errors",
+                        content: `<ul><li><strong>Adiabatic ≠ Isentropic:</strong> This is a critical error. An adiabatic process (no heat transfer) is only isentropic if it is also reversible. Real adiabatic devices (like an insulated turbine) still have friction and are therefore not isentropic.</li><li><strong>Confusing Total vs. Specific Entropy:</strong> Using total entropy (S) in flow equations that require specific entropy (s), or vice-versa.</li><li><strong>Using Wrong System Equation:</strong> Applying a closed system equation to an open system, forgetting the entropy transfer due to mass flow.</li><li><strong>Property Table Errors:</strong> Incorrectly reading specific entropy values from steam or refrigerant tables.</li></ul>`
+                    },
+                    takeaways: {
+                        title: "Key Takeaways",
+                        content: `<ul><li>The entropy balance equation is a generalized form of the Second Law for analyzing real systems.</li><li>It accounts for entropy transfer (with heat and mass) and entropy generation (from irreversibilities).</li><li>Isentropic (constant entropy) processes serve as the ideal benchmark for evaluating the performance and efficiency of real flow devices.</li></ul>`
+                    }
+                }
+            }
+        };
+
+        let currentTopicId = null;
+        let currentTabId = null;
+        let efficiencyChart = null;
+        let lawsComparisonChart = null;
+        let carnotChart = null;
+
+        const mainNavContainer = document.querySelector('#main-nav div');
+        const contentTitle = document.getElementById('content-title');
+        const contentTabsContainer = document.querySelector('#content-tabs nav');
+        const contentBody = document.getElementById('content-body');
+
+        function init() {
+            const topicIds = Object.keys(appData);
+            
+            topicIds.forEach(id => {
+                const button = document.createElement('button');
+                button.dataset.topic = id;
+                button.className = 'nav-button px-3 py-2 md:px-4 md:py-2.5 text-sm md:text-base font-medium text-slate-700 bg-white rounded-lg shadow-sm hover:bg-slate-200';
+                button.textContent = appData[id].title;
+                button.onclick = () => selectTopic(id);
+                mainNavContainer.appendChild(button);
+            });
+
+            selectTopic(topicIds[0]); // Select "Foundations" by default
+        }
+
+        function selectTopic(topicId) {
+            if (currentTopicId === topicId) return;
+            currentTopicId = topicId;
+
+            document.querySelectorAll('#main-nav button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.topic === topicId);
+            });
+
+            const topicData = appData[topicId];
+            contentTitle.textContent = topicData.title;
+
+            renderTabs(topicData.tabs);
+            const firstTabId = Object.keys(topicData.tabs)[0];
+            selectTab(firstTabId);
+        }
+
+        function renderTabs(tabs) {
+            contentTabsContainer.innerHTML = '';
+            Object.keys(tabs).forEach(tabId => {
+                const tabData = tabs[tabId];
+                const button = document.createElement('button');
+                button.dataset.tab = tabId;
+                button.className = 'tab-button px-3 py-2 md:px-4 font-medium text-sm md:text-base text-slate-500 hover:text-sky-700';
+                button.textContent = tabData.title;
+                button.onclick = () => selectTab(tabId);
+                contentTabsContainer.appendChild(button);
+            });
+        }
+
+        function selectTab(tabId) {
+            if (currentTabId === tabId) return;
+            currentTabId = tabId;
+
+            document.querySelectorAll('#content-tabs button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabId);
+            });
+
+            const tabContent = appData[currentTopicId].tabs[tabId].content;
+            contentBody.innerHTML = tabContent;
+
+            // Destroy existing charts before rendering new ones
+            if (efficiencyChart) { efficiencyChart.destroy(); efficiencyChart = null; }
+            if (lawsComparisonChart) { lawsComparisonChart.destroy(); lawsComparisonChart = null; }
+            if (carnotChart) { carnotChart.destroy(); carnotChart = null; }
+
+            // Render specific interactive elements based on selected tab
+            if (currentTopicId === 'foundations' && tabId === 'intro') {
+                renderLawsComparisonChart();
+            } else if (currentTopicId === 'clausius-theorem' && tabId === 'equivalence') {
+                setupEquivalenceDiagram();
+            } else if (currentTopicId === 'clausius-inequality' && tabId === 'carnot') {
+                setupCarnotCalculator();
+            } else if (currentTopicId === 'irreversible-processes' && tabId === 'causes') {
+                setupAccordion();
+            } else if (currentTopicId === 'flow-processes' && tabId === 'visualization') {
+                renderEfficiencyChart();
+            }
+        }
+        
+        function renderEfficiencyChart() {
+            const ctx = document.getElementById('efficiencyChart').getContext('2d');
+            if (!ctx) return;
+
+            efficiencyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Turbine Work Output'],
+                    datasets: [
+                        {
+                            label: 'Ideal (Isentropic) Work',
+                            data: [100],
+                            backgroundColor: 'rgba(56, 189, 248, 0.6)', /* sky-400 */
+                            borderColor: 'rgba(3, 105, 161, 1)', /* sky-700 */
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Actual Work',
+                            data: [85],
+                            backgroundColor: 'rgba(251, 146, 60, 0.6)', /* orange-400 */
+                            borderColor: 'rgba(234, 88, 12, 1)', /* orange-600 */
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Turbine Performance: Ideal vs. Actual'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' kJ/kg';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Work Output (kJ/kg)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLawsComparisonChart() {
+            const ctxLaws = document.getElementById('lawsComparisonChart').getContext('2d');
+            if (!ctxLaws) return;
+
+            lawsComparisonChart = new Chart(ctxLaws, {
+                type: 'radar',
+                data: {
+                    labels: ['Energy Aspect', 'Process Direction', 'Efficiency Limits', 'Key Concept', 'Violation Consequence'],
+                    datasets: [{
+                        label: 'First Law',
+                        data: [5, 1, 1, 4, 3],
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)', /* sky-400 */
+                        borderColor: 'rgba(3, 105, 161, 1)', /* sky-700 */
+                        pointBackgroundColor: 'rgba(3, 105, 161, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(3, 105, 161, 1)'
+                    }, {
+                        label: 'Second Law',
+                        data: [3, 5, 5, 5, 4],
+                        backgroundColor: 'rgba(251, 146, 60, 0.2)', /* orange-400 */
+                        borderColor: 'rgba(234, 88, 12, 1)', /* orange-600 */
+                        pointBackgroundColor: 'rgba(234, 88, 12, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(234, 88, 12, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: { font: { size: 12 } },
+                            suggestedMin: 0,
+                            suggestedMax: 5,
+                            ticks: {
+                                display: false,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.label;
+                                    let details = '';
+                                    if (label === 'First Law') {
+                                        switch(value) {
+                                            case 'Energy Aspect': details = 'Conserves QUANTITY'; break;
+                                            case 'Process Direction': details = 'No restriction'; break;
+                                            case 'Efficiency Limits': details = 'No limits defined'; break;
+                                            case 'Key Concept': details = 'Internal Energy'; break;
+                                            case 'Violation Consequence': details = 'PMM1 (Creates energy)'; break;
+                                        }
+                                    } else {
+                                        switch(value) {
+                                            case 'Energy Aspect': details = 'Degrades QUALITY'; break;
+                                            case 'Process Direction': details = 'Dictates direction'; break;
+                                            case 'Efficiency Limits': details = 'Defines max efficiency'; break;
+                                            case 'Key Concept': details = 'Entropy'; break;
+                                            case 'Violation Consequence': details = 'PMM2 (100% efficiency)'; break;
+                                        }
+                                    }
+                                    return `${label}: ${details}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupEquivalenceDiagram() {
+            const equivalenceDiagram = document.getElementById('equivalence-diagram');
+            const explanationText = document.getElementById('equivalence-explanation');
+            const showValidBtn = document.getElementById('showValidBtn');
+            const violateKPBtn = document.getElementById('violateKPBtn');
+
+            const validDiagrams = `
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-center">Heat Engine (Valid)</h3>
+                    <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around">
+                        <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                        <div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div>
+                        <div class="border-2 border-dashed border-gray-400 p-4 rounded-full bg-white">Engine</div>
+                        <div class="flex w-full justify-around items-center mt-2">
+                            <div class="arrow-down text-center text-2xl">Q<sub>L</sub></div>
+                            <div class="work-out text-center text-2xl"></div>
+                        </div>
+                        <div class="text-center font-semibold mt-2">Cold (T<sub>L</sub>)</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-center">Refrigerator (Valid)</h3>
+                    <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around">
+                        <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                        <div class="arrow-down w-full text-center text-2xl my-2 transform rotate-180">Q<sub>H</sub></div>
+                        <div class="flex w-full justify-around items-center">
+                            <div class="border-2 border-dashed border-gray-400 p-4 rounded-full bg-white">Fridge</div>
+                            <div class="work-in text-center text-2xl"></div>
+                        </div>
+                        <div class="arrow-down text-center text-2xl my-2 transform rotate-180">Q<sub>L</sub></div>
+                        <div class="text-center font-semibold mt-2">Cold (T<sub>L</sub>)</div>
+                    </div>
+                </div>
+            `;
+
+            const violationDiagram = `
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-center text-red-700">Violating K-P...</h3>
+                    <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around border-red-300 bg-red-100">
+                        <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                        <div class="arrow-down w-full text-center text-2xl my-2">Q<sub>H</sub></div>
+                        <div class="border-2 border-dashed border-red-400 p-4 rounded-full bg-white">PMM2</div>
+                        <div class="work-out text-center text-2xl mt-4">W = Q<sub>H</sub></div>
+                        <div class="text-center font-semibold mt-2 text-red-700">Powers Refrigerator →</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-center text-red-700">...Creates a Clausius Violation</h3>
+                    <div class="diagram-box rounded-lg p-4 flex flex-col items-center justify-around border-red-300 bg-red-100">
+                        <div class="text-center font-semibold">Hot (T<sub>H</sub>)</div>
+                        <div class="arrow-down w-full text-center text-2xl my-2 transform rotate-180">Q<sub>H</sub> + Q<sub>L</sub></div>
+                        <div class="border-2 border-dashed border-red-400 p-4 rounded-full bg-white">Combined System</div>
+                        <div class="arrow-down text-center text-2xl my-2 transform rotate-180">Q<sub>L</sub></div>
+                        <div class="text-center font-semibold mt-2">Cold (T<sub>L</sub>)</div>
+                    </div>
+                </div>
+            `;
+
+            function showValid() {
+                equivalenceDiagram.innerHTML = validDiagrams;
+                explanationText.textContent = 'These are standard, valid thermodynamic systems. A heat engine produces work by moving heat from hot to cold. A refrigerator uses work to move heat from cold to hot.';
+                violateKPBtn.classList.remove('bg-sky-700', 'text-white');
+                violateKPBtn.classList.add('bg-gray-200', 'text-gray-800');
+                showValidBtn.classList.add('bg-sky-700', 'text-white');
+                showValidBtn.classList.remove('bg-gray-200', 'text-gray-800');
+            }
+
+            function showViolation() {
+                equivalenceDiagram.innerHTML = violationDiagram;
+                explanationText.textContent = 'If we could build an impossible 100% efficient engine (a PMM2 violating Kelvin-Planck), we could use its work output to power a standard refrigerator. The combined result would be a device that moves heat from cold to hot with NO external work input—a violation of the Clausius statement.';
+                showValidBtn.classList.remove('bg-sky-700', 'text-white');
+                showValidBtn.classList.add('bg-gray-200', 'text-gray-800');
+                violateKPBtn.classList.add('bg-sky-700', 'text-white');
+                violateKPBtn.classList.remove('bg-gray-200', 'text-gray-800');
+            }
+
+            showValidBtn.addEventListener('click', showValid);
+            violateKPBtn.addEventListener('click', showViolation);
+            showValid(); // Initial state
+        }
+
+        function setupAccordion() {
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                const icon = item.querySelector('.accordion-icon');
+
+                header.addEventListener('click', () => {
+                    const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+                    
+                    // Close all items
+                    accordionItems.forEach(i => {
+                        i.querySelector('.accordion-content').style.maxHeight = '0px';
+                        i.querySelector('.accordion-content').style.padding = '0 1.5rem';
+                        i.querySelector('.accordion-icon').textContent = '+';
+                        i.querySelector('.accordion-icon').classList.remove('rotate-45');
+                    });
+
+                    // Open the clicked item if it was closed
+                    if (!isOpen) {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        content.style.padding = '0 1.5rem 1.5rem';
+                        icon.textContent = '+';
+                        icon.classList.add('rotate-45');
+                    }
+                });
+            });
+        }
+
+        function setupCarnotCalculator() {
+            const tHotSlider = document.getElementById('tempHot');
+            const tColdSlider = document.getElementById('tempCold');
+            const tHotValue = document.getElementById('tHotValue');
+            const tColdValue = document.getElementById('tColdValue');
+            const efficiencyValue = document.getElementById('carnotEfficiencyValue');
+            const formulaText = document.getElementById('carnotFormula');
+            const ctxCarnot = document.getElementById('carnotCycleChart').getContext('2d');
+            
+            function createCarnotChart() {
+                carnotChart = new Chart(ctxCarnot, {
+                    type: 'line',
+                    data: {
+                        labels: ['A', 'B', 'C', 'D', 'A'],
+                        datasets: [{
+                            label: 'Carnot Cycle',
+                            data: [],
+                            fill: true,
+                            backgroundColor: 'rgba(56, 189, 248, 0.2)', /* sky-400 */
+                            borderColor: 'rgba(3, 105, 161, 1)', /* sky-700 */
+                            tension: 0.1,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Entropy (S)' },
+                                grid: { display: false }
+                            },
+                            y: {
+                                title: { display: true, text: 'Temperature (T)' },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+            }
+
+            function updateCarnotCalculator() {
+                const tH = parseFloat(tHotSlider.value);
+                const tC = parseFloat(tColdSlider.value);
+
+                if (tC >= tH) {
+                    tColdSlider.value = tH - 1;
+                    updateCarnotCalculator();
+                    return;
+                }
+
+                tHotValue.textContent = tH.toFixed(0);
+                tColdValue.textContent = tC.toFixed(0);
+
+                const efficiency = 1 - (tC / tH);
+                efficiencyValue.textContent = (efficiency * 100).toFixed(1) + '%';
+                formulaText.textContent = `η = 1 - (${tC.toFixed(0)} K / ${tH.toFixed(0)} K)`;
+
+                const s_low = 1;
+                const s_high = 3;
+                carnotChart.data.datasets[0].data = [
+                    {x: s_low, y: tC},  /* D->A */
+                    {x: s_low, y: tH},  /* A->B Isentropic compression */
+                    {x: s_high, y: tH}, /* B->C Isothermal expansion */
+                    {x: s_high, y: tC}, /* C->D Isentropic expansion */
+                    {x: s_low, y: tC}   /* D->A Isothermal compression */
+                ];
+                carnotChart.options.scales.y.max = tH * 1.1;
+                carnotChart.update();
+            }
+            
+            createCarnotChart();
+            tHotSlider.addEventListener('input', updateCarnotCalculator);
+            tColdSlider.addEventListener('input', updateCarnotCalculator);
+            updateCarnotCalculator();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Exergy and Irreversibility</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive learning dashboard, not a linear report. The structure prioritizes user engagement and exploration over sequential reading. It starts with a high-level comparison (Hero), moves to foundational concepts in an interactive card format (Fundamentals), provides hands-on tools (Calculators), explains the 'why' behind losses (Irreversibility), and finally applies knowledge to complex problems (System Analysis). This non-linear, task-oriented structure allows students to jump to the section most relevant to their needs, reinforcing learning through active participation rather than passive consumption. The calculators are central, designed to build intuition by visualizing how changing one variable (like temperature) directly impacts outcomes like exergy and its destruction. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Energy vs. Exergy. Goal: Compare. Viz: Side-by-side text with a dynamic bar chart. Interaction: Slider to change energy amount. Justification: Visually demonstrates that while energy is constant, exergy (quality) varies. Library: Chart.js.
+        - Report Info: Exergy of Heat formula. Goal: Explore relationship. Viz: Bar chart showing useful work vs. unavailable energy. Interaction: Temperature slider. Justification: Allows students to "feel" the Carnot limit by seeing the work potential change in real-time. Library: Chart.js.
+        - Report Info: Exergy Destruction formula. Goal: Explore relationship. Viz: Bar chart showing destroyed exergy. Interaction: Two temperature sliders (source/sink). Justification: Makes the abstract concept of exergy destruction tangible by linking it directly to the temperature gap. Library: Chart.js.
+        - Report Info: Irreversibility sources (Table 2). Goal: Organize & Inform. Viz: Interactive grid of cards built with HTML/CSS. Interaction: Hover/click to reveal details. Justification: More engaging and less overwhelming than a static table. Method: HTML/CSS with JS for interaction.
+        - Report Info: Worked Examples (Turbine/Piston). Goal: Guide learning. Viz: Step-by-step reveal of the solution. Interaction: "Next Step" button. Justification: Breaks down complex problems into manageable chunks, mimicking a professor's guided explanation. Method: HTML/CSS with JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #3D405B;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #E07A5F;
+            border-bottom-color: #E07A5F;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #81B29A;
+            color: #FFFFFF;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #6a9a81;
+        }
+        .btn-secondary {
+            background-color: #F2CC8F;
+            color: #3D405B;
+        }
+        .btn-secondary:hover {
+            background-color: #e6bf7a;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .step-content {
+            opacity: 0; /* Initially hidden */
+            transition: opacity 0.5s ease-in; /* Smooth fade-in */
+        }
+        .step-content.active {
+            opacity: 1; /* Fully visible when active */
+        }
+        .irreversibility-source {
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+        }
+        .irreversibility-source .details {
+            max-height: 0; /* Initially collapsed */
+            opacity: 0; /* Initially invisible */
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, opacity 0.5s ease-out; /* Smooth expand/fade */
+        }
+        .irreversibility-source .details.active-details {
+            max-height: 200px; /* Adjust as needed for content */
+            opacity: 1; /* Fully visible when active */
+        }
+
+        /* New styles for thermal reservoirs */
+        .thermal-reservoir {
+            width: 100px;
+            height: 100px;
+            border-radius: 1rem;
+            margin: 1rem auto;
+            transition: background-color 0.5s ease-in-out, transform 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .heat-flow-arrow {
+            font-size: 2rem;
+            margin: 0.5rem auto;
+            color: #E07A5F;
+            animation: pulse 1.5s infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 0.7; }
+            to { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* Piston-Cylinder Simulation Styles */
+        .piston-cylinder-container {
+            width: 150px;
+            height: 200px;
+            border: 4px solid #3D405B;
+            border-radius: 0.5rem;
+            margin: 2rem auto;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+        .cylinder {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .air-inside {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: hsl(200, 70%, 70%); /* Initial light blue for air */
+            transition: height 0.5s ease-in-out, background-color 0.5s ease-in-out;
+            border-bottom-left-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .piston {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background-color: #81B29A;
+            border-top: 2px solid #3D405B;
+            border-bottom: 2px solid #3D405B;
+            transition: bottom 0.5s ease-in-out;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-[#3D405B]">Exergy & Irreversibility</h1>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#fundamentals" class="nav-link">Fundamentals</a>
+                <a href="#calculators" class="nav-link">Calculators</a>
+                <a href="#irreversibility" class="nav-link">Irreversibility</a>
+                <a href="#analysis" class="nav-link">System Analysis</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-2xl">☰</button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#fundamentals" class="block py-2 px-6 text-center nav-link">Fundamentals</a>
+            <a href="#calculators" class="block py-2 px-6 text-center nav-link">Calculators</a>
+            <a href="#irreversibility" class="block py-2 px-6 text-center nav-link">Irreversibility</a>
+            <a href="#analysis" class="block py-2 px-6 text-center nav-link">System Analysis</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="hero" class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Energy is Conserved, but its <span class="text-[#E07A5F]">Quality</span> is Not.</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-8">
+                The First Law of Thermodynamics tracks the quantity of energy, but it doesn't tell the whole story. Exergy analysis, rooted in the Second Law, evaluates the *quality* of energy—its potential to do useful work. This interactive guide will help you understand why this distinction is critical for engineering, enabling you to design more efficient and sustainable systems.
+            </p>
+            <div class="card p-6 max-w-2xl mx-auto">
+                <h3 class="text-xl font-semibold mb-4">Energy vs. Exergy (Work Potential)</h3>
+                <p class="text-sm text-gray-500 mb-4">While 100 kJ of electricity and 100 kJ of low-temperature heat are the same amount of *energy*, their ability to perform useful work (their *exergy*) is vastly different. Electricity is high-quality energy, while low-grade heat is not. This fundamental difference is key to understanding true thermodynamic efficiency.</p>
+                <div class="chart-container h-64 max-h-[250px]">
+                    <canvas id="energyVsExergyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="fundamentals" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Core Fundamentals</h2>
+             <p class="text-center text-gray-600 max-w-3xl mx-auto mb-12">This section breaks down the foundational concepts of exergy. Each element builds upon the last, from defining the baseline "dead state" to understanding the work potential inherent in heat and finite objects. Interact with these concepts to build a solid foundation for advanced thermodynamic analysis.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold mb-3">1. What is Exergy?</h3>
+                    <p class="mb-4">Exergy is the maximum theoretical useful work you can get from a system as it undergoes a reversible process to come into complete thermodynamic equilibrium with its environment. Think of it as the "useful purchasing power" of your energy. While your total wealth (energy) is constant, your available cash (exergy) can be wasted in inefficient transactions. This concept is vital for evaluating the true performance of energy systems.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold mb-3">2. The Dead State ($T_0, P_0$)</h3>
+                    <p class="mb-4">This is the key reference point for all exergy calculations. The "dead state" is a hypothetical state of complete equilibrium with the surroundings (e.g., 25°C and 1 atm). A system at the dead state has zero exergy because it has no potential to interact with the environment to produce work. It's the ultimate "ground level" for work potential, against which all other states are measured.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-2xl font-bold mb-3">3. Exergy of Heat</h3>
+                    <p class="mb-4">The work potential of heat depends entirely on its temperature relative to the environment. High-temperature heat is "high-quality" and has high exergy. The maximum work is limited by the Carnot Efficiency: $Ex_Q = Q(1 - T_0/T)$. This highlights why extracting work from low-grade heat is so challenging.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="calculators" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-4">Interactive Calculators</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-12">Theory is one thing, but seeing it in action is another. Use these interactive tools to build an intuitive understanding of how changing system parameters directly affects exergy and its destruction. Adjust the sliders and see the results instantly, reinforcing the concepts through direct manipulation.</p>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div class="card p-8">
+                    <h3 class="text-2xl font-semibold mb-4">Exergy of a Heat Source</h3>
+                    <p class="text-gray-600 mb-6">How much useful work can you get from a heat source? It depends on its temperature. Use the slider to change the source temperature and see how the exergy (useful work potential) changes. The environment is fixed at 25°C. Observe how the work potential drops significantly as the source temperature approaches ambient.</p>
+                    <div id="heat-source-visual" class="thermal-reservoir" style="background-color: hsl(0, 80%, 50%);">
+                        Source
+                    </div>
+                    <div class="mb-4">
+                        <label for="heatSourceTemp" class="block font-medium mb-2">Heat Source Temperature: <span id="heatSourceTempLabel">500</span>°C</label>
+                        <input type="range" id="heatSourceTemp" min="26" max="1500" value="500" class="w-full">
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="exergyOfHeatChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card p-8">
+                    <h3 class="text-2xl font-semibold mb-4">Exergy Destruction in Heat Transfer</h3>
+                    <p class="text-gray-600 mb-6">Heat transfer across a finite temperature difference is a primary source of inefficiency. This process destroys exergy. Adjust the source and sink temperatures to see how the temperature gap affects the amount of work potential lost. This lost potential is a direct measure of the process's irreversibility.</p>
+                    <div class="flex justify-around items-center my-4">
+                        <div id="source-visual" class="thermal-reservoir" style="background-color: hsl(0, 80%, 50%);">
+                            Hot Source
+                        </div>
+                        <div class="heat-flow-arrow">➡️</div>
+                        <div id="sink-visual" class="thermal-reservoir" style="background-color: hsl(240, 80%, 50%);">
+                            Cold Sink
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="sourceTemp" class="block font-medium mb-2">Source Temperature: <span id="sourceTempLabel">800</span>°C</label>
+                        <input type="range" id="sourceTemp" min="101" max="1200" value="800" class="w-full">
+                    </div>
+                    <div class="mb-4">
+                        <label for="sinkTemp" class="block font-medium mb-2">Sink Temperature: <span id="sinkTempLabel">100</span>°C</label>
+                        <input type="range" id="sinkTemp" min="26" max="799" value="100" class="w-full">
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="exergyDestructionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="irreversibility" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-4">Why is Exergy Destroyed? Understanding Irreversibility</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-12">All real-world processes are irreversible, meaning they generate entropy and destroy exergy. The Gouy-Stodola theorem, $\dot{Ex}_{destruction} = T_0 \dot{S}_{gen}$, quantifies this loss. Understanding these sources is crucial for identifying bottlenecks in energy efficiency and designing more sustainable systems. Explore the common culprits of this "efficiency tax" below.</p>
+            <div id="irreversibility-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Sources will be injected by JS -->
+            </div>
+        </section>
+
+        <section id="analysis" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-4">System Analysis: Worked Examples</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-12">Let's apply these concepts to practical engineering systems. The following examples show how to perform an exergy balance on both closed and steady-flow systems to determine their true thermodynamic performance (Second-Law Efficiency). This efficiency provides a more realistic measure of how well a system utilizes its energy resources. Follow the step-by-step solutions to deepen your understanding.</p>
+            <div class="card p-8">
+                <div class="flex justify-center mb-8 border-b">
+                    <button id="pistonBtn" class="px-6 py-3 font-semibold border-b-4 border-[#E07A5F] text-[#E07A5F]">Closed System: Piston-Cylinder</button>
+                    <button id="turbineBtn" class="px-6 py-3 font-semibold border-b-4 border-transparent text-gray-500">Steady Flow: Steam Turbine</button>
+                </div>
+
+                <div id="piston-example">
+                    <h3 class="text-2xl font-semibold mb-2">Compression in a Piston-Cylinder</h3>
+                    <p class="mb-6">A piston-cylinder device with 2 L of air at 100 kPa and 25°C is compressed to 600 kPa and 150°C. The useful work input is 1.2 kJ. The surroundings are at 25°C, 100 kPa. Let's find the minimum work required and the second-law efficiency.</p>
+                    <div class="piston-cylinder-container">
+                        <div class="cylinder">
+                            <div id="air-inside" class="air-inside" style="height: 80%; background-color: hsl(200, 70%, 70%);"></div>
+                            <div id="piston" class="piston" style="bottom: 80%;"></div>
+                        </div>
+                    </div>
+                    <div id="piston-steps" class="space-y-4">
+                        <!-- Steps injected by JS -->
+                    </div>
+                    <div class="mt-6">
+                        <button id="piston-next-step" class="btn">Start Analysis</button>
+                    </div>
+                </div>
+
+                <div id="turbine-example" class="hidden">
+                    <h3 class="text-2xl font-semibold mb-2">Adiabatic Steam Turbine</h3>
+                    <p class="mb-6">Steam enters a turbine at 6 MPa, 600°C, 80 m/s and leaves at 50 kPa, 100°C, 140 m/s. The actual power output is 5 MW. Surroundings are at 25°C. Let's find the reversible power and the second-law efficiency.</p>
+                     <div id="turbine-steps" class="space-y-4">
+                        <!-- Steps injected by JS -->
+                    </div>
+                     <div class="mt-6">
+                        <button id="turbine-next-step" class="btn">Start Analysis</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <h3 class="text-xl font-bold mb-4">Key Takeaways</h3>
+            <ul class="space-y-2 max-w-2xl mx-auto text-gray-300">
+                <li>🔹 Exergy measures the *quality* or *useful work potential* of energy, not just its quantity. It provides a more comprehensive understanding of energy's true value.</li>
+                <li>🔹 All real processes are irreversible and destroy exergy, a loss quantified by the Gouy-Stodola theorem. This means useful work potential is always degraded in practice.</li>
+                <li>🔹 Minimizing exergy destruction by reducing sources of irreversibility (like friction and large temperature differences) is the key to true thermodynamic efficiency and sustainable energy system design.</li>
+            </ul>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (!mobileMenu.classList.contains('hidden')) {
+                         mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            const T0_C = 25;
+            const T0_K = T0_C + 273.15;
+
+            // Function to convert temperature to a color (e.g., blue for cold, red for hot)
+            function tempToColor(tempC, minTempC, maxTempC) {
+                const normalizedTemp = (tempC - minTempC) / (maxTempC - minTempC);
+                const hue = (1 - normalizedTemp) * 240; // From red (0) to blue (240)
+                const saturation = 80 + (normalizedTemp * 20);
+                const lightness = 40 + (normalizedTemp * 20);
+                return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            }
+
+            let energyVsExergyChart;
+            function setupEnergyVsExergyChart() {
+                const ctx = document.getElementById('energyVsExergyChart').getContext('2d');
+                energyVsExergyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Electricity', 'Heat at 800°C', 'Heat at 100°C'],
+                        datasets: [{
+                            label: 'Energy (kJ)',
+                            data: [100, 100, 100],
+                            backgroundColor: '#F2CC8F',
+                            borderColor: '#e6bf7a',
+                            borderWidth: 1,
+                            stack: 'Stack 0',
+                        }, {
+                            label: 'Exergy (kJ)',
+                            data: [100, 100 * (1 - T0_K / (800 + 273.15)), 100 * (1 - T0_K / (100 + 273.15))],
+                            backgroundColor: '#E07A5F',
+                            borderColor: '#d36c4f',
+                            borderWidth: 1,
+                            stack: 'Stack 1',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            title: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.x !== null) {
+                                            label += context.parsed.x.toFixed(1) + ' kJ';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: false,
+                                title: { display: true, text: 'Energy / Exergy (kJ)' },
+                                max: 110
+                            },
+                            y: {
+                                stacked: true,
+                            }
+                        }
+                    }
+                });
+            }
+
+            let exergyOfHeatChart;
+            const heatSourceTempSlider = document.getElementById('heatSourceTemp');
+            const heatSourceTempLabel = document.getElementById('heatSourceTempLabel');
+            const heatSourceVisual = document.getElementById('heat-source-visual');
+
+            function setupExergyOfHeatChart() {
+                const ctx = document.getElementById('exergyOfHeatChart').getContext('2d');
+                exergyOfHeatChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Heat Input (100 kJ)'],
+                        datasets: [{
+                            label: 'Exergy (Useful Work)',
+                            data: [0],
+                            backgroundColor: '#81B29A',
+                        }, {
+                            label: 'Anergy (Unavailable)',
+                            data: [0],
+                            backgroundColor: '#d1d5db',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                stacked: true,
+                                max: 100,
+                                title: { display: true, text: 'Energy Distribution (kJ)' }
+                            },
+                            y: { stacked: true }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw.toFixed(1)} kJ`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                updateExergyOfHeatChart();
+            }
+
+            function updateExergyOfHeatChart() {
+                const T_source_C = parseFloat(heatSourceTempSlider.value);
+                heatSourceTempLabel.textContent = T_source_C.toFixed(0);
+                const T_source_K = T_source_C + 273.15;
+                const Q = 100;
+                
+                const exergy = Q * (1 - T0_K / T_source_K);
+                const anergy = Q - exergy;
+
+                exergyOfHeatChart.data.datasets[0].data[0] = exergy;
+                exergyOfHeatChart.data.datasets[1].data[0] = anergy;
+                exergyOfHeatChart.update();
+
+                // Update visual
+                heatSourceVisual.style.backgroundColor = tempToColor(T_source_C, 25, 1500);
+                heatSourceVisual.textContent = `${T_source_C}°C`;
+            }
+
+            heatSourceTempSlider.addEventListener('input', updateExergyOfHeatChart);
+
+            let exergyDestructionChart;
+            const sourceTempSlider = document.getElementById('sourceTemp');
+            const sourceTempLabel = document.getElementById('sourceTempLabel');
+            const sinkTempSlider = document.getElementById('sinkTemp');
+            const sinkTempLabel = document.getElementById('sinkTempLabel');
+            const sourceVisual = document.getElementById('source-visual');
+            const sinkVisual = document.getElementById('sink-visual');
+
+            function setupExergyDestructionChart() {
+                const ctx = document.getElementById('exergyDestructionChart').getContext('2d');
+                exergyDestructionChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Exergy Analysis'],
+                        datasets: [{
+                            label: 'Exergy Input',
+                            data: [0],
+                            backgroundColor: '#81B29A',
+                        }, {
+                            label: 'Exergy Output',
+                            data: [0],
+                            backgroundColor: '#F2CC8F',
+                        }, {
+                            label: 'Exergy Destroyed',
+                            data: [0],
+                            backgroundColor: '#E07A5F',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { title: { display: true, text: 'Exergy (kJ)' } }
+                        },
+                         plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw.toFixed(1)} kJ`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                updateExergyDestructionChart();
+            }
+
+            function updateExergyDestructionChart() {
+                const T_source_C = parseFloat(sourceTempSlider.value);
+                const T_sink_C = parseFloat(sinkTempSlider.value);
+
+                sinkTempSlider.max = T_source_C - 1; // Ensure sink is always colder than source
+
+                sourceTempLabel.textContent = T_source_C.toFixed(0);
+                sinkTempLabel.textContent = T_sink_C.toFixed(0);
+
+                const T_source_K = T_source_C + 273.15;
+                const T_sink_K = T_sink_C + 273.15;
+                const Q_dot = 100; 
+
+                const exergy_in = Q_dot * (1 - T0_K / T_source_K);
+                const exergy_out = Q_dot * (1 - T0_K / T_sink_K);
+                const exergy_destroyed = exergy_in - exergy_out;
+
+                exergyDestructionChart.data.datasets[0].data[0] = exergy_in;
+                exergyDestructionChart.data.datasets[1].data[0] = exergy_out;
+                exergyDestructionChart.data.datasets[2].data[0] = exergy_destroyed;
+                exergyDestructionChart.update();
+
+                // Update visuals
+                sourceVisual.style.backgroundColor = tempToColor(T_source_C, 100, 1200);
+                sourceVisual.textContent = `${T_source_C}°C`;
+                sinkVisual.style.backgroundColor = tempToColor(T_sink_C, 25, 799);
+                sinkVisual.textContent = `${T_sink_C}°C`;
+            }
+
+            sourceTempSlider.addEventListener('input', updateExergyDestructionChart);
+            sinkTempSlider.addEventListener('input', updateExergyDestructionChart);
+
+            const irreversibilitySources = [
+                { title: 'Friction', icon: '⚙️', details: 'Converts high-quality mechanical work into low-grade heat, destroying exergy. Mitigate with lubrication and streamlined designs.' },
+                { title: 'Heat Transfer (Finite ΔT)', icon: '🔥', details: 'Degrades thermal energy quality as heat flows from hot to cold. Mitigate by minimizing temperature differences, e.g., with counter-flow heat exchangers.' },
+                { title: 'Mixing of Fluids', icon: '💧', details: 'Increases entropy and disorder, destroying exergy. Mitigate by avoiding unnecessary mixing and using staged processes.' },
+                { title: 'Unrestrained Expansion', icon: '💨', details: 'Dissipates pressure/kinetic energy without producing work (e.g., throttling). Mitigate by using work-producing devices like turbines.' },
+                { title: 'Chemical Reactions', icon: '🧪', details: 'Spontaneous reactions are inherently irreversible, destroying chemical exergy. Mitigate by optimizing reaction conditions and pathways.' },
+                { title: 'Electrical Resistance', icon: '⚡', details: 'Converts high-quality electrical energy into low-grade heat. Mitigate by using materials with lower resistance.' }
+            ];
+
+            const grid = document.getElementById('irreversibility-grid');
+            irreversibilitySources.forEach(source => {
+                const card = document.createElement('div');
+                card.className = 'card p-6 text-center irreversibility-source';
+                card.innerHTML = `
+                    <div class="text-4xl mb-4">${source.icon}</div>
+                    <h4 class="text-xl font-semibold mb-2">${source.title}</h4>
+                    <p class="text-gray-500 text-sm details">${source.details}</p>
+                `;
+                grid.appendChild(card);
+                card.addEventListener('click', () => {
+                    card.querySelector('.details').classList.toggle('active-details');
+                });
+            });
+
+
+            const pistonBtn = document.getElementById('pistonBtn');
+            const turbineBtn = document.getElementById('turbineBtn');
+            const pistonExample = document.getElementById('piston-example');
+            const turbineExample = document.getElementById('turbine-example');
+
+            pistonBtn.addEventListener('click', () => {
+                pistonExample.classList.remove('hidden');
+                turbineExample.classList.add('hidden');
+                pistonBtn.classList.add('border-[#E07A5F]', 'text-[#E07A5F]');
+                pistonBtn.classList.remove('border-transparent', 'text-gray-500');
+                turbineBtn.classList.add('border-transparent', 'text-gray-500');
+                turbineBtn.classList.remove('border-[#E07A5F]', 'text-[#E07A5F]');
+                currentPistonStep = 0; // Reset step counter
+                pistonStepsContainer.innerHTML = ''; // Clear previous steps
+                pistonNextStepBtn.textContent = 'Start Analysis';
+                pistonNextStepBtn.disabled = false;
+                pistonNextStepBtn.classList.remove('btn-secondary');
+                resetPistonVisual();
+            });
+
+            turbineBtn.addEventListener('click', () => {
+                turbineExample.classList.remove('hidden');
+                pistonExample.classList.add('hidden');
+                turbineBtn.classList.add('border-[#E07A5F]', 'text-[#E07A5F]');
+                turbineBtn.classList.remove('border-transparent', 'text-gray-500');
+                pistonBtn.classList.add('border-transparent', 'text-gray-500');
+                pistonBtn.classList.remove('border-[#E07A5F]', 'text-[#E07A5F]');
+                currentTurbineStep = 0; // Reset step counter
+                turbineStepsContainer.innerHTML = ''; // Clear previous steps
+                turbineNextStepBtn.textContent = 'Start Analysis';
+                turbineNextStepBtn.disabled = false;
+                turbineNextStepBtn.classList.remove('btn-secondary');
+            });
+
+            const pistonStepsContainer = document.getElementById('piston-steps');
+            const pistonNextStepBtn = document.getElementById('piston-next-step');
+            const pistonVisual = document.getElementById('piston');
+            const airInsideVisual = document.getElementById('air-inside');
+
+            // Piston animation states: [piston_bottom_percentage, air_height_percentage, air_color_hue, air_color_saturation, air_color_lightness]
+            // Initial: 80% bottom, 80% height, light blue (200, 70, 70)
+            // Final (compressed): 20% bottom, 20% height, hotter color (e.g., 0, 80, 50 for red)
+            const pistonVisualStates = [
+                { pistonBottom: '80%', airHeight: '80%', airColor: 'hsl(200, 70%, 70%)' }, // Initial state (2L, 25C)
+                { pistonBottom: '20%', airHeight: '20%', airColor: 'hsl(0, 80%, 50%)' } // Compressed state (0.33L, 150C)
+            ];
+
+            function resetPistonVisual() {
+                pistonVisual.style.bottom = pistonVisualStates[0].pistonBottom;
+                airInsideVisual.style.height = pistonVisualStates[0].airHeight;
+                airInsideVisual.style.backgroundColor = pistonVisualStates[0].airColor;
+            }
+
+            const pistonSteps = [
+                "<strong>Step 1: Find Mass of Air.</strong> Using the ideal gas law, $m = \\frac{P_1 V_1}{R T_1} = \\frac{100 \\times 0.002}{0.287 \\times 298.15} = 0.00234 \\text{ kg}$.",
+                "<strong>Step 2: Calculate Exergy at Initial State.</strong> Since the initial state is the same as the dead state (25°C, 100 kPa), its exergy is zero by definition. $Ex_1 = 0 \\text{ kJ}$.",
+                "<strong>Step 3: Calculate Exergy at Final State.</strong> Using the full exergy equation for a closed system, we find the change in internal energy, volume, and entropy. This gives $Ex_2 = 0.170 \\text{ kJ}$.",
+                "<strong>Step 4: Determine Minimum Work.</strong> The minimum work required for a process is the change in exergy. $W_{min} = Ex_2 - Ex_1 = 0.170 \\text{ kJ}$. This is the work needed if the process were perfectly reversible.",
+                "<strong>Step 5: Calculate Second-Law Efficiency.</strong> This compares the ideal work to the actual useful work. $\\eta_{II} = \\frac{W_{min}}{W_{in,useful}} = \\frac{0.170}{1.2} = 14.2\\%$.",
+                "<strong>Result:</strong> The process has a very low second-law efficiency of 14.2%. This means over 85% of the work input was destroyed by irreversibilities like friction and non-ideal compression."
+            ];
+            let currentPistonStep = 0;
+            pistonNextStepBtn.addEventListener('click', () => {
+                if (currentPistonStep < pistonSteps.length) {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'step-content p-4 bg-gray-50 rounded-lg border';
+                    stepDiv.innerHTML = pistonSteps[currentPistonStep];
+                    pistonStepsContainer.appendChild(stepDiv);
+                    void stepDiv.offsetWidth; // Trigger reflow
+                    stepDiv.classList.add('active'); // Add 'active' to trigger transition
+                    
+                    // Update piston visual based on step
+                    if (currentPistonStep === 0) {
+                        // Initial state
+                        pistonVisual.style.bottom = pistonVisualStates[0].pistonBottom;
+                        airInsideVisual.style.height = pistonVisualStates[0].airHeight;
+                        airInsideVisual.style.backgroundColor = pistonVisualStates[0].airColor;
+                    } else if (currentPistonStep === 2) {
+                        // After step 2, move to compressed state
+                        pistonVisual.style.bottom = pistonVisualStates[1].pistonBottom;
+                        airInsideVisual.style.height = pistonVisualStates[1].airHeight;
+                        airInsideVisual.style.backgroundColor = pistonVisualStates[1].airColor;
+                    }
+
+                    currentPistonStep++;
+                    pistonNextStepBtn.textContent = 'Next Step';
+                    MathJax.typesetPromise([stepDiv]);
+                }
+                if (currentPistonStep === pistonSteps.length) {
+                    pistonNextStepBtn.textContent = 'Analysis Complete';
+                    pistonNextStepBtn.disabled = true;
+                    pistonNextStepBtn.classList.add('btn-secondary');
+                }
+            });
+
+            const turbineStepsContainer = document.getElementById('turbine-steps');
+            const turbineNextStepBtn = document.getElementById('turbine-next-step');
+            const turbineSteps = [
+                "<strong>Step 1: Find Mass Flow Rate.</strong> Using the steady-flow energy equation and the actual power output (5 MW), we find $\\dot{m} = \\frac{\\dot{W}_{actual}}{(h_1 - h_2) + (V_1^2 - V_2^2)/2} = 5.156 \\text{ kg/s}$.",
+                "<strong>Step 2: Calculate Reversible Power.</strong> This is the maximum possible power, equal to the change in flow exergy. $\\dot{W}_{rev} = \\dot{m}[(h_1-h_2) - T_0(s_1-s_2) + (V_1^2-V_2^2)/2] = 5.81 \\text{ MW}$.",
+                "<strong>Step 3: Calculate Second-Law Efficiency.</strong> This is the ratio of actual power to reversible power. $\\eta_{II} = \\frac{\\dot{W}_{actual}}{\\dot{W}_{rev}} = \\frac{5.0}{5.81} = 86.1\\%$.",
+                "<strong>Step 4: Find Exergy Destruction.</strong> This is the lost work potential. $\\dot{Ex}_{dest} = \\dot{W}_{rev} - \\dot{W}_{actual} = 5.81 - 5.0 = 0.81 \\text{ MW}$. Alternatively, using Gouy-Stodola: $\\dot{Ex}_{dest} = T_0 \\dot{S}_{gen} = T_0 \\dot{m}(s_2 - s_1) = 0.809 \\text{ MW}$.",
+                "<strong>Result:</strong> The turbine has a high second-law efficiency of 86.1%, indicating good performance. However, 0.81 MW of power potential is still being destroyed due to internal irreversibilities."
+            ];
+            let currentTurbineStep = 0;
+            turbineNextStepBtn.addEventListener('click', () => {
+                if (currentTurbineStep < turbineSteps.length) {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'step-content p-4 bg-gray-50 rounded-lg border';
+                    stepDiv.innerHTML = turbineSteps[currentTurbineStep];
+                    turbineStepsContainer.appendChild(stepDiv);
+                    void stepDiv.offsetWidth;
+                    stepDiv.classList.add('active');
+                    currentTurbineStep++;
+                    turbineNextStepBtn.textContent = 'Next Step';
+                    MathJax.typesetPromise([stepDiv]);
+                }
+                if (currentTurbineStep === turbineSteps.length) {
+                    turbineNextStepBtn.textContent = 'Analysis Complete';
+                    turbineNextStepBtn.disabled = true;
+                    turbineNextStepBtn.classList.add('btn-secondary');
+                }
+            });
+
+            setupEnergyVsExergyChart();
+            setupExergyOfHeatChart();
+            setupExergyDestructionChart();
+            resetPistonVisual(); // Initialize piston visual on load
+        });
+    </script>
+</body>
+</html>
