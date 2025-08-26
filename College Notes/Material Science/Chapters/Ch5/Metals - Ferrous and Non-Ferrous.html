@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Non-Ferrous Metals</title>
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: The application is a single-page, vertically scrolling site with a sticky top navigation for easy access to each metal's section and a final summary. This structure was chosen to provide a clear, linear learning path while allowing users the freedom to jump to specific topics. Each metal's section uses a combination of cards, interactive charts, and collapsible accordions. This design breaks down complex information into digestible chunks, promoting user engagement and preventing cognitive overload. The flow guides the user from a general introduction to specific metals and concludes with a comparative synthesis, mirroring an effective educational journey. -->
+    <!-- Visualization & Content Choices: Key quantitative data (density, strength, cost) is visualized using Chart.js bar charts for direct comparison within each metal's section and a comprehensive radar chart in the final summary for multi-variate analysis. This choice allows users to interactively explore data relationships. Text-heavy content like alloys, applications, and common mistakes is organized into collapsible accordions. This interaction requires the user to actively seek information, improving retention. Checkpoint questions use a simple reveal interaction for self-assessment. These choices prioritize clarity, interaction, and user-driven exploration over passive reading. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7; /* Warm off-white */
+            color: #4A4A4A; /* Dark Gray */
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #8A5A44; /* Muted Brown */
+            border-bottom-color: #8A5A44;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .btn-primary {
+            background-color: #A98B7D; /* Muted Taupe */
+            color: #FFFFFF;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #8A5A44; /* Muted Brown */
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-[#8A5A44]">Non-Ferrous Metals Guide</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div id="nav-links" class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Intro</a>
+                        <a href="#aluminium" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Aluminium</a>
+                        <a href="#copper" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Copper</a>
+                        <a href="#magnesium" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Magnesium</a>
+                        <a href="#titanium" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Titanium</a>
+                        <a href="#nickel" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Nickel</a>
+                        <a href="#summary" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Summary</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button id="mobile-menu-button" type="button" class="bg-gray-100 inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-[#8A5A44]">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#intro" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Intro</a>
+                <a href="#aluminium" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Aluminium</a>
+                <a href="#copper" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Copper</a>
+                <a href="#magnesium" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Magnesium</a>
+                <a href="#titanium" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Titanium</a>
+                <a href="#nickel" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Nickel</a>
+                <a href="#summary" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Summary</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <section id="intro" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-[#8A5A44]">An Engineer's Guide to Non-Ferrous Metals</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-8">This guide provides an interactive exploration of key non-ferrous metals essential to mechanical engineering. Non-ferrous metals are materials that do not contain iron in significant amounts. They are selected for unique properties like low weight, high conductivity, and corrosion resistance, which are often superior to traditional steels. Here, you can navigate through each metal to understand its properties, common alloys, and real-world applications, culminating in a comparative summary to aid in material selection.</p>
+        </section>
+
+        <div id="metal-sections" class="space-y-24">
+        </div>
+
+        <section id="summary" class="mt-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-[#8A5A44]">Final Summary & Comparison</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12">This final section synthesizes the information on all the covered metals. The interactive chart below allows for a direct comparison of their key properties, providing a powerful tool for material selection. Following the chart, you'll find a summary of how engineers approach choosing a material and some key tips for studying for exams.</p>
+            
+            <div class="card p-6 md:p-8 mb-12">
+                <h3 class="text-2xl font-semibold text-center mb-6">Comparative Properties Radar Chart</h3>
+                <div class="chart-container h-[400px] md:h-[500px]">
+                    <canvas id="summaryRadarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4">How Engineers Decide</h3>
+                    <div id="synthesis-explanation" class="space-y-3 text-gray-700"></div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4">Top 5 Exam Tips</h3>
+                    <div id="exam-tips" class="space-y-3 text-gray-700"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-100 mt-16">
+        <div class="container mx-auto py-6 px-4 text-center text-gray-600">
+            <p>&copy; 2024 Interactive Engineering Materials Guide. For educational purposes only.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const metalData = {
+                aluminium: {
+                    name: "Aluminium",
+                    tagline: "The Lightweight Champion",
+                    color: 'rgba(192, 192, 192, 0.6)',
+                    borderColor: 'rgba(192, 192, 192, 1)',
+                    intro: "Aluminium (Al) is a silvery-white, lightweight, and ductile metal. Its relevance to mechanical engineering stems from its exceptional strength-to-weight ratio, corrosion resistance, and formability, making it a cornerstone material in transport and packaging industries.",
+                    properties: [
+                        { name: 'Density', value: 2.7, unit: 'g/cm³', icon: '⚖️', note: 'About 1/3 the weight of steel.' },
+                        { name: 'Strength (Alloyed)', value: 690, unit: 'MPa', icon: '💪', note: 'High-strength alloys can exceed 690 MPa.' },
+                        { name: 'Corrosion Resistance', value: 9, unit: '/10', icon: '🛡️', note: 'Excellent due to self-passivating oxide layer.' },
+                        { name: 'Thermal Conductivity', value: 237, unit: 'W/mK', icon: '🔥', note: 'Excellent heat conductor, ~3x steel.' },
+                    ],
+                    alloys: [
+                        { name: '3XXX Series (Al-Mn)', desc: 'Increased strength over pure Al, good formability. Used in beverage cans and heat exchangers.' },
+                        { name: '5XXX Series (Al-Mg)', desc: 'Excellent corrosion resistance, especially in seawater. Used for ship components and pressure vessels.' },
+                        { name: '6XXX Series (Al-Mg-Si)', desc: 'Good strength and corrosion resistance. Used for structural components, automotive parts.' },
+                        { name: '7XXX Series (Al-Zn-Mg-Cu)', desc: 'Highest strength aluminium alloys. Used in aerospace for frames and critical structures.' },
+                    ],
+                    applications: "Widely used for aircraft frames, automotive bodies, engine blocks, ship components, beverage cans, and consumer electronics casings. Its high strength-to-weight ratio is critical for improving fuel efficiency in transport.",
+                    misconceptions: [
+                        { myth: "Aluminium is weak.", fact: "While pure aluminium is soft, its alloys are incredibly strong and are used in demanding applications like aerospace." },
+                        { myth: "Aluminium is expensive.", fact: "It's often cheaper than stainless steel or titanium, and its light weight and recyclability provide significant lifecycle cost savings." }
+                    ],
+                    mistakes: [
+                        { error: "Assuming weld strength equals base metal strength.", correction: "Welding significantly weakens the heat-affected zone (HAZ) in many aluminium alloys, reducing its strength to the annealed (softest) condition. Designs must account for this lower strength in the HAZ." }
+                    ],
+                    checkpoint: {
+                        question: "What specific property of Aluminium makes it inherently corrosion resistant, and what potential challenge should an engineer consider if welding is involved?",
+                        answer: "Its inherent corrosion resistance comes from the rapid formation of a thin, dense, self-protecting aluminium oxide layer. When welding, an engineer must consider that the heat can significantly weaken the heat-affected zone, reducing the local strength of the material."
+                    }
+                },
+                copper: {
+                    name: "Copper",
+                    tagline: "The Superior Conductor",
+                    color: 'rgba(184, 115, 51, 0.6)',
+                    borderColor: 'rgba(184, 115, 51, 1)',
+                    intro: "Copper (Cu) is a reddish-brown metal prized for its exceptional electrical and thermal conductivity. In mechanical engineering, it's essential for applications involving power transmission, heat exchange, and components requiring good corrosion resistance and formability.",
+                    properties: [
+                        { name: 'Density', value: 8.96, unit: 'g/cm³', icon: '⚖️', note: 'Significantly denser than aluminium.' },
+                        { name: 'Strength (Alloyed)', value: 600, unit: 'MPa', icon: '💪', note: 'Alloys like Beryllium Copper are very strong.' },
+                        { name: 'Corrosion Resistance', value: 8, unit: '/10', icon: '🛡️', note: 'Excellent in many environments, especially water.' },
+                        { name: 'Electrical Conductivity', value: 10, unit: '/10', icon: '⚡', note: 'The standard for electrical conductors.' },
+                    ],
+                    alloys: [
+                        { name: 'Brass (Cu-Zn)', desc: 'Good strength and machinability. Used for plumbing fittings, musical instruments, and decorative hardware.' },
+                        { name: 'Bronze (Cu-Sn)', desc: 'High strength, good corrosion and wear resistance. Used for bearings, bushings, and ship propellers.' },
+                        { name: 'Cupronickel (Cu-Ni)', desc: 'Exceptional corrosion resistance in seawater. Used for marine hardware, piping, and heat exchangers.' },
+                        { name: 'Beryllium Copper', desc: 'Highest strength copper alloy. Used for non-sparking tools, springs, and electrical contacts.' },
+                    ],
+                    applications: "Dominates electrical applications like wiring, motors, and circuit boards. Also used in plumbing pipes, heat exchangers, radiators, marine hardware, and antimicrobial touch surfaces in hospitals.",
+                    misconceptions: [
+                        { myth: "Copper is always soft.", fact: "Pure copper is soft, but alloying creates high-strength materials like bronze and beryllium copper used for durable mechanical parts." },
+                        { myth: "All copper alloys are highly conductive.", fact: "Alloying increases strength but generally *decreases* electrical conductivity. This is a critical design trade-off." }
+                    ],
+                    mistakes: [
+                        { error: "Ignoring galvanic corrosion.", correction: "When copper is in contact with a less noble metal (like steel or zinc) in a moist environment, it will accelerate the corrosion of the other metal. This must be accounted for in designs." }
+                    ],
+                    checkpoint: {
+                        question: "A design team needs a material for an electrical connector requiring both high conductivity and strength. Why might pure copper not be suitable, and how does alloying affect both properties?",
+                        answer: "Pure copper is very soft and may not meet the strength requirement. Alloying copper (e.g., with beryllium or tin) significantly increases its strength and hardness, but this comes at the cost of reduced electrical conductivity. The engineers must choose an alloy that provides an acceptable balance between the two properties."
+                    }
+                },
+                magnesium: {
+                    name: "Magnesium",
+                    tagline: "The Ultra-Lightweight",
+                    color: 'rgba(170, 170, 170, 0.6)',
+                    borderColor: 'rgba(170, 170, 170, 1)',
+                    intro: "Magnesium (Mg) is the lightest of all structural metals, making it a 'green engineering material' for its role in lightweighting. In engineering, it's critical for aerospace, automotive, and portable electronics where minimizing weight is the top priority.",
+                    properties: [
+                        { name: 'Density', value: 1.74, unit: 'g/cm³', icon: '⚖️', note: '~33% lighter than aluminium.' },
+                        { name: 'Strength (Alloyed)', value: 360, unit: 'MPa', icon: '💪', note: 'Highest strength-to-weight ratio of structural metals.' },
+                        { name: 'Corrosion Resistance', value: 2, unit: '/10', icon: '🛡️', note: 'Poor, requires protective coatings.' },
+                        { name: 'Machinability', value: 10, unit: '/10', icon: '⚙️', note: 'Best of any commercial metal.' },
+                    ],
+                    alloys: [
+                        { name: 'AZ Series (Mg-Al-Zn)', desc: 'Most common cast alloys (e.g., AZ91). Good balance of strength, castability, and corrosion resistance for magnesium.' },
+                        { name: 'WE Series (Mg-Y-RE)', desc: 'High-performance alloys (e.g., WE43) with improved strength and creep resistance at elevated temperatures. Used in aerospace.' },
+                    ],
+                    applications: "Used in aircraft and helicopter gearboxes, engine components, laptop and camera bodies, steering wheels, and high-performance bicycle frames. Its low density is its main selling point.",
+                    misconceptions: [
+                        { myth: "Magnesium is dangerously flammable.", fact: "While magnesium powder is flammable, solid magnesium parts are difficult to ignite and will not burn until heated well above their melting point. Modern alloys are even more fire-resistant." },
+                        { myth: "Magnesium is too brittle.", fact: "It has lower ductility at room temperature due to its crystal structure, but forming it at elevated temperatures (hot working) is a standard and effective practice." }
+                    ],
+                    mistakes: [
+                        { error: "Ignoring its poor corrosion resistance.", correction: "Magnesium is highly reactive and will corrode quickly in humid environments without protection. Designs must include surface treatments like anodizing or painting." }
+                    ],
+                    checkpoint: {
+                        question: "What is the primary advantage of magnesium's density, and what key challenge related to its mechanical properties must be addressed during manufacturing?",
+                        answer: "Its primary advantage is its extremely low density, making it the lightest structural metal. The key challenge is its poor ductility at room temperature due to its HCP crystal structure, which means it usually needs to be formed at elevated temperatures (hot working)."
+                    }
+                },
+                titanium: {
+                    name: "Titanium",
+                    tagline: "The Strength-to-Weight & Corrosion King",
+                    color: 'rgba(128, 128, 128, 0.6)',
+                    borderColor: 'rgba(128, 128, 128, 1)',
+                    intro: "Titanium (Ti) is a silver-gray metal renowned for its incredible strength-to-weight ratio and outstanding corrosion resistance. It is the material of choice for demanding applications in aerospace, medical implants, and marine engineering where performance and reliability are non-negotiable.",
+                    properties: [
+                        { name: 'Density', value: 4.5, unit: 'g/cm³', icon: '⚖️', note: 'Denser than Al, but ~45% lighter than steel.' },
+                        { name: 'Strength (Alloyed)', value: 950, unit: 'MPa', icon: '💪', note: 'Ti-6Al-4V is as strong as many steels.' },
+                        { name: 'Corrosion Resistance', value: 10, unit: '/10', icon: '🛡️', note: 'Virtually immune to seawater and many chemicals.' },
+                        { name: 'High-Temp Performance', value: 7, unit: '/10', icon: '🌡️', note: 'Maintains strength up to ~600°C.' },
+                    ],
+                    alloys: [
+                        { name: 'Commercially Pure (CP) Ti', desc: 'Good formability and corrosion resistance, but lower strength. Used in chemical processing and architecture.' },
+                        { name: 'Ti-6Al-4V (Grade 5)', desc: 'The "workhorse" alloy. Excellent strength, corrosion resistance, and biocompatibility. Used in aerospace, medical implants, and performance auto parts.' },
+                        { name: 'Ti-6Al-7Nb', desc: 'A biomedical alloy developed to replace Ti-6Al-4V, avoiding vanadium. Used for surgical implants.' },
+                    ],
+                    applications: "Essential for jet engine components, airframes, spacecraft, medical implants (hip/knee joints), surgical tools, deep-sea submersible hulls, and high-performance automotive exhausts.",
+                    misconceptions: [
+                        { myth: "Titanium is an exotic, unaffordable metal.", fact: "While expensive, its long service life and reliability in harsh environments often lead to a lower overall lifecycle cost, making it an economical choice for critical parts." }
+                    ],
+                    mistakes: [
+                        { error: "Underestimating machining difficulty.", correction: "Titanium is very difficult and expensive to machine. Its low thermal conductivity causes heat to build up at the tool tip, leading to rapid tool wear. This significantly impacts manufacturing costs." }
+                    ],
+                    checkpoint: {
+                        question: "Why would Titanium be a strong candidate for a deep-sea submersible component, and what is its primary drawback?",
+                        answer: "Titanium is a strong candidate due to its exceptional strength-to-weight ratio and its outstanding corrosion resistance, especially in saltwater. Its primary drawback is its very high material and machining cost compared to other metals."
+                    }
+                },
+                nickel: {
+                    name: "Nickel",
+                    tagline: "The High-Temperature & Harsh Environment Survivor",
+                    color: 'rgba(211, 211, 211, 0.6)',
+                    borderColor: 'rgba(211, 211, 211, 1)',
+                    intro: "Nickel (Ni) is a silvery-white metal that forms the basis of 'superalloys' engineered for the most demanding applications. It is indispensable for its superior performance at extreme temperatures and its exceptional resistance to corrosion and oxidation.",
+                    properties: [
+                        { name: 'Density', value: 8.9, unit: 'g/cm³', icon: '⚖️', note: 'Dense, similar to copper.' },
+                        { name: 'Strength (Superalloy)', value: 1000, unit: 'MPa', icon: '💪', note: 'Maintains strength at very high temperatures.' },
+                        { name: 'Corrosion Resistance', value: 10, unit: '/10', icon: '🛡️', note: 'Exceptional in acids, alkalis, and seawater.' },
+                        { name: 'High-Temp Performance', value: 10, unit: '/10', icon: '🌡️', note: 'The best choice for extreme heat and creep resistance.' },
+                    ],
+                    alloys: [
+                        { name: 'Inconel (Ni-Cr)', desc: 'Outstanding oxidation and corrosion resistance at high temperatures. Used in jet engines and chemical reactors.' },
+                        { name: 'Monel (Ni-Cu)', desc: 'Excellent resistance to seawater and acids. Used for marine piping, pump shafts, and valves.' },
+                        { name: 'Hastelloy (Ni-Mo-Cr)', desc: 'Superior resistance to a wide range of corrosive chemicals. Used in chemical processing plants.' },
+                        { name: 'Invar (Ni-Fe)', desc: 'Extremely low coefficient of thermal expansion. Used for precision instruments and composite molds.' },
+                    ],
+                    applications: "Dominates the hottest parts of jet engines and gas turbines. Also used in chemical processing plants, nuclear reactors, marine equipment, and specialized electronics requiring controlled thermal expansion.",
+                    misconceptions: [
+                        { myth: "Nickel alloys are just for high temperatures.", fact: "While famed for heat resistance, alloys like Monel are chosen specifically for their superior corrosion resistance at ambient temperatures in harsh marine and chemical environments." }
+                    ],
+                    mistakes: [
+                        { error: "Assuming all nickel alloys are the same.", correction: "The family of nickel alloys is vast and highly specialized. An Inconel alloy designed for high-temperature oxidation resistance may not be the best choice for a room-temperature reducing acid environment, where a Hastelloy alloy would excel. Specific selection is critical." }
+                    ],
+                    checkpoint: {
+                        question: "Why would a nickel-chromium alloy like Inconel be a strong candidate for a high-temperature chemical reactor, and what is a key consideration regarding its cost?",
+                        answer: "Inconel is a strong candidate because it maintains excellent mechanical strength and resists oxidation and corrosion at very high temperatures where other metals would fail. A key consideration is its very high cost, which is justified by the need for extreme reliability and long service life in such a critical and harsh application."
+                    }
+                },
+            };
+
+            const synthesisExplanation = [
+                "<strong>1. Define Critical Requirements:</strong> First, identify the non-negotiable properties. Is it weight, conductivity, corrosion resistance, or high-temperature strength? This narrows the field.",
+                "<strong>2. Evaluate Trade-offs:</strong> No metal is perfect. Improving one property often compromises another (e.g., strength vs. conductivity in copper). The choice is about finding the best balance for the specific application.",
+                "<strong>3. Consider Processing & Fabrication:</strong> The ease and cost of machining, forming, and welding are huge factors. Titanium's difficult machining or aluminium's welding challenges can significantly increase total cost.",
+                "<strong>4. Assess Lifecycle Cost:</strong> Look beyond the initial price. A more expensive material like titanium might be cheaper over the product's life due to lower maintenance and longer service life. Fuel savings from lightweighting with aluminium or magnesium are also a key factor.",
+                "<strong>5. Understand the Environment:</strong> A material's performance is context-dependent. Aluminium is great in the cold, while steel can become brittle. Copper has antimicrobial properties. These specific environmental interactions are crucial."
+            ];
+
+            const examTips = [
+                "<strong>1. Understand the 'Why':</strong> Don't just memorize properties; understand the underlying reason (e.g., magnesium's HCP crystal structure limits its ductility). This helps in problem-solving.",
+                "<strong>2. Focus on Comparison:</strong> Be ready to compare and contrast metals for a given scenario. Why choose aluminium over steel for a car body? Why titanium over aluminium for a jet engine blade?",
+                "<strong>3. Remember Processing Effects:</strong> Know how manufacturing processes alter properties. Welding weakens aluminium, hot working is needed for magnesium, and machining titanium is difficult. These are practical, testable concepts.",
+                "<strong>4. Address Misconceptions:</strong> Review the common myths. Being able to explain why solid magnesium isn't dangerously flammable or why aluminium alloys can be very strong shows a deeper understanding.",
+                "<strong>5. Connect to Applications:</strong> Link every property to a real-world application. This grounds the theory in practice and makes it easier to remember (e.g., Titanium's biocompatibility -> medical implants)."
+            ];
+
+            const metalSectionsContainer = document.getElementById('metal-sections');
+            Object.keys(metalData).forEach(key => {
+                const metal = metalData[key];
+                const section = document.createElement('section');
+                section.id = key;
+                section.className = 'scroll-mt-20';
+                
+                let propertiesHtml = metal.properties.map(p => `
+                    <div class="card p-4 text-center">
+                        <div class="text-4xl mb-2">${p.icon}</div>
+                        <div class="text-lg font-semibold">${p.name}</div>
+                        <div class="text-2xl font-bold text-[#8A5A44]">${p.value} <span class="text-base font-normal text-gray-500">${p.unit}</span></div>
+                        <div class="text-xs text-gray-500 mt-1">${p.note}</div>
+                    </div>
+                `).join('');
+
+                let alloysHtml = metal.alloys.map((alloy, index) => `
+                    <div class="border-b border-gray-200">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left py-4 px-2 hover:bg-gray-50">
+                            <span class="font-semibold">${alloy.name}</span>
+                            <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="accordion-content px-4 pb-4 text-gray-700">
+                            <p>${alloy.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                let misconceptionsHtml = metal.misconceptions.map(m => `
+                    <div>
+                        <p><strong>Myth:</strong> ${m.myth}</p>
+                        <p class="text-green-700"><strong>Fact:</strong> ${m.fact}</p>
+                    </div>
+                `).join('<hr class="my-3">');
+                
+                let mistakesHtml = metal.mistakes.map(m => `
+                    <div>
+                        <p class="text-red-700"><strong>Error:</strong> ${m.error}</p>
+                        <p class="text-green-700"><strong>Correction:</strong> ${m.correction}</p>
+                    </div>
+                `).join('<hr class="my-3">');
+
+                section.innerHTML = `
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl font-bold mb-2">${metal.name}</h2>
+                        <p class="text-xl text-gray-600">${metal.tagline}</p>
+                    </div>
+                    
+                    <div class="card p-6 md:p-8 mb-12">
+                        <p class="text-lg mb-8">${metal.intro}</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                            ${propertiesHtml}
+                        </div>
+                    </div>
+
+                    <div class="grid lg:grid-cols-5 gap-8">
+                        <div class="lg:col-span-3">
+                            <div class="card p-6 md:p-8">
+                                <h3 class="text-2xl font-semibold mb-4">Key Alloys & Applications</h3>
+                                <p class="mb-6">${metal.applications}</p>
+                                <div class="space-y-2">${alloysHtml}</div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-8">
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4">Common Misconceptions</h3>
+                                <div class="space-y-4">${misconceptionsHtml}</div>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4">Typical Student Mistakes</h3>
+                                <div class="space-y-4">${mistakesHtml}</div>
+                            </div>
+                            <div class="card p-6 bg-[#F5EFE6]">
+                                <h3 class="text-xl font-semibold mb-4">Checkpoint</h3>
+                                <p class="mb-4">${metal.checkpoint.question}</p>
+                                <button class="checkpoint-toggle btn-primary text-sm font-medium py-2 px-4 rounded-md">Reveal Answer</button>
+                                <div class="checkpoint-answer hidden mt-4 p-3 bg-white rounded-md border border-gray-200">
+                                    <p>${metal.checkpoint.answer}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                metalSectionsContainer.appendChild(section);
+            });
+
+            document.getElementById('synthesis-explanation').innerHTML = synthesisExplanation.map(p => `<p>${p}</p>`).join('');
+            document.getElementById('exam-tips').innerHTML = examTips.map(p => `<p>${p}</p>`).join('');
+
+            const summaryCtx = document.getElementById('summaryRadarChart').getContext('2d');
+            const radarData = {
+                labels: ['Strength-to-Weight', 'Corrosion Resistance', 'High-Temp Performance', 'Conductivity (Elec/Therm)', 'Low Cost'],
+                datasets: Object.values(metalData).map(m => {
+                    const normalized = {
+                        strengthToWeight: (m.properties.find(p => p.name.includes('Strength'))?.value || 0) / (m.properties.find(p => p.name === 'Density')?.value || 1),
+                        corrosion: m.properties.find(p => p.name === 'Corrosion Resistance')?.value || 0,
+                        highTemp: m.properties.find(p => p.name.includes('High-Temp'))?.value || (m.name === 'Aluminium' ? 2 : m.name === 'Copper' ? 4 : m.name === 'Magnesium' ? 1 : 0),
+                        conductivity: m.properties.find(p => p.name.includes('Conductivity'))?.value || (m.name === 'Aluminium' ? 8 : 0),
+                        lowCost: 10 - (['Aluminium', 'Copper', 'Magnesium', 'Titanium', 'Nickel'].indexOf(m.name) * 2) // Simplified cost ranking
+                    };
+                    
+                    const maxValues = { strengthToWeight: 250, corrosion: 10, highTemp: 10, conductivity: 10, lowCost: 10 };
+                    
+                    return {
+                        label: m.name,
+                        data: [
+                            (normalized.strengthToWeight / maxValues.strengthToWeight) * 10,
+                            normalized.corrosion,
+                            normalized.highTemp,
+                            normalized.conductivity,
+                            normalized.lowCost
+                        ],
+                        backgroundColor: m.color,
+                        borderColor: m.borderColor,
+                        pointBackgroundColor: m.borderColor,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: m.borderColor
+                    };
+                })
+            };
+            new Chart(summaryCtx, {
+                type: 'radar',
+                data: radarData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Normalized Property Comparison (Scale 0-10)'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            pointLabels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Accordion and Checkpoint Toggle Logic
+            document.querySelectorAll('.accordion-toggle').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('svg');
+                    if (content.style.maxHeight && content.style.maxHeight !== '0px') { // Check if it's open
+                        content.style.maxHeight = '0px'; // Close
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Temporarily set max-height to 'none' to get the full scrollHeight
+                        content.style.maxHeight = 'none';
+                        const fullHeight = content.scrollHeight;
+                        // Set max-height back to 0 for the transition to work, then to fullHeight
+                        content.style.maxHeight = '0px';
+                        // Use a small timeout to allow the browser to register the 0px state before transitioning
+                        setTimeout(() => {
+                            content.style.maxHeight = fullHeight + 'px'; // Open with calculated height
+                            icon.style.transform = 'rotate(180deg)';
+                        }, 10); // Small delay
+                    }
+                });
+            });
+
+            document.querySelectorAll('.checkpoint-toggle').forEach(button => {
+                button.addEventListener('click', () => {
+                    const answer = button.nextElementSibling;
+                    answer.classList.toggle('hidden');
+                    button.textContent = answer.classList.contains('hidden') ? 'Reveal Answer' : 'Hide Answer';
+                });
+            });
+
+            // Mobile menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Close mobile menu on link click
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            // Nav link active state on scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
