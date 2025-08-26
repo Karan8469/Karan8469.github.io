@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Material Selection for Halide Environments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a guided, multi-section interactive dashboard. The structure flows from understanding the core problem (corrosion mechanisms and factors) to exploring the solutions (material explorer) and finally summarizing the process (selection methodology). This non-linear dashboard approach was chosen over a simple linear report to empower users to explore, compare, and synthesize information at their own pace. Key interactions include clickable cards to reveal detailed information, interactive charts to visualize influencing factors, and a filterable material comparison tool. This structure directly supports the user's goal of making an informed material selection by breaking down complex data into digestible, interactive modules. -->
+    <!-- Visualization & Content Choices:
+        - Corrosion Mechanisms: Report Info -> Descriptions of SCC, Pitting, etc. -> Goal: Inform/Organize -> Viz: Interactive cards with icons -> Interaction: Click to expand for details -> Justification: Breaks down dense text into engaging, user-driven segments. -> Method: HTML/CSS/JS.
+        - Critical Factors: Report Info -> Influence of Temp, pH, O2 -> Goal: Show Relationships -> Viz: Bar Chart -> Interaction: Hover for tooltips -> Justification: Visually quantifies the impact of abstract environmental factors. -> Library: Chart.js (Canvas).
+        - Material Explorer: Report Info -> Alloy properties, limitations, resistance, now including mechanical properties and density, with clarified temperature suitability -> Goal: Compare/Select -> Viz: Filterable grid of material cards with radar charts and expanded property details -> Interaction: Filter by type and tags, view detailed properties and performance profile -> Justification: Provides a more comprehensive comparison by including critical engineering properties alongside corrosion resistance, with precise temperature limit context. -> Library: Chart.js (Canvas), HTML/CSS/JS for filtering.
+        - Selection Methodology: Report Info -> Key selection criteria and recommendations -> Goal: Guide/Summarize -> Viz: Styled checklist/steps -> Interaction: Simple hover effects -> Justification: Presents actionable advice in a clear, easy-to-follow format. -> Method: HTML/CSS.
+        - Related Standards: Report Info -> List of relevant industry standards and organizations, with specific standard numbers on cards and expandable details -> Goal: Provide Resources -> Viz: Expandable cards with standard numbers and links -> Interaction: Click to expand for full description and link -> Justification: Offers practical next steps for users seeking detailed technical specifications and testing methods, with more precise and easily accessible references. -> Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+            color: #1e293b; /* slate-800 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0d9488; /* teal-600 */
+            border-bottom-color: #0d9488; /* teal-600 */
+        }
+        .card-hover {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .material-filter-btn.active {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+        }
+        .tag-common {
+            background-color: #d1fae5; /* green-100 */
+            color: #065f46; /* green-800 */
+        }
+        .tag-cost {
+            background-color: #bfdbfe; /* blue-100 */
+            color: #1e40af; /* blue-800 */
+        }
+        .tag-high-perf {
+            background-color: #fef2f2; /* red-100 */
+            color: #991b1b; /* red-800 */
+        }
+        .expand-arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .expanded .expand-arrow {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-teal-700">Halide Corrosion Guide</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#mechanisms" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Mechanisms</a>
+                <a href="#factors" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Factors</a>
+                <a href="#materials" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Materials</a>
+                <a href="#methodology" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Methodology</a>
+                <a href="#standards" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Standards</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="py-20 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Material Selection for High-Temp Halide Environments</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mx-auto">
+                    An interactive guide to understanding and mitigating corrosion in challenging industrial settings. Explore the fundamental mechanisms, critical environmental factors, and material options to ensure system integrity, safety, and longevity.
+                </p>
+            </div>
+        </section>
+
+        <section id="mechanisms" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-2">Corrosion Mechanisms</h2>
+                    <p class="text-slate-600 max-w-2xl mx-auto">
+                        High-temperature halide environments promote several forms of material degradation. Understanding these mechanisms is the first step toward effective prevention. Click on a card to learn more about each type of attack.
+                    </p>
+                </div>
+                <div id="mechanisms-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+            </div>
+        </section>
+
+        <section id="factors" class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-2">Critical Environmental Factors</h2>
+                    <p class="text-slate-600 max-w-2xl mx-auto">
+                        Several environmental factors can dramatically accelerate corrosion. Their interplay creates a compounded risk that must be managed through careful design and material selection. The chart below visualizes the relative impact of these key accelerators.
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="factorsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="materials" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-2">Material Explorer</h2>
+                    <p class="text-slate-600 max-w-2xl mx-auto">
+                        Choosing the right material is critical. Use the filters below to explore and compare different alloys based on their performance in high-temperature halide environments. Click on a material to see a detailed performance profile.
+                    </p>
+                </div>
+                <div id="material-filters" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+                </div>
+                <div id="materials-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+            </div>
+        </section>
+
+        <section id="methodology" class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-2">Systematic Selection Methodology</h2>
+                    <p class="text-slate-600 max-w-2xl mx-auto">
+                        Effective material selection is not a single choice but a strategic process. Follow these key steps and considerations derived from industry best practices to ensure reliability and safety.
+                    </p>
+                </div>
+                <div id="methodology-content" class="max-w-4xl mx-auto">
+                </div>
+            </div>
+        </section>
+
+        <section id="standards" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-2">Related Standards & Resources</h2>
+                    <p class="text-slate-600 max-w-2xl mx-auto">
+                        Consulting established industry standards and organizations is crucial for robust material selection and corrosion prevention. These resources provide detailed test methods, specifications, and best practices. Click on a card to learn more about each standard.
+                    </p>
+                </div>
+                <div id="standards-content" class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center text-slate-400">
+            <p>This interactive guide is based on the report "Material Selection for Halide Environments at Elevated Temperatures."</p>
+            <p>&copy; 2025 Interactive Report Generator. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const appData = {
+                mechanisms: [
+                    {
+                        id: 'scc',
+                        name: 'Stress Corrosion Cracking (SCC)',
+                        icon: '&#9732;',
+                        summary: 'Sudden failure of ductile metals under tensile stress in a corrosive environment. Often occurs without warning.',
+                        details: 'SCC is accelerated by elevated temperatures (>55°C for stainless steels), the presence of chlorides, and tensile stress. The synergistic effect of dissolved oxygen and chlorides is particularly damaging. Austenitic stainless steels (304L, 316L) are highly susceptible, while duplex grades and nickel alloys offer much better resistance.'
+                    },
+                    {
+                        id: 'pitting',
+                        name: 'Pitting Corrosion',
+                        icon: '&#9679;',
+                        summary: 'Localized attack creating small pits or cavities. Can lead to structural failure while the surface appears intact.',
+                        details: 'Initiated by chloride ions breaking down protective oxide films. Accelerated by high temperatures. Resistance is improved by high Chromium, Molybdenum, and Nitrogen content, often measured by the Pitting Resistance Equivalent Number (PREN). It is a precursor to more severe failures like SCC.'
+                    },
+                    {
+                        id: 'crevice',
+                        name: 'Crevice Corrosion',
+                        icon: '&#9649;',
+                        summary: 'Intense localized corrosion within confined spaces like gaps, joints, or under deposits.',
+                        details: 'Occurs due to oxygen depletion inside the crevice, creating an anodic site. Chlorides migrate into the crevice, causing a pH drop and accelerating corrosion. It can occur at lower temperatures than pitting. Design is critical to eliminate crevices.'
+                    },
+                    {
+                        id: 'gaseous',
+                        name: 'Gaseous Halide Attack',
+                        icon: '&#9928;',
+                        summary: 'Rapid corrosion from reaction with halogen gases at high temperatures, forming volatile metal halides.',
+                        details: 'This "volatility trap" prevents the formation of a stable, protective oxide layer. The corrosion product vaporizes, exposing fresh metal to continuous attack. Wet chlorine is extremely aggressive, forming HCl. Requires materials with inherent chemical stability, not just those that form passive films.'
+                    },
+                    {
+                        id: 'molten_salt',
+                        name: 'Molten Salt Corrosion',
+                        icon: '&#128293;',
+                        summary: 'Electrochemical attack in molten halide salts, driven by impurities and high ionic conductivity.',
+                        details: 'Protective oxide layers often fail to form in molten chlorides. Impurities, especially moisture and oxides, are the primary drivers of corrosion. Maintaining extreme salt purity and an inert atmosphere is a critical defense strategy, as inherent material passivity cannot be relied upon.'
+                    }
+                ],
+                factors: {
+                    labels: ['Temperature', 'Moisture & O2', 'Halide Conc.', 'Low pH', 'Tensile Stress', 'Crevices'],
+                    data: [95, 90, 85, 75, 80, 70],
+                    descriptions: [
+                        'Accelerates reaction rates exponentially and degrades mechanical properties.',
+                        'Create a catalytic cycle, forming aggressive acids (e.g., HCl) and driving electrochemical reactions.',
+                        'Localized concentration in crevices or via evaporation creates "hidden" highly corrosive micro-environments.',
+                        'Destabilizes protective films. Can be self-sustaining inside crevices.',
+                        'A necessary component for Stress Corrosion Cracking (SCC). Can be applied or residual from fabrication.',
+                        'Create occluded cells that concentrate corrosives, deplete oxygen, and drop pH, driving localized attack.'
+                    ]
+                },
+                materials: [
+                    {
+                        name: '304L Stainless Steel',
+                        type: 'Stainless Steel',
+                        summary: 'Basic austenitic steel. Poor resistance to chlorides, highly susceptible to SCC and pitting.',
+                        temp_limit: 'Up to 55°C (Corrosion Resistance - SCC in chlorides)',
+                        scc: 1, pitting: 1, crevice: 1, general: 2,
+                        yield_strength: '170 MPa', ultimate_strength: '485 MPa', modulus_elasticity: '193 GPa', density: '8.0 g/cm³',
+                        tags: ['Commonly Used', 'Cost-Effective']
+                    },
+                    {
+                        name: '316L Stainless Steel',
+                        type: 'Stainless Steel',
+                        summary: 'Common austenitic steel with Mo. Susceptible to SCC in chlorides above 55°C.',
+                        temp_limit: 'Up to 300°C (Corrosion Resistance - SCC in chlorides)',
+                        scc: 1, pitting: 2, crevice: 2, general: 3,
+                        yield_strength: '170 MPa', ultimate_strength: '485 MPa', modulus_elasticity: '193 GPa', density: '8.0 g/cm³',
+                        tags: ['Commonly Used', 'Cost-Effective']
+                    },
+                    {
+                        name: '410 Stainless Steel',
+                        type: 'Stainless Steel',
+                        summary: 'Martensitic stainless steel. Good strength but limited corrosion resistance, especially to chlorides.',
+                        temp_limit: 'Up to 400°C (General Use, limited corrosion)',
+                        scc: 1, pitting: 1, crevice: 1, general: 1,
+                        yield_strength: '275 MPa', ultimate_strength: '480 MPa', modulus_elasticity: '200 GPa', density: '7.7 g/cm³',
+                        tags: ['Cost-Effective']
+                    },
+                    {
+                        name: 'Duplex 2205',
+                        type: 'Stainless Steel',
+                        summary: 'High strength and good SCC resistance. Superior to 316L.',
+                        temp_limit: 'Up to 300°C (Mechanical Properties - embrittlement)',
+                        scc: 4, pitting: 4, crevice: 3, general: 4,
+                        yield_strength: '450 MPa', ultimate_strength: '620 MPa', modulus_elasticity: '200 GPa', density: '7.8 g/cm³',
+                        tags: ['Commonly Used', 'Cost-Effective']
+                    },
+                    {
+                        name: 'Super Duplex 2507',
+                        type: 'Stainless Steel',
+                        summary: 'Excellent strength and corrosion resistance in aggressive chloride environments.',
+                        temp_limit: 'Up to 316°C (Mechanical Properties - embrittlement)',
+                        scc: 5, pitting: 5, crevice: 4, general: 4,
+                        yield_strength: '550 MPa', ultimate_strength: '800 MPa', modulus_elasticity: '200 GPa', density: '7.8 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: '6% Mo Super Austenitic (254SMO)',
+                        type: 'Stainless Steel',
+                        summary: 'High Mo and N content for exceptional pitting and crevice corrosion resistance. Good SCC resistance.',
+                        temp_limit: 'Up to 300°C (Corrosion Resistance)',
+                        scc: 4, pitting: 5, crevice: 5, general: 4,
+                        yield_strength: '300 MPa', ultimate_strength: '650 MPa', modulus_elasticity: '195 GPa', density: '8.1 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: '904L Stainless Steel',
+                        type: 'Stainless Steel',
+                        summary: 'Super austenitic stainless steel with high nickel and molybdenum. Excellent resistance to sulfuric acid and chlorides.',
+                        temp_limit: 'Up to 400°C (Corrosion Resistance)',
+                        scc: 4, pitting: 4, crevice: 4, general: 4,
+                        yield_strength: '220 MPa', ultimate_strength: '490 MPa', modulus_elasticity: '190 GPa', density: '8.0 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'AL-6XN',
+                        type: 'Stainless Steel',
+                        summary: 'Super austenitic stainless steel with high Mo and N. Designed for high resistance to pitting, crevice, and SCC in chloride environments.',
+                        temp_limit: 'Up to 300°C (Corrosion Resistance)',
+                        scc: 5, pitting: 5, crevice: 5, general: 4,
+                        yield_strength: '240 MPa', ultimate_strength: '550 MPa', modulus_elasticity: '190 GPa', density: '8.2 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Inconel 625',
+                        type: 'Nickel Alloy',
+                        summary: 'Nickel-chromium-molybdenum alloy with excellent strength and resistance to a wide range of corrosive media, including chlorides.',
+                        temp_limit: 'Up to 980°C (Oxidation/Mechanical Properties)',
+                        scc: 5, pitting: 4, crevice: 4, general: 5,
+                        yield_strength: '414 MPa', ultimate_strength: '827 MPa', modulus_elasticity: '207 GPa', density: '8.44 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Hastelloy C-276',
+                        type: 'Nickel Alloy',
+                        summary: 'Versatile alloy with excellent resistance to a wide range of corrosive media, including hot chlorides.',
+                        temp_limit: 'High (Corrosion Resistance)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: '283 MPa', ultimate_strength: '690 MPa', modulus_elasticity: '205 GPa', density: '8.89 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Hastelloy C-2000',
+                        type: 'Nickel Alloy',
+                        summary: 'Enhanced resistance due to copper addition. Excels in both reducing and oxidizing acids.',
+                        temp_limit: 'Up to 600°C (Corrosion Resistance)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: '300 MPa', ultimate_strength: '760 MPa', modulus_elasticity: '205 GPa', density: '8.51 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Hastelloy B-3',
+                        type: 'Nickel Alloy',
+                        summary: 'Excellent resistance to non-oxidizing acids like HCl. Poor in oxidizing environments.',
+                        temp_limit: 'Up to 900°C (Corrosion Resistance - non-oxidizing)',
+                        scc: 5, pitting: 4, crevice: 4, general: 5,
+                        yield_strength: '310 MPa', ultimate_strength: '700 MPa', modulus_elasticity: '205 GPa', density: '9.22 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Monel 400',
+                        type: 'Nickel Alloy',
+                        summary: 'Nickel-copper alloy. Good resistance to non-oxidizing acids and strong alkalis. Moderate resistance to chlorides.',
+                        temp_limit: 'Up to 400°C (General Use)',
+                        scc: 3, pitting: 3, crevice: 3, general: 4,
+                        yield_strength: '240 MPa', ultimate_strength: '550 MPa', modulus_elasticity: '179 GPa', density: '8.80 g/cm³',
+                        tags: ['Cost-Effective']
+                    },
+                    {
+                        name: 'Incoloy 800H/HT',
+                        type: 'Nickel Alloy',
+                        summary: 'Nickel-iron-chromium alloy with good high-temperature strength and moderate corrosion resistance. Often used in high-temperature process piping.',
+                        temp_limit: 'Above 600°C (Mechanical Properties - Creep limited)',
+                        scc: 4, pitting: 3, crevice: 3, general: 4,
+                        yield_strength: '205 MPa', ultimate_strength: '520 MPa', modulus_elasticity: '196 GPa', density: '8.03 g/cm³',
+                        tags: ['Commonly Used']
+                    },
+                    {
+                        name: 'Incoloy 825',
+                        type: 'Nickel Alloy',
+                        summary: 'Nickel-iron-chromium-molybdenum-copper alloy. Excellent resistance to reducing and oxidizing acids, SCC, and pitting/crevice corrosion.',
+                        temp_limit: 'Up to 600°C (Corrosion Resistance)',
+                        scc: 5, pitting: 4, crevice: 4, general: 5,
+                        yield_strength: '220 MPa', ultimate_strength: '586 MPa', modulus_elasticity: '195 GPa', density: '8.14 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Alloy 59',
+                        type: 'Nickel Alloy',
+                        summary: 'Nickel-chromium-molybdenum alloy with very high chromium content. Exceptional resistance to a wide range of aggressive media, including hot acids and chlorides.',
+                        temp_limit: 'Up to 600°C (Corrosion Resistance)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: '350 MPa', ultimate_strength: '750 MPa', modulus_elasticity: '206 GPa', density: '8.61 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Nickel 200/201',
+                        type: 'Nickel Alloy',
+                        summary: 'Commercially pure nickel. Excellent resistance to caustic alkalis. Limited resistance to oxidizing acids and halides.',
+                        temp_limit: 'Up to 600°C (General Use)',
+                        scc: 4, pitting: 2, crevice: 2, general: 3,
+                        yield_strength: '103 MPa', ultimate_strength: '400 MPa', modulus_elasticity: '207 GPa', density: '8.89 g/cm³',
+                        tags: ['Commonly Used']
+                    },
+                    {
+                        name: 'Titanium Grade 2',
+                        type: 'Titanium Alloy',
+                        summary: 'Excellent resistance to seawater and chlorine due to a stable passive film. Prone to crevice attack.',
+                        temp_limit: 'Up to 315°C (Corrosion Resistance - Crevice)',
+                        scc: 4, pitting: 5, crevice: 2, general: 5,
+                        yield_strength: '275 MPa', ultimate_strength: '345 MPa', modulus_elasticity: '103 GPa', density: '4.51 g/cm³',
+                        tags: ['Commonly Used', 'Cost-Effective']
+                    },
+                    {
+                        name: 'Titanium Grade 7',
+                        type: 'Titanium Alloy',
+                        summary: 'Palladium addition provides superior resistance to crevice corrosion compared to Grade 2.',
+                        temp_limit: 'Up to 315°C (Corrosion Resistance)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: '275 MPa', ultimate_strength: '345 MPa', modulus_elasticity: '103 GPa', density: '4.51 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Titanium Grade 12',
+                        type: 'Titanium Alloy',
+                        summary: 'Titanium alloy with small additions of nickel and molybdenum. Offers improved crevice corrosion resistance over Grade 2 in hot brine environments.',
+                        temp_limit: 'Up to 315°C (Corrosion Resistance)',
+                        scc: 4, pitting: 5, crevice: 4, general: 5,
+                        yield_strength: '345 MPa', ultimate_strength: '485 MPa', modulus_elasticity: '103 GPa', density: '4.51 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Zirconium 702',
+                        type: 'Other Alloy',
+                        summary: 'Exceptional resistance to a wide range of acids, including hot concentrated HCl. Excellent general corrosion resistance.',
+                        temp_limit: 'Up to 400°C (Corrosion Resistance)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: '207 MPa', ultimate_strength: '345 MPa', modulus_elasticity: '96.5 GPa', density: '6.51 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Tantalum',
+                        type: 'Other Alloy',
+                        summary: 'Extremely corrosion resistant, comparable to glass, in many aggressive media including hot acids and chlorides. Very high melting point.',
+                        temp_limit: 'Above 1000°C (Corrosion Resistance/Melting Point)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: '170 MPa', ultimate_strength: '240 MPa', modulus_elasticity: '186 GPa', density: '16.6 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Niobium',
+                        type: 'Other Alloy',
+                        summary: 'Similar to Tantalum in corrosion resistance, especially to strong acids and chlorides. High melting point and good ductility.',
+                        temp_limit: 'Above 1000°C (Corrosion Resistance/Melting Point)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: '140 MPa', ultimate_strength: '240 MPa', modulus_elasticity: '105 GPa', density: '8.57 g/cm³',
+                        tags: ['High Performance']
+                    },
+                    {
+                        name: 'Graphite',
+                        type: 'Non-Metallic',
+                        summary: 'Non-metallic material with excellent chemical inertness to many aggressive chemicals, including hot halides (when non-oxidizing). Brittle.',
+                        temp_limit: 'Above 2000°C (Chemical Inertness in inert atmosphere)',
+                        scc: 5, pitting: 5, crevice: 5, general: 5,
+                        yield_strength: 'N/A', ultimate_strength: 'N/A', modulus_elasticity: '10-20 GPa', density: '1.8-2.2 g/cm³',
+                        tags: ['High Performance']
+                    }
+                ],
+                methodology: [
+                    {
+                        step: '1. Holistic Environmental Characterization',
+                        description: 'Define not just bulk fluid properties but also potential for localized halide concentration, oxygen ingress, and pH shifts. Understand the complete operational picture.'
+                    },
+                    {
+                        step: '2. Integrated Design and Material Selection',
+                        description: 'Link material choice directly to design. Proactively design to eliminate crevices, avoid stagnant areas, and implement stress relief measures to mitigate SCC.'
+                    },
+                    {
+                        step: '3. Prioritize High-Performance Alloys',
+                        description: 'For severe conditions, default to high-performance nickel alloys (e.g., Hastelloy C-276/C-2000) or specialized titanium alloys (e.g., Grade 7). Use duplex steels only within their temperature limits.'
+                    },
+                    {
+                        step: '4. Implement Strict Environmental Control',
+                        description: 'For molten salt systems, maintaining high purity by minimizing moisture and oxygen is a primary defense. Use inert, purified atmospheres and deoxygenation techniques.'
+                    },
+                    {
+                        step: '5. Adhere to Rigorous Testing & Standards',
+                        description: 'Mandate adherence to ASTM, NACE, and ISO standards. Validate material performance with tests (e.g., ASTM G48 for CPT/CCCT) that simulate actual operating conditions.'
+                    },
+                    {
+                        step: '6. Establish Robust Monitoring & Maintenance',
+                        description: 'Implement routine inspection programs (NDT) to detect early signs of localized corrosion. Proactive maintenance is key to preventing unexpected failures.'
+                    }
+                ],
+                standards: [
+                    {
+                        id: 'nace-ampp',
+                        name: 'NACE International (AMPP)',
+                        number: null,
+                        summary: 'Global organization for corrosion protection with extensive standards and certifications.',
+                        details: 'A global organization dedicated to protecting people, assets, and the environment from the effects of corrosion. Offers extensive standards, reports, and certifications, crucial for material selection and corrosion prevention.',
+                        link: 'https://www.ampp.org/'
+                    },
+                    {
+                        id: 'astm-int',
+                        name: 'ASTM International',
+                        number: null,
+                        summary: 'Develops and publishes voluntary consensus technical standards for materials.',
+                        details: 'Develops and publishes voluntary consensus technical standards for a wide range of materials, products, systems, and services. Many standards are available for corrosion testing and material specifications, providing essential guidelines for industry.',
+                        link: 'https://www.astm.org/'
+                    },
+                    {
+                        id: 'iso-int',
+                        name: 'ISO (International Organization for Standardization)',
+                        number: null,
+                        summary: 'Develops and publishes international standards for various industries.',
+                        details: 'Develops and publishes international standards across numerous industries. This includes a multitude of standards related to corrosion testing, material characterization, and quality management systems, ensuring global consistency and safety.',
+                        link: 'https://www.iso.org/'
+                    },
+                    {
+                        id: 'api-int',
+                        name: 'API (American Petroleum Institute)',
+                        number: null,
+                        summary: 'Develops standards for the oil and natural gas industry.',
+                        details: 'Develops standards for the oil and natural gas industry. These standards often address highly corrosive environments and provide specific material selection guidelines to ensure the integrity and safety of operations.',
+                        link: 'https://www.api.org/'
+                    },
+                    {
+                        id: 'asm-int',
+                        name: 'ASM International',
+                        number: null,
+                        summary: 'Leading materials information society, providing data and education.',
+                        details: 'The world\'s largest and most active materials information society. Provides comprehensive data, knowledge, and educational resources on materials, including specialized corrosion handbooks and technical publications.',
+                        link: 'https://www.asminternational.org/'
+                    },
+                    {
+                        id: 'astm-g48',
+                        name: 'Pitting and Crevice Corrosion Testing',
+                        number: 'ASTM G48',
+                        summary: 'Standard methods for testing pitting and crevice corrosion of stainless steels.',
+                        details: 'These methods cover procedures for the determination of the resistance of stainless steels and related alloys to pitting and crevice corrosion when exposed to oxidizing chloride environments, typically using ferric chloride solution.',
+                        link: 'https://www.astm.org/g0048-03r21.html'
+                    },
+                    {
+                        id: 'nace-mr0175-iso15156',
+                        name: 'Materials for H2S Environments',
+                        number: 'NACE MR0175 / ISO 15156',
+                        summary: 'Requirements for metallic materials in H2S-containing oil and gas environments.',
+                        details: 'This standard provides requirements for metallic materials to be used in H2S-containing environments in oil and gas production and natural gas sweetening plants to prevent sulfide stress cracking, a critical failure mechanism.',
+                        link: 'https://www.ampp.org/standards/NACE-MR0175-ISO-15156'
+                    },
+                    {
+                        id: 'astm-a262',
+                        name: 'Detecting Intergranular Attack in Stainless Steels',
+                        number: 'ASTM A262',
+                        summary: 'Practices for detecting susceptibility to intergranular attack in austenitic stainless steels.',
+                        details: 'These practices describe procedures for detecting susceptibility to intergranular attack in austenitic stainless steels, which can compromise their mechanical properties and corrosion resistance.',
+                        link: 'https://www.astm.org/a0262-15.html'
+                    },
+                    {
+                        id: 'astm-g31',
+                        name: 'Laboratory Immersion Corrosion Testing',
+                        number: 'ASTM G31',
+                        summary: 'Procedures for conducting and evaluating laboratory immersion corrosion tests.',
+                        details: 'This practice describes procedures for planning, preparing, conducting, and evaluating laboratory immersion corrosion tests, which are fundamental for assessing material performance in specific corrosive media.',
+                        link: 'https://www.astm.org/g0031-12.html'
+                    },
+                    {
+                        id: 'nace-tm0177',
+                        name: 'SCC Testing in H2S Environments',
+                        number: 'NACE TM0177',
+                        summary: 'Test methods for determining resistance to sulfide stress cracking (SSC).',
+                        details: 'This standard describes specific test methods for determining the resistance of metallic materials to sulfide stress cracking (SSC) in H2S-containing environments, providing crucial data for material qualification.',
+                        link: 'https://www.ampp.org/standards/NACE-TM0177'
+                    },
+                    {
+                        id: 'astm-e112',
+                        name: 'Determining Average Grain Size',
+                        number: 'ASTM E112',
+                        summary: 'Standard test methods for determining the average grain size of metals.',
+                        details: 'This standard describes the procedures for determining the average grain size of metals, which is an important microstructural feature influencing mechanical properties and corrosion resistance.',
+                        link: 'https://www.astm.org/e0112-13.html'
+                    },
+                    {
+                        id: 'iso-9227',
+                        name: 'Corrosion Tests in Artificial Atmospheres - Salt Spray Tests',
+                        number: 'ISO 9227',
+                        summary: 'Specifies the apparatus, reagents and procedure for neutral salt spray (NSS), acetic acid salt spray (AASS) and copper-accelerated acetic acid salt spray (CASS) tests.',
+                        details: 'This international standard specifies the apparatus, reagents and procedure for carrying out neutral salt spray (NSS), acetic acid salt spray (AASS) and copper-accelerated acetic acid salt spray (CASS) tests for the assessment of the corrosion resistance of metallic materials.',
+                        link: 'https://www.iso.org/standard/50346.html'
+                    }
+                ]
+            };
+
+            function renderMechanisms() {
+                const grid = document.getElementById('mechanisms-grid');
+                grid.innerHTML = appData.mechanisms.map(m => `
+                    <div class="bg-white p-6 rounded-lg shadow-md cursor-pointer card-hover" onclick="toggleMechanismDetails('${m.id}')">
+                        <div class="flex items-center mb-4">
+                            <span class="text-3xl text-teal-600 mr-4">${m.icon}</span>
+                            <h3 class="text-xl font-semibold">${m.name}</h3>
+                        </div>
+                        <p class="text-slate-600">${m.summary}</p>
+                        <div id="details-${m.id}" class="hidden mt-4 pt-4 border-t border-slate-200">
+                            <p class="text-slate-700">${m.details}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            window.toggleMechanismDetails = function(id) {
+                const details = document.getElementById(`details-${id}`);
+                details.classList.toggle('hidden');
+                const card = details.closest('.card-hover');
+                if (card) {
+                    card.classList.toggle('expanded');
+                }
+            }
+
+            function renderFactorsChart() {
+                const ctx = document.getElementById('factorsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: appData.factors.labels,
+                        datasets: [{
+                            label: 'Relative Impact on Corrosion',
+                            data: appData.factors.data,
+                            backgroundColor: '#0f766e', // teal-700
+                            borderColor: '#0d9488', // teal-600
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: '#e2e8f0' // slate-200
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: function(context) {
+                                        return appData.factors.descriptions[context.dataIndex];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderMaterialFilters() {
+                const container = document.getElementById('material-filters');
+                const types = ['All', ...new Set(appData.materials.map(m => m.type))];
+                const tags = ['Commonly Used', 'Cost-Effective', 'High Performance'];
+
+                let filterButtonsHTML = types.map(type => `
+                    <button class="material-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors ${type === 'All' ? 'active' : 'bg-white hover:bg-teal-50'}" data-filter-type="type" data-filter-value="${type}">
+                        ${type}
+                    </button>
+                `).join('');
+
+                filterButtonsHTML += tags.map(tag => `
+                    <button class="material-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors bg-white hover:bg-teal-50" data-filter-type="tag" data-filter-value="${tag}">
+                        ${tag}
+                    </button>
+                `).join('');
+
+                container.innerHTML = filterButtonsHTML;
+
+                container.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'BUTTON') {
+                        document.querySelectorAll('.material-filter-btn').forEach(btn => btn.classList.remove('active', 'bg-white', 'hover:bg-teal-50'));
+                        document.querySelectorAll('.material-filter-btn').forEach(btn => {
+                            if(btn !== e.target) {
+                                btn.classList.add('bg-white', 'hover:bg-teal-50');
+                            }
+                        });
+                        e.target.classList.add('active');
+
+                        const filterType = e.target.dataset.filterType;
+                        const filterValue = e.target.dataset.filterValue;
+
+                        if (filterType === 'type') {
+                            filterMaterialsByType(filterValue);
+                        } else if (filterType === 'tag') {
+                            filterMaterialsByTag(filterValue);
+                        }
+                    }
+                });
+            }
+
+            function renderMaterials(filteredMaterials) {
+                const grid = document.getElementById('materials-grid');
+
+                grid.innerHTML = filteredMaterials.map(m => `
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden card-hover flex flex-col">
+                        <div class="p-6 flex-grow">
+                            <h3 class="text-xl font-semibold mb-2">${m.name}</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded-full bg-teal-100 text-teal-800">${m.type}</span>
+                                ${m.tags.map(tag => {
+                                    let tagClass = '';
+                                    if (tag === 'Commonly Used') tagClass = 'tag-common';
+                                    else if (tag === 'Cost-Effective') tagClass = 'tag-cost';
+                                    else if (tag === 'High Performance') tagClass = 'tag-high-perf';
+                                    return `<span class="text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded-full ${tagClass}">${tag}</span>`;
+                                }).join('')}
+                            </div>
+                            <p class="text-slate-600 mt-4">${m.summary}</p>
+                            <div class="text-sm text-slate-700 mt-2 space-y-1">
+                                <p><strong>Temp Suitability:</strong> ${m.temp_limit}</p>
+                                <p><strong>Yield Strength:</strong> ${m.yield_strength}</p>
+                                <p><strong>Ultimate Strength:</strong> ${m.ultimate_strength}</p>
+                                <p><strong>Modulus of Elasticity:</strong> ${m.modulus_elasticity}</p>
+                                <p><strong>Density:</strong> ${m.density}</p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-stone-50">
+                             <div class="h-48 w-full"><canvas id="chart-${m.name.replace(/[^a-zA-Z0-9]/g, '')}"></canvas></div>
+                        </div>
+                    </div>
+                `).join('');
+
+                filteredMaterials.forEach(m => renderMaterialChart(m));
+            }
+
+            let currentFilterType = 'type';
+            let currentFilterValue = 'All';
+
+            function filterMaterialsByType(type) {
+                currentFilterType = 'type';
+                currentFilterValue = type;
+                const filtered = type === 'All' ? appData.materials : appData.materials.filter(m => m.type === type);
+                renderMaterials(filtered);
+            }
+
+            function filterMaterialsByTag(tag) {
+                currentFilterType = 'tag';
+                currentFilterValue = tag;
+                const filtered = appData.materials.filter(m => m.tags && m.tags.includes(tag));
+                renderMaterials(filtered);
+            }
+
+            function renderMaterialChart(material) {
+                // Ensure the ID is valid for HTML and JavaScript
+                const chartId = `chart-${material.name.replace(/[^a-zA-Z0-9]/g, '')}`;
+                const existingChart = Chart.getChart(chartId); // Destroy existing chart if it exists
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+
+                const ctx = document.getElementById(chartId).getContext('2d');
+                const ratingLabels = {1: 'Poor', 2: 'Fair', 3: 'Good', 4: 'Very Good', 5: 'Excellent'};
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['SCC', 'Pitting', 'Crevice', 'General'],
+                        datasets: [{
+                            label: 'Corrosion Resistance',
+                            data: [material.scc, material.pitting, material.crevice, material.general],
+                            backgroundColor: 'rgba(13, 148, 136, 0.2)', // teal-600 transparent
+                            borderColor: '#0d9488', // teal-600
+                            pointBackgroundColor: '#0d9488',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#0d9488'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 5,
+                                stepSize: 1,
+                                pointLabels: {
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                ticks: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        return `${context.dataset.label}: ${value} (${ratingLabels[value]})`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderMethodology() {
+                const container = document.getElementById('methodology-content');
+                container.innerHTML = appData.methodology.map(item => `
+                    <div class="mb-6 p-4 border-l-4 border-teal-600 bg-teal-50 rounded-r-lg">
+                        <h4 class="font-bold text-lg text-teal-800">${item.step}</h4>
+                        <p class="text-slate-700 mt-1">${item.description}</p>
+                    </div>
+                `).join('');
+            }
+
+            function renderStandards() {
+                const container = document.getElementById('standards-content');
+                container.innerHTML = appData.standards.map(s => `
+                    <div class="bg-white p-6 rounded-lg shadow-md cursor-pointer card-hover" onclick="toggleStandardDetails('${s.id}')">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xl font-semibold text-slate-900">${s.name}</h3>
+                            <span class="text-2xl text-teal-600 expand-arrow">&#9654;</span>
+                        </div>
+                        ${s.number ? `<p class="text-base text-slate-700 font-medium mb-3"><strong>Standard No.:</strong> ${s.number}</p>` : ''}
+                        <p class="text-slate-600">${s.summary}</p>
+                        <div id="details-${s.id}" class="hidden mt-4 pt-4 border-t border-slate-200">
+                            <p class="text-slate-700">${s.details}</p>
+                            ${s.link ? `<p class="mt-4"><a href="${s.link}" target="_blank" class="text-teal-600 hover:underline font-medium">Learn More &rarr;</a></p>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            window.toggleStandardDetails = function(id) {
+                const details = document.getElementById(`details-${id}`);
+                details.classList.toggle('hidden');
+                const card = details.closest('.card-hover');
+                if (card) {
+                    card.classList.toggle('expanded');
+                }
+            }
+
+            function initNavObserver() {
+                const sections = document.querySelectorAll('section');
+                const navLinks = document.querySelectorAll('.nav-link');
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            navLinks.forEach(link => {
+                                link.classList.remove('active');
+                                if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                    link.classList.add('active');
+                                }
+                            });
+                        }
+                    });
+                }, { rootMargin: '-50% 0px -50% 0px' });
+
+                sections.forEach(section => {
+                    observer.observe(section);
+                });
+            }
+
+
+            renderMechanisms();
+            renderFactorsChart();
+            renderMaterialFilters();
+            filterMaterialsByType('All'); // Initial render
+            renderMethodology();
+            renderStandards();
+            initNavObserver();
+        });
+    </script>
+</body>
+</html>

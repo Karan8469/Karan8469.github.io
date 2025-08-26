@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Material Selector for Halide Environments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Teal and Orange Accents -->
+    <!-- Application Structure Plan: A task-oriented, single-page application divided into thematic sections: 1) An overview, 2) An interactive "Corrosion Explorer" to detail different failure mechanisms, 3) A core "Interactive Material Selector" dashboard with filters and dynamic charts for comparing material properties (mechanical, corrosion, cost), 4) A "Design & Mitigation Guide" summarizing best practices, and 5) A "Framework & Standards" reference section. This structure is chosen to guide an engineer logically from understanding the problem to selecting a solution, rather than forcing them to read a linear report. Navigation is handled by a sticky header, allowing quick access to each tool/section. -->
+    <!-- Visualization & Content Choices: Report Info -> Goal -> Viz/Presentation Method -> Interaction -> Justification. 1) Corrosion Mechanisms -> Goal: Inform/Explore -> Viz: Grid of clickable cards with icons -> Interaction: Click to reveal details -> Justification: Breaks down complex info into digestible, on-demand chunks. 2) Material Properties (Mechanical, PREN, Temp/Chloride Limits) -> Goal: Compare/Select -> Viz: Grouped Bar Charts (Strength), Bar Chart (PREN), and a Bubble Chart (Temp vs. Chloride vs. Cost) using Chart.js -> Interaction: Dropdown filter by material type dynamically updates all charts and a summary table -> Justification: Allows for multi-variate comparison, making trade-offs between cost, performance, and resistance visually apparent. 3) Design Framework -> Goal: Organize/Guide -> Viz: Step-by-step diagram using styled HTML/CSS -> Justification: Presents a complex process in a simple, linear visual flow. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #334155;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        /* Specific styling for the Operating Window Chart to make it wider and taller */
+        .operating-window-chart-container {
+            max-width: 900px; /* Increased width */
+            height: 500px;   /* Increased height */
+            max-height: 600px; /* Increased max height */
+        }
+        @media (min-width: 768px) {
+            .operating-window-chart-container {
+                height: 550px; /* Further increased height for larger screens */
+            }
+        }
+
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0891B2;
+            border-bottom-color: #0891B2;
+        }
+        .card-hover-effect {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-slate-700">Halide Material Selector</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Overview</a>
+                        <a href="#explorer" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Corrosion Explorer</a>
+                        <a href="#selector" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Material Selector</a>
+                        <a href="#design" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Design Guide</a>
+                        <a href="#framework" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Framework</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="overview" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-800 sm:text-4xl">Advanced Material Selection for Halide-Rich Environments</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg leading-8 text-slate-600">An interactive guide to help engineers understand corrosion risks and select the most suitable materials for applications in aggressive halide solutions like chlorides, bromides, and fluorides.</p>
+                <div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-cyan-700">High Corrosion Risk</h3>
+                        <p class="mt-2 text-slate-600">Halide ions aggressively attack protective passive films, leading to localized pitting, crevice corrosion, and stress corrosion cracking (SCC).</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-cyan-700">Complex Interactions</h3>
+                        <p class="mt-2 text-slate-600">Corrosion is intensified by temperature, pH, stress, and flow. A holistic approach is essential for reliable design.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-cyan-700">Cost vs. Performance</h3>
+                        <p class="mt-2 text-slate-600">Balancing upfront material cost with long-term reliability is key to avoiding both over-engineering and premature failures.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="explorer" class="py-16 sm:py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-800 sm:text-4xl">Corrosion Mechanisms Explorer</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg leading-8 text-slate-600">Halides introduce multiple, often hidden, corrosion risks. Click on a mechanism to learn about its characteristics and the environmental factors that make it worse.</p>
+                </div>
+                <div id="corrosion-grid" class="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                </div>
+            </div>
+        </section>
+
+        <section id="selector" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-800 sm:text-4xl">Interactive Material Selector</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg leading-8 text-slate-600">Selecting the right material involves balancing corrosion resistance, mechanical properties, and cost. Use the filters below to compare common alloys and polymers for your application.</p>
+                </div>
+
+                <div class="mt-12">
+                    <div class="flex justify-center">
+                        <div class="w-full max-w-xs">
+                            <label for="material-type-filter" class="block text-sm font-medium text-slate-700">Select Material Category:</label>
+                            <select id="material-type-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm rounded-md shadow-sm">
+                                <option value="all">All Materials</option>
+                                <option value="austenitic">Austenitic Stainless Steels</option>
+                                <option value="duplex">Duplex Stainless Steels</option>
+                                <option value="nickel">Nickel-Based Alloys</option>
+                                <option value="non-metal">Non-Metallic Polymers</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-center text-slate-700">Mechanical Strength Comparison</h3>
+                        <p class="text-sm text-center text-slate-500 mb-4">Higher values indicate greater strength.</p>
+                        <div class="chart-container">
+                            <canvas id="strengthChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-center text-slate-700">Pitting Resistance (PREN)</h3>
+                         <p class="text-sm text-center text-slate-500 mb-4">PREN ≥ 40 is recommended for seawater. (Not applicable to non-metals).</p>
+                        <div class="chart-container">
+                            <canvas id="prenChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12 bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-center text-slate-700">Operating Window: Temperature vs. Chloride Limit</h3>
+                    <p class="text-sm text-center text-slate-500 mb-4">Bubble size indicates relative cost. Position indicates resistance to temperature and chlorides.</p>
+                    <div class="chart-container mx-auto operating-window-chart-container">
+                        <canvas id="operatingWindowChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-12 overflow-x-auto bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-center text-slate-700 mb-4">Material Property Data</h3>
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yield (MPa)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tensile (MPa)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Temp (°C)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cl⁻ Limit (ppm)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SCC Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materials-table-body" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="design" class="py-16 sm:py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-800 sm:text-4xl">Design & Mitigation Guide</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg leading-8 text-slate-600">Material choice is only half the battle. Poor design can cause even the best alloys to fail. Here are common pitfalls and the strategies to mitigate them.</p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-lg">
+                        <h3 class="text-xl font-semibold text-red-800">❌ Common Design Pitfalls</h3>
+                        <ul class="mt-4 space-y-3 list-disc list-inside text-red-700">
+                            <li>Ignoring localized attack (pitting, crevice).</li>
+                            <li>Over-relying on simplified salt-spray tests.</li>
+                            <li>Neglecting weld zones and heat-affected zones (HAZ).</li>
+                            <li>Creating unintended galvanic couples (dissimilar metals).</li>
+                            <li>Designing geometries that trap moisture and create crevices.</li>
+                            <li>Under-designing for cost or over-designing unnecessarily.</li>
+                            <li>Failing to plan for inspection and maintenance.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg">
+                        <h3 class="text-xl font-semibold text-green-800">✅ Mitigation Best Practices</h3>
+                        <ul class="mt-4 space-y-3 list-disc list-inside text-green-700">
+                            <li>Design to eliminate crevices and ensure good drainage.</li>
+                            <li>Specify correct welding procedures and post-weld treatments.</li>
+                            <li>Electrically isolate dissimilar metals or choose compatible ones.</li>
+                            <li>Use protective coatings, inhibitors, or cathodic protection.</li>
+                            <li>Conduct a Life Cycle Cost Analysis (LCCA) to balance cost and performance.</li>
+                            <li>Integrate a robust inspection and monitoring plan from the start.</li>
+                            <li>Use a structured material selection framework.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="framework" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-800 sm:text-4xl">Critical Design Framework</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg leading-8 text-slate-600">Follow this structured process to ensure a robust and cost-effective material selection, supported by key industry standards.</p>
+                </div>
+                <div class="mt-12">
+                    <div class="relative">
+                        <div class="absolute left-1/2 -translate-x-1/2 w-0.5 h-full bg-slate-300 hidden md:block" aria-hidden="true"></div>
+                        <div class="space-y-12 md:space-y-0">
+                            <div class="md:grid md:grid-cols-2 md:gap-8 items-center">
+                                <div class="md:text-right md:pr-8">
+                                    <div class="bg-white p-6 rounded-lg shadow-lg card-hover-effect">
+                                        <h4 class="text-lg font-bold text-cyan-700">Step 1: Environment Definition</h4>
+                                        <p class="mt-2 text-slate-600">Collect exact fluid chemistry, temperature/pressure cycles, flow rates, and intermittent exposure data.</p>
+                                    </div>
+                                </div>
+                                <div class="hidden md:block"></div>
+                            </div>
+                            <div class="md:grid md:grid-cols-2 md:gap-8 items-center">
+                                <div class="hidden md:block"></div>
+                                <div class="md:pl-8">
+                                    <div class="bg-white p-6 rounded-lg shadow-lg card-hover-effect">
+                                        <h4 class="text-lg font-bold text-cyan-700">Step 2: Define Performance</h4>
+                                        <p class="mt-2 text-slate-600">Define mechanical loads, required lifespan, safety factors, and acceptable corrosion rates.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="md:grid md:grid-cols-2 md:gap-8 items-center">
+                                <div class="md:text-right md:pr-8">
+                                    <div class="bg-white p-6 rounded-lg shadow-lg card-hover-effect">
+                                        <h4 class="text-lg font-bold text-cyan-700">Step 3: Screen Candidates</h4>
+                                        <p class="mt-2 text-slate-600">List materials and screen by chemical compatibility, corrosion indices (PREN), mechanical properties, and cost.</p>
+                                    </div>
+                                </div>
+                                <div class="hidden md:block"></div>
+                            </div>
+                            <div class="md:grid md:grid-cols-2 md:gap-8 items-center">
+                                <div class="hidden md:block"></div>
+                                <div class="md:pl-8">
+                                    <div class="bg-white p-6 rounded-lg shadow-lg card-hover-effect">
+                                        <h4 class="text-lg font-bold text-cyan-700">Step 4: Evaluate Mechanisms</h4>
+                                        <p class="mt-2 text-slate-600">Use standards (e.g., ISO 15156 for SCC) and empirical data to evaluate specific corrosion risks for shortlisted materials.</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="md:grid md:grid-cols-2 md:gap-8 items-center">
+                                <div class="md:text-right md:pr-8">
+                                    <div class="bg-white p-6 rounded-lg shadow-lg card-hover-effect">
+                                        <h4 class="text-lg font-bold text-cyan-700">Step 5: Design & Mitigate</h4>
+                                        <p class="mt-2 text-slate-600">Finalize design, specifying weld procedures, coatings, inhibitors, or cathodic protection as needed.</p>
+                                    </div>
+                                </div>
+                                <div class="hidden md:block"></div>
+                            </div>
+                            <div class="md:grid md:grid-cols-2 md:gap-8 items-center">
+                                <div class="hidden md:block"></div>
+                                <div class="md:pl-8">
+                                    <div class="bg-white p-6 rounded-lg shadow-lg card-hover-effect">
+                                        <h4 class="text-lg font-bold text-cyan-700">Step 6: Plan Surveillance</h4>
+                                        <p class="mt-2 text-slate-600">Predict corrosion rates and schedule inspection and condition monitoring throughout the asset's lifecycle.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const corrosionData = [
+        { 
+            name: 'Pitting Corrosion', 
+            icon: '💧',
+            description: 'Highly localized attack forming small cavities or "pits". Dangerous because it causes failure with minimal overall metal loss.',
+            factors: 'Cl⁻, Br⁻, F⁻ ions; high temperature; low pH; stagnant conditions; oxidizing agents.'
+        },
+        { 
+            name: 'Crevice Corrosion', 
+            icon: '틈',
+            description: 'Localized attack in occluded spaces (gaps, joints) where stagnant conditions develop, leading to aggressive local chemistry.',
+            factors: 'Halides (Cl⁻, Br⁻); oxygen depletion; low pH; stagnant electrolytes; biofilm formation.'
+        },
+        { 
+            name: 'Stress Corrosion Cracking (SCC)', 
+            icon: '⚡',
+            description: 'Brittle fracture under the combined action of tensile stress and a specific corrosive environment. Can be rapid and catastrophic.',
+            factors: 'Halides (Cl⁻); elevated temperature (>60°C for SS); tensile stress; low pH.'
+        },
+        { 
+            name: 'Hydrogen Embrittlement (HE)', 
+            icon: 'H₂',
+            description: 'Loss of ductility and brittle fracture due to absorbed hydrogen atoms, a risk for high-strength steels.',
+            factors: 'Acidic (pH<4) or alkaline (pH>10) halide solutions; high strength steels; cathodic reactions.'
+        },
+        { 
+            name: 'Corrosion Fatigue (CF)', 
+            icon: '🔄',
+            description: 'Accelerated fatigue cracking due to combined cyclic stress and corrosion. No fatigue limit exists in corrosive environments.',
+            factors: 'Halides; cyclic stresses; rupture of passive films; low pH.'
+        },
+        { 
+            name: 'Galvanic Corrosion', 
+            icon: '🔋',
+            description: 'Accelerated corrosion of a less noble metal when in electrical contact with a more noble metal in an electrolyte.',
+            factors: 'Conductive halide solutions; large cathode-to-anode area ratio.'
+        }
+    ];
+
+    const materialsData = [
+        { category: 'austenitic', name: '304/304L SS', yield: 205, tensile: 515, maxTemp: 425, chlorideLimit: 100, sccRisk: 'High', pren: 19, cost: 1 },
+        { category: 'austenitic', name: '316/316L SS', yield: 205, tensile: 515, maxTemp: 425, chlorideLimit: 2000, sccRisk: 'High', pren: 25, cost: 1.5 },
+        { category: 'duplex', name: '2205 Duplex SS', yield: 450, tensile: 655, maxTemp: 315, chlorideLimit: 35000, sccRisk: 'Low', pren: 35, cost: 2.5 },
+        { category: 'duplex', name: 'Super Duplex 25Cr', yield: 550, tensile: 760, maxTemp: 250, chlorideLimit: 120000, sccRisk: 'Very Low', pren: 42, cost: 4 },
+        { category: 'nickel', name: 'Inconel 625', yield: 448, tensile: 862, maxTemp: 980, chlorideLimit: 200000, sccRisk: 'Immune', pren: 41, cost: 8 },
+        { category: 'nickel', name: 'Hastelloy C-276', yield: 455, tensile: 841, maxTemp: 427, chlorideLimit: 200000, sccRisk: 'Immune', pren: 45, cost: 10 },
+        { category: 'nickel', name: 'Monel 400', yield: 240, tensile: 550, maxTemp: 538, chlorideLimit: 20000, sccRisk: 'Resistant', pren: null, cost: 5 },
+        { category: 'non-metal', name: 'PVDF', yield: 40, tensile: 50, maxTemp: 150, chlorideLimit: 200000, sccRisk: 'Immune', pren: null, cost: 3 },
+        { category: 'non-metal', name: 'PTFE', yield: 25, tensile: 30, maxTemp: 260, chlorideLimit: 200000, sccRisk: 'Immune', pren: null, cost: 4 },
+        { category: 'non-metal', name: 'FRP (Vinylester)', yield: 70, tensile: 140, maxTemp: 104, chlorideLimit: 200000, sccRisk: 'Acid Risk', pren: null, cost: 2 },
+    ];
+
+    const corrosionGrid = document.getElementById('corrosion-grid');
+    corrosionData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-50 p-6 rounded-lg shadow-md cursor-pointer card-hover-effect';
+        card.innerHTML = `
+            <div class="flex items-center">
+                <span class="text-3xl mr-4">${item.icon}</span>
+                <h3 class="text-xl font-semibold text-slate-800">${item.name}</h3>
+            </div>
+            <div class="details hidden mt-4 pt-4 border-t border-slate-200">
+                <p class="text-slate-600">${item.description}</p>
+                <p class="mt-2 text-sm text-slate-500"><strong class="text-slate-600">Intensified by:</strong> ${item.factors}</p>
+            </div>
+        `;
+        card.addEventListener('click', () => {
+            card.querySelector('.details').classList.toggle('hidden');
+        });
+        corrosionGrid.appendChild(card);
+    });
+
+    const materialTypeFilter = document.getElementById('material-type-filter');
+    const tableBody = document.getElementById('materials-table-body');
+    let strengthChart, prenChart, operatingWindowChart;
+    
+    const chartColors = {
+        yield: 'rgba(249, 115, 22, 0.7)',
+        tensile: 'rgba(8, 145, 178, 0.7)',
+        pren: 'rgba(2, 132, 199, 0.7)',
+        costColors: {
+            1: 'rgba(45, 212, 191, 0.7)',
+            1.5: 'rgba(34, 197, 94, 0.7)',
+            2: 'rgba(132, 204, 22, 0.7)',
+            2.5: 'rgba(234, 179, 8, 0.7)',
+            3: 'rgba(249, 115, 22, 0.7)',
+            4: 'rgba(239, 68, 68, 0.7)',
+            5: 'rgba(219, 39, 119, 0.7)',
+            8: 'rgba(147, 51, 234, 0.7)',
+            10: 'rgba(79, 70, 229, 0.7)',
+        }
+    };
+    
+    function createCharts(filteredData) {
+        const strengthCtx = document.getElementById('strengthChart').getContext('2d');
+        const prenCtx = document.getElementById('prenChart').getContext('2d');
+        const operatingWindowCtx = document.getElementById('operatingWindowChart').getContext('2d');
+
+        if (strengthChart) strengthChart.destroy();
+        if (prenChart) prenChart.destroy();
+        if (operatingWindowChart) operatingWindowChart.destroy();
+
+        const labels = filteredData.map(m => m.name);
+
+        strengthChart = new Chart(strengthCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Yield Strength (MPa)',
+                        data: filteredData.map(m => m.yield),
+                        backgroundColor: chartColors.yield,
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Tensile Strength (MPa)',
+                        data: filteredData.map(m => m.tensile),
+                        backgroundColor: chartColors.tensile,
+                        borderColor: 'rgba(8, 145, 178, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Strength (MPa)' } } }
+            }
+        });
+
+        const prenData = filteredData.filter(m => m.pren !== null);
+        prenChart = new Chart(prenCtx, {
+            type: 'bar',
+            data: {
+                labels: prenData.map(m => m.name),
+                datasets: [{
+                    label: 'PREN',
+                    data: prenData.map(m => m.pren),
+                    backgroundColor: chartColors.pren,
+                    borderColor: 'rgba(2, 132, 199, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'PREN Value' } } }
+            }
+        });
+        
+        operatingWindowChart = new Chart(operatingWindowCtx, {
+            type: 'bubble',
+            data: {
+                datasets: filteredData.map(m => ({
+                    label: m.name,
+                    data: [{ x: m.chlorideLimit, y: m.maxTemp, r: (m.cost || 1) * 5 }],
+                    backgroundColor: chartColors.costColors[m.cost] || 'rgba(100, 100, 100, 0.7)',
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: 'Chloride Limit (ppm, log scale)' },
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return Number(value.toString()).toLocaleString();
+                            }
+                        },
+                        min: 10, // Ensure axis starts at a reasonable value for log scale
+                        max: 250000 // Ensure axis extends sufficiently to contain largest bubbles
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Max Service Temperature (°C)' },
+                        min: 0, // Ensure axis starts at 0
+                        max: 1100 // Ensure axis extends sufficiently to contain largest bubbles
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const material = filteredData[context.datasetIndex];
+                                return [
+                                    `${material.name}`,
+                                    `Max Temp: ${context.parsed.y}°C`,
+                                    `Cl⁻ Limit: ${context.parsed.x.toLocaleString()} ppm`,
+                                    `Relative Cost: ${material.cost}`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateTable(filteredData) {
+        tableBody.innerHTML = '';
+        filteredData.forEach(material => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-slate-50';
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${material.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${material.yield}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${material.tensile}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${material.maxTemp}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${material.chlorideLimit.toLocaleString()}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${material.sccRisk}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function filterAndRender() {
+        const selectedType = materialTypeFilter.value;
+        const filteredData = selectedType === 'all' 
+            ? materialsData 
+            : materialsData.filter(m => m.category === selectedType);
+        
+        createCharts(filteredData);
+        updateTable(filteredData);
+    }
+
+    materialTypeFilter.addEventListener('change', filterAndRender);
+    
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('main section');
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.4
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === entry.target.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+
+    filterAndRender();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Navigating High-Temperature Halide Environments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues & Greens -->
+    <!-- Application Structure Plan: The infographic follows a logical narrative flow to guide the user from problem to solution. It starts with a high-impact introduction to the challenge (Section 1), explains the "what" and "why" with visual breakdowns of corrosion mechanisms and accelerating factors (Sections 2 & 3), presents a clear comparison of potential solutions (Section 4), and concludes with an actionable process (Section 5). This linear, story-driven structure is ideal for an infographic format, making complex technical information digestible and memorable. -->
+    <!-- Visualization & Content Choices: 
+        - Section 1 (Challenge): Data Point: Temperature's exponential effect on corrosion -> Goal: Inform -> Viz: Single Big Number -> Justification: Creates a strong, memorable hook to engage the user immediately. -> Method: Styled HTML.
+        - Section 2 (Mechanisms): Data Point: 5 types of corrosion -> Goal: Organize -> Viz: Icon-based cards -> Justification: Breaks down complex definitions into visually distinct, easy-to-scan categories. -> Method: HTML/CSS with Unicode characters.
+        - Section 3 (Accelerants): Data Point: Relative impact of environmental factors -> Goal: Compare -> Viz: Horizontal Bar Chart -> Justification: Provides a clear, intuitive comparison of the magnitude of different influencing factors. -> Library: Chart.js (Canvas).
+        - Section 4 (Materials): Data Point: Performance of 4 material classes against 3 corrosion types -> Goal: Compare -> Viz: Radar Chart -> Justification: Excellent for multi-variable comparison, showing at a glance which material class is strong or weak across different criteria. -> Library: Chart.js (Canvas).
+        - Section 5 (Methodology): Data Point: 5-step systematic selection process -> Goal: Organize -> Viz: Flow Chart -> Justification: Visually represents the process flow, making the sequence of actions clear and easy to follow. -> Method: Structured HTML/CSS with Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* sky-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center my-8 md:my-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#006494] mb-4">Material Selection for High-Temperature Halide Environments</h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-4xl mx-auto">A visual guide to understanding the risks and selecting the right materials for one of engineering's toughest challenges.</p>
+        </header>
+
+        <main class="space-y-12">
+
+            <section id="challenge" class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <h2 class="text-2xl font-bold text-[#006494] mb-4">The Core Challenge: Temperature as an Accelerator</h2>
+                <p class="text-slate-600 max-w-3xl mx-auto mb-6">
+                    A fundamental principle of corrosion science is that increasing temperature accelerates the corrosive behavior of a fluid. This relationship is often exponential, meaning even a small rise in temperature can cause a dramatic increase in corrosion rates, posing a severe threat to material integrity.
+                </p>
+                <div class="bg-gradient-to-br from-[#00A6FB] to-[#0582CA] text-white rounded-lg p-6">
+                    <p class="text-2xl font-semibold">Arrhenius Relationship</p>
+                    <p class="text-6xl md:text-7xl font-extrabold my-2">Exponential Increase</p>
+                    <p class="text-lg">in Corrosion Rate with Rising Temperature</p>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <section id="mechanisms" class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-center text-[#006494] mb-6">The Culprits: 5 Key Corrosion Mechanisms</h2>
+                    <p class="text-slate-600 text-center mb-8">High-temperature halide environments trigger several distinct and dangerous forms of material degradation. Understanding each is critical for prevention.</p>
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="text-4xl text-[#00A6FB]">⚡</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Stress Corrosion Cracking (SCC)</h3>
+                                <p class="text-slate-600">Sudden failure of ductile metals under tensile stress. Austenitic stainless steels are highly susceptible above 55°C in chlorides.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="text-4xl text-[#00A6FB]">⚫</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Pitting Corrosion</h3>
+                                <p class="text-slate-600">Localized attack creating small, deep pits. Often a hidden threat that can act as a precursor to SCC.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="text-4xl text-[#00A6FB]">틈</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Crevice Corrosion</h3>
+                                <p class="text-slate-600">Intense corrosion in confined spaces like gaps or under deposits, where aggressive chemicals can concentrate.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="text-4xl text-[#00A6FB]">☁️</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Gaseous Halide Attack</h3>
+                                <p class="text-slate-600">Rapid material loss as hot halogen gases form volatile metal halides, preventing protective layers from forming.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="text-4xl text-[#00A6FB]">💧</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Molten Salt Corrosion</h3>
+                                <p class="text-slate-600">Electrochemical attack in molten salts, driven by impurities like moisture and oxygen, which can dissolve protective films.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="accelerants" class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-center text-[#006494] mb-6">The Accelerants: Critical Environmental Factors</h2>
+                     <p class="text-slate-600 text-center mb-8">The rate and severity of corrosion are not constant. They are profoundly influenced by a complex interplay of environmental factors that can dramatically worsen material degradation.</p>
+                    <div class="chart-container">
+                        <canvas id="factorsChart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <section id="materials" class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-center text-[#006494] mb-6">The Contenders: Material Performance Comparison</h2>
+                <p class="text-slate-600 text-center max-w-3xl mx-auto mb-8">
+                    No single material is perfect for all conditions. This chart compares the general resistance of major alloy families to the most common forms of localized corrosion in halide environments. Higher scores indicate better resistance.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container h-[400px] md:h-[450px]">
+                        <canvas id="materialsChart"></canvas>
+                    </div>
+                    <div class="space-y-4 text-center md:text-left">
+                        <div class="bg-sky-100 p-4 rounded-lg">
+                            <h3 class="font-bold text-lg text-[#006494]">Key Temperature Threshold</h3>
+                            <p class="text-4xl font-extrabold text-[#0582CA]">55°C</p>
+                            <p class="text-slate-600">Above this temperature, common Austenitic Stainless Steels (304L, 316L) become highly susceptible to Stress Corrosion Cracking in chloride environments.</p>
+                        </div>
+                         <div class="bg-sky-100 p-4 rounded-lg">
+                            <h3 class="font-bold text-lg text-[#006494]">Duplex Steels Limitation</h3>
+                            <p class="text-4xl font-extrabold text-[#0582CA]">~300°C</p>
+                            <p class="text-slate-600">Duplex and Super Duplex steels risk embrittlement if used for prolonged periods above this temperature, limiting their use in very high-heat applications.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="methodology" class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-center text-[#006494] mb-6">The Playbook: A Systematic Selection Process</h2>
+                <p class="text-slate-600 text-center max-w-3xl mx-auto mb-10">Effective material selection is a strategic process, not a single choice. Following a systematic methodology is essential to ensure safety, reliability, and longevity in extreme environments.</p>
+                <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 items-stretch justify-center">
+                    <div class="flex-1 flex flex-col items-center p-4 bg-sky-50 rounded-lg text-center">
+                        <div class="text-4xl font-bold text-[#0582CA] mb-2">1</div>
+                        <h3 class="font-semibold">Define Conditions</h3>
+                        <p class="text-sm text-slate-600">Characterize the complete environment: temperature, pressure, halide concentration, pH, and potential impurities.</p>
+                    </div>
+                    <div class="self-center text-4xl text-sky-300 mx-2 font-light">&rarr;</div>
+                    <div class="flex-1 flex flex-col items-center p-4 bg-sky-50 rounded-lg text-center">
+                        <div class="text-4xl font-bold text-[#0582CA] mb-2">2</div>
+                        <h3 class="font-semibold">Identify Properties</h3>
+                        <p class="text-sm text-slate-600">Determine required strength, corrosion resistance, and thermal stability based on the defined conditions.</p>
+                    </div>
+                    <div class="self-center text-4xl text-sky-300 mx-2 font-light">&rarr;</div>
+                    <div class="flex-1 flex flex-col items-center p-4 bg-sky-50 rounded-lg text-center">
+                        <div class="text-4xl font-bold text-[#0582CA] mb-2">3</div>
+                        <h3 class="font-semibold">Evaluate Materials</h3>
+                        <p class="text-sm text-slate-600">Assess potential alloys (stainless steels, nickel, titanium) against the required properties.</p>
+                    </div>
+                    <div class="self-center text-4xl text-sky-300 mx-2 font-light">&rarr;</div>
+                    <div class="flex-1 flex flex-col items-center p-4 bg-sky-50 rounded-lg text-center">
+                        <div class="text-4xl font-bold text-[#0582CA] mb-2">4</div>
+                        <h3 class="font-semibold">Test & Validate</h3>
+                        <p class="text-sm text-slate-600">Conduct rigorous testing (e.g., ASTM G48) under simulated conditions to confirm performance.</p>
+                    </div>
+                    <div class="self-center text-4xl text-sky-300 mx-2 font-light">&rarr;</div>
+                    <div class="flex-1 flex flex-col items-center p-4 bg-sky-50 rounded-lg text-center">
+                        <div class="text-4xl font-bold text-[#0582CA] mb-2">5</div>
+                        <h3 class="font-semibold">Final Selection</h3>
+                        <p class="text-sm text-slate-600">Choose the final material based on validated performance, cost, and availability.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="implications" class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-center text-[#006494] mb-6">Beyond Corrosion: Economic & Safety Implications</h2>
+                <p class="text-slate-600 text-center max-w-3xl mx-auto mb-8">
+                    Material degradation in high-temperature halide environments isn't just a technical issue; it carries significant economic and safety consequences that underscore the importance of proper material selection.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-red-50 p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-xl text-red-700 mb-2">Economic Impact</h3>
+                        <ul class="list-disc list-inside text-slate-700 space-y-2">
+                            <li><strong>Premature Component Failure:</strong> Leading to early replacement costs.</li>
+                            <li><strong>Reduced Service Lifespan:</strong> Lowering the overall return on investment for equipment.</li>
+                            <li><strong>Substantial Repair Costs:</strong> Often far exceeding initial material costs.</li>
+                            <li><strong>Significant Downtime & Production Losses:</strong> The most costly consequence for industrial operations.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-xl text-green-700 mb-2">Safety Hazards</h3>
+                        <ul class="list-disc list-inside text-slate-700 space-y-2">
+                            <li><strong>Sudden & Unexpected Failures:</strong> Localized corrosion can occur without visible signs.</li>
+                            <li><strong>Risk to Personnel:</strong> Catastrophic failures can endanger workers.</li>
+                            <li><strong>Environmental Damage:</strong> Leakage of corrosive or hazardous substances.</li>
+                            <li><strong>Structural Compromise:</strong> Weakening of critical infrastructure like pipelines and heat exchangers.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="testing-standards" class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-center text-[#006494] mb-6">Ensuring Reliability: Testing & Industry Standards</h2>
+                <p class="text-slate-600 text-center max-w-3xl mx-auto mb-8">
+                    Rigorous testing and adherence to established industry standards are indispensable for validating material performance and ensuring long-term reliability in challenging environments.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-bold text-xl text-[#006494] mb-4">Key Testing Methods</h3>
+                        <ul class="list-disc list-inside text-slate-700 space-y-2">
+                            <li><strong>Salt Spray Test (ASTM B117):</strong> Simulates salt-laden environments.</li>
+                            <li><strong>Electrochemical Testing:</strong> Measures corrosion potential and rates (e.g., Potentiodynamic Polarization, EIS).</li>
+                            <li><strong>Immersion Testing:</strong> Assesses material behavior in corrosive liquids over time.</li>
+                            <li><strong>Critical Pitting/Crevice Temperature (CPT/CCCT) Tests (ASTM G48):</strong> Determines minimum temperature for localized corrosion.</li>
+                            <li><strong>Stress Corrosion Cracking (SCC) Testing:</strong> Quantifies resistance to cracking under stress.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl text-[#006494] mb-4">Relevant Industry Standards</h3>
+                        <ul class="list-disc list-inside text-slate-700 space-y-2">
+                            <li><strong>ASTM International:</strong> Develops standards for materials and testing (e.g., G48, A262).</li>
+                            <li><strong>NACE International (AMPP):</strong> Global authority on corrosion protection (e.g., MR0175/ISO 15156 for H2S environments).</li>
+                            <li><strong>ISO (International Organization for Standardization):</strong> Publishes international standards for corrosion testing (e.g., ISO 9227).</li>
+                            <li><strong>API (American Petroleum Institute):</strong> Standards for oil and gas industry materials.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="text-center mt-12 py-6 border-t border-sky-200">
+            <p class="text-slate-500">Infographic based on the report: "Material Selection for Halide Environments at Elevated Temperatures."</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+
+            const processLabels = (labels) => {
+                return labels.map(label => {
+                    if (label.length > 16) {
+                        const words = label.split(' ');
+                        const lines = [];
+                        let currentLine = '';
+                        words.forEach(word => {
+                            if ((currentLine + word).length > 16) {
+                                lines.push(currentLine.trim());
+                                currentLine = '';
+                            }
+                            currentLine += word + ' ';
+                        });
+                        lines.push(currentLine.trim());
+                        return lines;
+                    }
+                    return label;
+                });
+            };
+
+            const factorsCtx = document.getElementById('factorsChart');
+            if (factorsCtx) {
+                new Chart(factorsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: processLabels(['Temperature', 'Moisture & Oxygen', 'Halide Concentration', 'Tensile Stress', 'Low pH', 'Crevices & Deposits']),
+                        datasets: [{
+                            label: 'Relative Impact',
+                            data: [95, 90, 85, 80, 75, 70],
+                            backgroundColor: '#0582CA',
+                            borderColor: '#006494',
+                            borderWidth: 2,
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#e0f2fe'
+                                }
+                            },
+                             y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: tooltipTitleCallback
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const materialsCtx = document.getElementById('materialsChart');
+            if (materialsCtx) {
+                new Chart(materialsCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Stress Corrosion Cracking (SCC)', 'Pitting Corrosion', 'Crevice Corrosion'],
+                        datasets: [
+                            {
+                                label: 'Austenitic SS (316L)',
+                                data: [1, 2, 2],
+                                fill: true,
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgb(255, 99, 132)',
+                                pointBackgroundColor: 'rgb(255, 99, 132)',
+                            }, 
+                            {
+                                label: 'Duplex SS (2205)',
+                                data: [4, 4, 3],
+                                fill: true,
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgb(54, 162, 235)',
+                                pointBackgroundColor: 'rgb(54, 162, 235)',
+                            },
+                            {
+                                label: 'Nickel Alloys (C-276)',
+                                data: [5, 5, 5],
+                                fill: true,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgb(75, 192, 192)',
+                                pointBackgroundColor: 'rgb(75, 192, 192)',
+                            },
+                            {
+                                label: 'Titanium Alloys (Gr. 7)',
+                                data: [5, 5, 5],
+                                fill: true,
+                                backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                                borderColor: 'rgb(255, 205, 86)',
+                                pointBackgroundColor: 'rgb(255, 205, 86)',
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 5,
+                                stepSize: 1,
+                                pointLabels: {
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                grid: {
+                                    color: '#e0f2fe'
+                                },
+                                angleLines: {
+                                    color: '#e0f2fe'
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: tooltipTitleCallback
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

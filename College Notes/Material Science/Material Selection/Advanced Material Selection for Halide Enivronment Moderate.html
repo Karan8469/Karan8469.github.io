@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Selection in Halide Environments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #6366f1;
+            padding-bottom: 0.5rem;
+        }
+        .subsection-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #374151;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .nav-link {
+            padding: 0.0625rem 0.375rem; /* Further reduced padding */
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease-in-out;
+            font-size: 0.875rem; /* Ensure text remains readable */
+        }
+        .nav-link:hover {
+            background-color: #e0e7ff;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background-color: #eff6ff;
+            font-weight: 600;
+            color: #1f2937;
+            cursor: pointer;
+            white-space: nowrap; /* Prevent wrapping for sortable headers */
+        }
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+        .tag-high-performance { background-color: #fef2f2; color: #ef4444; }
+        .tag-corrosion-resistant { background-color: #ecfdf5; color: #10b981; }
+        .tag-less-costly { background-color: #eef2ff; color: #6366f1; }
+        .tag-commonly-used { background-color: #fffbeb; color: #f59e0b; }
+        .tag-superalloy { background-color: #f0f9ff; color: #0ea5e9; }
+        .tag-non-metallic { background-color: #f5f3ff; color: #8b5cf6; }
+        .tag-coating { background-color: #f0fdf4; color: #22c55e; }
+        .tag-titanium { background-color: #f0f9ff; color: #0ea5e9; }
+        .tag-aluminum { background-color: #fdf2f8; color: #ec4899; }
+        .tag-brass { background-color: #fff7ed; color: #f97316; }
+
+        /* Chart specific styling */
+        canvas {
+            max-height: 350px; /* Reduced max-height for charts */
+            width: 100% !important; /* Ensure canvas takes full width of its container */
+            height: auto !important; /* Allow height to adjust proportionally */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 1.75rem;
+            }
+            .subsection-title {
+                font-size: 1.5rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+            .nav-link {
+                padding: 0.05rem 0.25rem; /* Even smaller for mobile */
+                font-size: 0.75rem;
+            }
+            table, th, td {
+                font-size: 0.875rem;
+            }
+            canvas {
+                max-height: 250px; /* Further reduced for mobile */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header and Navigation -->
+    <header class="bg-white shadow-md py-0.5 sticky top-0 z-50"> <!-- Reduced py-1 to py-0.5 -->
+        <div class="container flex flex-wrap justify-between items-center">
+            <h1 class="text-2xl font-bold text-indigo-700 md:text-3xl">Halide Environments</h1>
+            <nav class="mt-2 md:mt-0"> <!-- Adjusted margin for smaller header -->
+                <ul class="flex flex-wrap gap-1 md:gap-2"> <!-- Reduced gap between links -->
+                    <li><a href="#summary" class="nav-link text-indigo-600 hover:bg-indigo-50">Summary</a></li>
+                    <li><a href="#mechanisms" class="nav-link text-indigo-600 hover:bg-indigo-50">Mechanisms</a></li>
+                    <li><a href="#factors" class="nav-link text-indigo-600 hover:bg-indigo-50">Factors</a></li>
+                    <li><a href="#mistakes" class="nav-link text-indigo-600 hover:bg-indigo-50">Mistakes</a></li>
+                    <li><a href="#materials" class="nav-link text-indigo-600 hover:bg-indigo-50">Materials</a></li>
+                    <li><a href="#framework" class="nav-link text-indigo-600 hover:bg-indigo-50">Framework</a></li>
+                    <li><a href="#standards" class="nav-link text-indigo-600 hover:bg-indigo-50">Standards</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container py-8">
+
+        <!-- Executive Summary -->
+        <section id="summary" class="card">
+            <h2 class="section-title">Executive Summary</h2>
+            <p class="text-gray-700 leading-relaxed">Material selection in halide environments presents significant engineering challenges due to the highly aggressive nature of these media, which can lead to rapid and catastrophic corrosion failures. This guide outlines the primary corrosion mechanisms, critical environmental factors, and vulnerability thresholds for various alloys and non-metallic materials. A structured materials selection philosophy, integrating mechanical requirements, cost constraints, and lifecycle analysis, is presented. Common design pitfalls, such as overlooking localized corrosion or overreliance on inadequate testing, are discussed. The guide concludes with a step-wise design thinking framework and a summary of relevant industry standards, emphasizing a holistic approach to ensure long-term integrity and cost-effectiveness in halide service.</p>
+        </section>
+
+        <!-- 1. Common Designer Questions & Challenges -->
+        <section id="mechanisms" class="card">
+            <h2 class="section-title">1. Understanding Corrosion in Halide Environments</h2>
+            <p class="text-gray-700 leading-relaxed">Halide environments, particularly those containing chlorides, fluorides, and bromides, are notoriously aggressive and can severely compromise the integrity of engineering materials. The presence of these ions often leads to localized and accelerated forms of corrosion, which are more insidious and difficult to predict than uniform material loss.</p>
+
+            <h3 class="subsection-title">Primary Corrosion Mechanisms</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Pitting Corrosion:</strong> Localized attack forming small holes, accelerated by halide ions.</li>
+                <li><strong>Crevice Corrosion:</strong> Localized attack in stagnant gaps, due to differential aeration and ion concentration.</li>
+                <li><strong>Stress Corrosion Cracking (SCC):</strong> Cracking under combined tensile stress and specific corrosive environment (e.g., chlorides).</li>
+                <li><strong>Hydrogen Embrittlement (HE):</strong> Degradation of ductility/toughness due to hydrogen absorption.</li>
+                <li><strong>Corrosion Fatigue:</strong> Accelerated material degradation under cyclic loading in a corrosive environment.</li>
+                <li><strong>Galvanic Corrosion:</strong> Preferential corrosion of less noble metal when dissimilar metals are in contact in an electrolyte.</li>
+                <li><strong>Uniform Corrosion:</strong> Relatively even thinning of the material surface.</li>
+            </ul>
+
+            <h3 class="subsection-title">Environmental Factors Influencing Corrosion Acceleration</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Chloride Concentration:</strong> Primary driver for pitting, crevice corrosion, and SCC.</li>
+                <li><strong>Temperature:</strong> Significantly accelerates most corrosion mechanisms.</li>
+                <li><strong>pH Values:</strong> Acidity reduces corrosion resistance.</li>
+                <li><strong>Oxidizing Conditions:</strong> Dissolved oxygen or other oxidizers increase corrosion rates.</li>
+                <li><strong>Flow Velocity:</strong> Stagnant conditions promote localized corrosion; high velocities can cause erosion-corrosion.</li>
+                <li><strong>Impurity Levels:</strong> Minor impurities can significantly alter corrosion rates.</li>
+                <li><strong>Stagnant Conditions:</strong> Promote localized corrosion by allowing ion concentration and oxygen depletion.</li>
+            </ul>
+
+            <h3 class="subsection-title">Vulnerability Thresholds for Common Stainless Steels</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>304/304L Stainless Steel:</strong> Highly susceptible to chloride SCC (failures at 10 ppm chlorides under concentrating conditions). Vulnerable to pitting and crevice corrosion.</li>
+                <li><strong>316/316L Stainless Steel:</strong> Improved resistance over 304, but still highly susceptible to chloride SCC, especially above 60°C.</li>
+                <li><strong>Duplex 2205 (UNS S32205):</strong> Improved SCC resistance; can withstand higher temperatures and chloride concentrations than 304/316. Limited to below 316°C to prevent embrittlement.</li>
+                <li><strong>Super Austenitic Steels (e.g., AL-6XN, SMO 254):</strong> Significantly enhanced resistance to chloride SCC (practically immune for AL-6XN). High PREN values (40+) reflect superior localized corrosion resistance.</li>
+            </ul>
+
+            <h3 class="subsection-title">Typical Mistakes Designers Make</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Ignoring Localized Corrosion Triggers:</strong> Overlooking crevices, stagnant zones, or surface deposits.</li>
+                <li><strong>Weld Sensitization:</strong> Failure to control welding procedures, leading to chromium depletion in HAZ.</li>
+                <li><strong>Neglecting Galvanic Corrosion:</strong> Improper pairing of dissimilar metals in contact.</li>
+                <li><strong>Overreliance on Standard Salt Spray Tests (ASTM B117):</strong> These tests rarely replicate dynamic real-world conditions.</li>
+                <li><strong>Incorrect Reliance on Mid-Grade Stainless:</strong> Using 304/316 in hot, acidic, or highly concentrated chloride solutions.</li>
+                <li><strong>Over-Designing or Under-Designing:</strong> Specifying overly expensive alloys when not needed, or insufficient corrosion allowance/inspection.</li>
+            </ul>
+        </section>
+
+        <!-- 2. Materials Selection Philosophy & Techniques -->
+        <section id="philosophy" class="card">
+            <h2 class="section-title">2. Materials Selection Philosophy & Techniques</h2>
+
+            <h3 class="subsection-title">Structured Frameworks</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Ashby Charts:</strong> Graphical tools plotting properties for visual comparison and trade-off analysis.</li>
+                <li><strong>Materials Selection Matrices:</strong> Systematic evaluation of candidates against weighted criteria (environment, mechanical, cost, fabricability).</li>
+                <li><strong>Environmental Classification combined with Mechanical Screening:</strong> Classifying environment severity first, then screening for mechanical requirements.</li>
+                <li><strong>Performance Indices:</strong> Mathematical combinations of properties (e.g., PREN for pitting resistance).</li>
+            </ul>
+
+            <h3 class="subsection-title">Assessing Environmental and Mechanical Factors</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Fluid Chemistry:</strong> Exact concentrations of halides and other aggressive species.</li>
+                <li><strong>Temperature Cycles:</strong> Operating temperature, fluctuations, and thermal shock.</li>
+                <li><strong>Velocity:</strong> Impact on oxygen supply and film removal (stagnant vs. high flow).</li>
+                <li><strong>Mechanical Loads:</strong> Type and magnitude of loads (static, dynamic, cyclic, multiaxial).</li>
+                <li><strong>Lifespan:</strong> Expected duration of component service influencing acceptable degradation.</li>
+            </ul>
+
+            <h3 class="subsection-title">Marrying Mechanical Requirements with Corrosion Resistance and Cost Constraints</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Performance-Cost-Sustainability Balance:</strong> Trade-offs between high initial cost of CRAs and long-term savings.</li>
+                <li><strong>Mechanical Properties as Foundational Criteria:</strong> Strength, stiffness, toughness, fatigue resistance must be met first.</li>
+                <li><strong>Corrosion Resistance as a Limiting Factor:</strong> Primary filter after mechanical needs are satisfied.</li>
+                <li><strong>Cost Constraints and Lifecycle Cost Analysis:</strong> Evaluating total cost of ownership (initial, operational, maintenance, disposal).</li>
+            </ul>
+
+            <h3 class="subsection-title">Role of Design, Fabrication, Inspection, and Lifecycle Cost Analysis</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Design Features:</strong> Minimizing crevices, ensuring proper drainage, smooth finishes.</li>
+                <li><strong>Fabrication Control:</strong> Proper welding procedures, heat tint removal, preventing sensitization.</li>
+                <li><strong>Inspection Regimes:</strong> Regular visual inspections, NDT, electrochemical monitoring.</li>
+                <li><strong>Lifecycle Cost Analysis (LCA):</strong> Comprehensive economic evaluation from raw material to end-of-life.</li>
+            </ul>
+        </section>
+
+        <!-- 3. Candidate Materials & Their Properties -->
+        <section id="materials" class="card">
+            <h2 class="section-title">3. Candidate Materials & Their Properties</h2>
+            <p class="text-gray-700 leading-relaxed">Explore various materials suitable for halide environments. Use the search and filter options to find specific materials based on their properties and tags.</p>
+
+            <div class="flex flex-wrap gap-4 mb-6">
+                <input type="text" id="materialSearch" onkeyup="filterMaterials()" placeholder="Search materials..." class="p-2 border border-gray-300 rounded-md flex-grow">
+                <select type="text" id="materialTypeFilter" onchange="filterMaterials()" class="p-2 border border-gray-300 rounded-md">
+                    <option value="">All Types</option>
+                    <option value="Austenitic Stainless Steel">Austenitic Stainless Steel</option>
+                    <option value="Duplex Stainless Steel">Duplex Stainless Steel</option>
+                    <option value="Nickel-based Alloy">Nickel-based Alloy</option>
+                    <option value="Titanium Alloy">Titanium Alloy</option>
+                    <option value="Aluminum Alloy">Aluminum Alloy</option>
+                    <option value="Brass">Brass</option>
+                    <option value="Non-Metallic">Non-Metallic</option>
+                    <option value="Coating">Coating</option>
+                </select>
+                <select type="text" id="materialTagFilter" onchange="filterMaterials()" class="p-2 border border-gray-300 rounded-md">
+                    <option value="">All Tags</option>
+                    <option value="high-performance">High Performance</option>
+                    <option value="corrosion-resistant">Corrosion Resistant</option>
+                    <option value="less-costly">Less Costly</option>
+                    <option value="commonly-used">Commonly Used</option>
+                    <option value="superalloy">Superalloy</option>
+                    <option value="non-metallic">Non-Metallic</option>
+                    <option value="coating">Coating</option>
+                    <option value="titanium">Titanium</option>
+                    <option value="aluminum">Aluminum</option>
+                    <option value="brass">Brass</option>
+                </select>
+            </div>
+
+            <h3 class="subsection-title">Material Properties Data Table</h3>
+            <div class="table-container">
+                <table id="materialsTable" class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Material</th>
+                            <th onclick="sortTable(1)">Type</th>
+                            <th onclick="sortTable(2)">Tags</th>
+                            <th onclick="sortTable(3)">Young’s Modulus (GPa)</th>
+                            <th onclick="sortTable(4)">Tensile Yield (MPa)</th>
+                            <th onclick="sortTable(5)">Ultimate Strength (MPa)</th>
+                            <th onclick="sortTable(6)">PREN Value</th>
+                            <th onclick="sortTable(7)">Max Cl Conc. (ppm)</th>
+                            <th onclick="sortTable(8)">Max Temp. (°C)</th>
+                            <th onclick="sortTable(9)">SCC Resistance</th>
+                            <th onclick="sortTable(10)">Pitting Resistance</th>
+                            <th onclick="sortTable(11)">Halide Compatibility</th>
+                        </tr>
+                    </thead>
+                    <tbody id="materialsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Materials will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="subsection-title mt-8">Material Performance Graphs</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div class="card p-4">
+                    <h4 class="text-lg font-semibold mb-2">Max Chloride Conc. vs. Max Temperature</h4>
+                    <canvas id="chlorideTempChart"></canvas>
+                </div>
+                <div class="card p-4">
+                    <h4 class="text-lg font-semibold mb-2">Young's Modulus vs. Tensile Yield Strength</h4>
+                    <canvas id="mechanicalPropertiesChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Common Pitfalls & Critical Analysis -->
+        <section id="pitfalls" class="card">
+            <h2 class="section-title">4. Common Pitfalls & Critical Analysis</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>Ignoring Localized Corrosion Triggers:</strong> Underestimating insidious nature of pitting/crevice corrosion, focusing only on general rates.</li>
+                <li><strong>Sole Reliance on Standard Salt Spray (ASTM B117) Testing:</strong> These tests don't replicate dynamic real-world conditions (e.g., wet/dry cycles, temp fluctuations).</li>
+                <li><strong>Incorrect Reliance on Mid-Grade Stainless Under Hot Chloride or Acidic Conditions:</strong> Using 304/316 in hot, acidic, or concentrated chloride environments due to cost.</li>
+                <li><strong>Over-Designing or Under-Designing:</strong> Specifying overly expensive superalloys unnecessarily, or insufficient corrosion allowance/inspection.</li>
+            </ul>
+        </section>
+
+        <!-- 5. Critical & Step-Wise Design Thinking Framework -->
+        <section id="framework" class="card">
+            <h2 class="section-title">5. Critical & Step-Wise Design Thinking Framework</h2>
+            <ol class="list-decimal list-inside text-gray-700 space-y-2">
+                <li><strong>Step 1: Define Environment:</strong> Precise characterization of halide chemistry, temperature/pH range, flow dynamics, intermittent exposure, impurities, oxidizing conditions.</li>
+                <li><strong>Step 2: Specify Mechanical Envelope:</strong> All anticipated loads, pressure ranges, thermal cycles, safety factors, expected lifespan.</li>
+                <li><strong>Step 3: Screen Materials:</strong> Broad screening using corrosion indices (PREN, SCC risk per ISO 15156), mechanical suitability, cost, availability.</li>
+                <li><strong>Step 4: Analyze Corrosion Mechanisms:</strong> Deeper analysis of susceptibility to pitting, crevice corrosion, SCC, HE, corrosion fatigue under defined conditions, using standards like NACE MR0175 / ISO 15156.</li>
+                <li><strong>Step 5: Mitigation Design:</strong> Optimize geometry (crevice avoidance), specify welding procedures (heat tint removal), consider coatings, inhibitors, cathodic protection, polymer linings.</li>
+                <li><strong>Step 6: Monitor & Inspect:</strong> Define predicted corrosion rates, establish inspection intervals, use NDT, reactivity monitoring.</li>
+                <li><strong>Step 7: Lifecycle Cost Evaluation:</strong> Compare initial capital cost with projected costs of inspection, maintenance, downtime, repairs over lifespan.</li>
+            </ol>
+        </section>
+
+        <!-- 6. Relevant Standards & Design Codes -->
+        <section id="standards" class="card">
+            <h2 class="section-title">6. Relevant Standards & Design Codes</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong>ISO 15156 / NACE MR0175:</strong> Guidelines for metallic materials resistant to sulfide stress cracking (SSC) in H₂S-containing environments, often with halides.</li>
+                <li><strong>ASTM B117, ASTM G85, ISO 9227:</strong> Define salt spray and cyclic corrosion testing protocols. ASTM B117 (standard neutral salt spray) is for quality control; ASTM G85 (modified/cyclic) offers more realistic simulation.</li>
+                <li><strong>EEMUA 194:</strong> Guidance on materials selection for subsea and desalination material guidance.</li>
+                <li><strong>API 571:</strong> "Damage Mechanisms Affecting Fixed Equipment in the Refining Industry," includes detailed sections on chloride SCC and other corrosion mechanisms.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container text-center text-sm">
+            <p>&copy; 2025 Material Selection Guide. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const materialsData = [
+            // Austenitic and Duplex Stainless Steels
+            {
+                name: "304/304L Stainless Steel", type: "Austenitic Stainless Steel", tags: ["commonly-used", "less-costly"],
+                youngModulus: "193-200", tensileYield: "170-215", ultimateStrength: "485-515", pren: "18.0-20.0",
+                maxClConc: "<10 (conc.)", maxTemp: "<60", sccResistance: "Highly Susceptible", pittingResistance: "Vulnerable",
+                halideCompatibility: "Poor in hot/concentrated chlorides"
+            },
+            {
+                name: "316/316L Stainless Steel", type: "Austenitic Stainless Steel", tags: ["commonly-used", "less-costly"],
+                youngModulus: "193-205", tensileYield: "170-290", ultimateStrength: "480-620", pren: "22.6-27.9",
+                maxClConc: "<10 (conc.)", maxTemp: "<60", sccResistance: "Very Susceptible", pittingResistance: "Improved over 304",
+                halideCompatibility: "Moderate in mild chlorides, poor in hot/concentrated"
+            },
+            {
+                name: "Duplex 2205 (UNS S32205)", type: "Duplex Stainless Steel", tags: ["corrosion-resistant", "commonly-used"],
+                youngModulus: "179-190", tensileYield: "250-510", ultimateStrength: "480-724", pren: ">35",
+                maxClConc: "Higher than 304/316", maxTemp: ">60 (SCC), >55 (Pitting)", sccResistance: "Resistant (due to ferrite)",
+                pittingResistance: "Good", halideCompatibility: "Good in many chloride environments"
+            },
+            {
+                name: "Super Duplex 2507 (UNS S32750)", type: "Duplex Stainless Steel", tags: ["high-performance", "corrosion-resistant"],
+                youngModulus: "190-200", tensileYield: "550-680", ultimateStrength: "795-950", pren: ">40",
+                maxClConc: "Very High", maxTemp: ">80 (SCC), >60 (Pitting)", sccResistance: "Excellent",
+                pittingResistance: "Excellent", halideCompatibility: "Excellent in aggressive chloride environments"
+            },
+            {
+                name: "AL-6XN (UNS N08367)", type: "Austenitic Stainless Steel", tags: ["high-performance", "corrosion-resistant", "superalloy"],
+                youngModulus: "180-195", tensileYield: "275-365", ultimateStrength: "655-740", pren: "39.8-45.1",
+                maxClConc: "High (superior to 316L)", maxTemp: ">100 (SCC)", sccResistance: "Practical Immunity",
+                pittingResistance: "Excellent", halideCompatibility: "Excellent in NaCl environments"
+            },
+            {
+                name: "SMO 254 (UNS S31254)", type: "Austenitic Stainless Steel", tags: ["high-performance", "corrosion-resistant", "superalloy"],
+                youngModulus: "195", tensileYield: "241-310", ultimateStrength: "551-700", pren: "42",
+                maxClConc: "High (seawater/brine)", maxTemp: ">100 (SCC)", sccResistance: "Exceptional Resistance",
+                pittingResistance: "Exceptional", halideCompatibility: "Excellent in chloride-rich conditions"
+            },
+            {
+                name: "904L (UNS N08904)", type: "Austenitic Stainless Steel", tags: ["corrosion-resistant"],
+                youngModulus: "190-200", tensileYield: "220", ultimateStrength: "490", pren: "34-36",
+                maxClConc: "Moderate-High", maxTemp: "80-100", sccResistance: "Good", pittingResistance: "Good",
+                halideCompatibility: "Good in moderate chloride, sulfuric acid"
+            },
+            {
+                name: "317L Stainless Steel", type: "Austenitic Stainless Steel", tags: ["commonly-used", "corrosion-resistant"],
+                youngModulus: "193-200", tensileYield: "205-275", ultimateStrength: "515-620", pren: "28-30",
+                maxClConc: "Moderate", maxTemp: "60-80", sccResistance: "Improved over 316L", pittingResistance: "Improved over 316L",
+                halideCompatibility: "Better than 316L in some chloride environments"
+            },
+
+            // Nickel-based Alloys
+            {
+                name: "Inconel 600 (UNS N06600)", type: "Nickel-based Alloy", tags: ["superalloy", "corrosion-resistant"],
+                youngModulus: "207", tensileYield: "183-345", ultimateStrength: "448-760", pren: "N/A",
+                maxClConc: "Very High", maxTemp: "Up to 1093", sccResistance: "Virtually Immune", pittingResistance: "Good",
+                halideCompatibility: "Excellent in dry Cl2/HCl, good in wet HCl below 3-4%"
+            },
+            {
+                name: "Inconel 625 (UNS N06625)", type: "Nickel-based Alloy", tags: ["high-performance", "superalloy", "corrosion-resistant"],
+                youngModulus: "170-195", tensileYield: "275-414", ultimateStrength: "690-827", pren: "N/A",
+                maxClConc: "Very High", maxTemp: "Cryogenic to 982", sccResistance: "Excellent", pittingResistance: "Excellent",
+                halideCompatibility: "Excellent in seawater, oxidizing/reducing environments"
+            },
+            {
+                name: "Hastelloy C-276 (UNS N10276)", type: "Nickel-based Alloy", tags: ["high-performance", "superalloy", "corrosion-resistant"],
+                youngModulus: "205-207", tensileYield: "260-377", ultimateStrength: "613-790", pren: "N/A",
+                maxClConc: "Extremely High", maxTemp: "Up to 1093", sccResistance: "Excellent", pittingResistance: "Excellent",
+                halideCompatibility: "Excellent in hot contaminated mineral acids, organic/inorganic chloride media, wet Cl2, brine"
+            },
+            {
+                name: "Monel 400 (UNS N04400)", type: "Nickel-based Alloy", tags: ["corrosion-resistant"],
+                youngModulus: "173-179", tensileYield: "205-400", ultimateStrength: "400-600", pren: "N/A",
+                maxClConc: "High", maxTemp: "Up to 538", sccResistance: "Excellent", pittingResistance: "Good",
+                halideCompatibility: "Excellent in rapidly flowing seawater, de-aerated HCl/HF. Poor in oxidizing conditions."
+            },
+            {
+                name: "Hastelloy B-2 (UNS N10665)", type: "Nickel-based Alloy", tags: ["high-performance", "superalloy", "corrosion-resistant"],
+                youngModulus: "217", tensileYield: "352-580", ultimateStrength: "758-1070", pren: "N/A",
+                maxClConc: "Extremely High", maxTemp: "Up to 538 (avoid 538-871)", sccResistance: "Excellent", pittingResistance: "Excellent",
+                halideCompatibility: "Excellent in pure HCl (all conc/temp), H2S, H2SO4, H3PO4. Poor in oxidizing media."
+            },
+            {
+                name: "Hastelloy C-4 (UNS N06455)", type: "Nickel-based Alloy", tags: ["high-performance", "superalloy", "corrosion-resistant"],
+                youngModulus: "212.4", tensileYield: "249-416", ultimateStrength: "656-801", pren: "N/A",
+                maxClConc: "Extremely High", maxTemp: "Up to 1038", sccResistance: "Excellent", pittingResistance: "Excellent",
+                halideCompatibility: "Excellent in hot contaminated mineral acids, solvents, wet/dry Cl2, brine, seawater."
+            },
+            {
+                name: "Incoloy 825 (UNS N08825)", type: "Nickel-based Alloy", tags: ["corrosion-resistant"],
+                youngModulus: "195", tensileYield: "240-345", ultimateStrength: "585-760", pren: "N/A",
+                maxClConc: "High", maxTemp: "Up to 593", sccResistance: "Excellent", pittingResistance: "Good",
+                halideCompatibility: "Good in oxidizing and reducing acids, SCC resistant in chloride environments."
+            },
+            {
+                name: "Incoloy 925 (UNS N09925)", type: "Nickel-based Alloy", tags: ["high-performance", "corrosion-resistant"],
+                youngModulus: "190", tensileYield: "725-860", ultimateStrength: "1035-1170", pren: "N/A",
+                maxClConc: "High", maxTemp: "Up to 538", sccResistance: "Excellent", pittingResistance: "Good",
+                halideCompatibility: "Good in sour gas and other chloride environments, high strength."
+            },
+
+            // Titanium Alloys
+            {
+                name: "Unalloyed Titanium (CP Grade 2)", type: "Titanium Alloy", tags: ["corrosion-resistant", "titanium"],
+                youngModulus: "103-108", tensileYield: "275-483", ultimateStrength: "345-550", pren: "N/A",
+                maxClConc: "Very High (aqueous)", maxTemp: "Up to 315 (aqueous)", sccResistance: "Excellent (aqueous)",
+                pittingResistance: "Excellent (aqueous)", halideCompatibility: "Excellent in seawater, oxidizing acids. Susceptible to dry Cl2, hot halides (crevice corrosion)."
+            },
+            {
+                name: "Ti-6Al-4V", type: "Titanium Alloy", tags: ["high-performance", "titanium"],
+                youngModulus: "110-120", tensileYield: "828-965", ultimateStrength: "895-1034", pren: "N/A",
+                maxClConc: "Very High (aqueous)", maxTemp: "Up to 350 (aqueous)", sccResistance: "Good (aqueous)",
+                pittingResistance: "Good (aqueous)", halideCompatibility: "Excellent in seawater, oxidizing acids. Susceptible to dry Cl2, SCC/crevice corrosion at elevated temps."
+            },
+
+            // Aluminum and Brass
+            {
+                name: "Aluminum 6061", type: "Aluminum Alloy", tags: ["less-costly", "commonly-used", "aluminum"],
+                youngModulus: "68.9", tensileYield: "55-276", ultimateStrength: "124-310", pren: "N/A",
+                maxClConc: "<500", maxTemp: "<100", sccResistance: "Moderate", pittingResistance: "Moderate",
+                halideCompatibility: "Good in mild chlorides, vulnerable if oxide film compromised or in extreme pH."
+            },
+            {
+                name: "Aluminum 5052", type: "Aluminum Alloy", tags: ["less-costly", "commonly-used", "aluminum"],
+                youngModulus: "70.3", tensileYield: "193-241", ultimateStrength: "214-290", pren: "N/A",
+                maxClConc: "<500", maxTemp: "<100", sccResistance: "Good", pittingResistance: "Moderate",
+                halideCompatibility: "Good in marine atmospheres and seawater, but still susceptible to pitting in high chlorides."
+            },
+            {
+                name: "DZR Brass (Dezincification Resistant)", type: "Brass", tags: ["less-costly", "brass"],
+                youngModulus: "100-110", tensileYield: "120-250", ultimateStrength: "300-450", pren: "N/A",
+                maxClConc: "<500 (localized dezincification risk)", maxTemp: "<70-80", sccResistance: "Good (if resistant)",
+                pittingResistance: "Good (if resistant)", halideCompatibility: "Resistant to dezincification in potable water. Vulnerable to localized dezincification in high chlorides."
+            },
+
+            // Non-metallics, Coatings or Liners
+            {
+                name: "PVDF (Polyvinylidene Fluoride)", type: "Non-Metallic", tags: ["corrosion-resistant", "non-metallic"],
+                youngModulus: "2000-2400 (flexural)", tensileYield: "35-55", ultimateStrength: "45-60", pren: "N/A",
+                maxClConc: "Excellent (chemical resistance)", maxTemp: "Up to 150", sccResistance: "Immune",
+                pittingResistance: "Immune", halideCompatibility: "Excellent resistance to wide range of chemicals, including halides."
+            },
+            {
+                name: "FRP (Fiberglass Reinforced Polymer) - Vinylester", type: "Non-Metallic", tags: ["corrosion-resistant", "non-metallic"],
+                youngModulus: "7-14 (composite)", tensileYield: "100-300 (composite)", ultimateStrength: "150-400 (composite)", pren: "N/A",
+                maxClConc: "Excellent (chemical resistance)", maxTemp: "Up to 104 (HPPE H-150-200)", sccResistance: "Immune",
+                pittingResistance: "Immune", halideCompatibility: "Excellent for aggressive chemical services, depending on resin/liner."
+            },
+            {
+                name: "Electroless Nickel (EN) Coating", type: "Coating", tags: ["corrosion-resistant", "coating"],
+                youngModulus: "170-200", tensileYield: "N/A", ultimateStrength: "N/A", pren: "N/A",
+                maxClConc: "Good (thickness dependent)", maxTemp: "Up to 538 (corrosion resistance reduced >260)", sccResistance: "N/A (coating)",
+                pittingResistance: "Good (uniform coverage)", halideCompatibility: "Effective in many corrosive environments, but can be compromised by heat treatment."
+            },
+            {
+                name: "h-BN/Graphene Hybrid Coating", type: "Coating", tags: ["high-performance", "corrosion-resistant", "coating"],
+                youngModulus: "N/A", tensileYield: "N/A", ultimateStrength: "N/A", pren: "N/A",
+                maxClConc: "Excellent (barrier properties)", maxTemp: "h-BN up to 3000 (vacuum)", sccResistance: "Immune (barrier)",
+                pittingResistance: "Excellent (barrier properties)", halideCompatibility: "Superior long-term anti-corrosion due to inertness and barrier properties."
+            },
+            {
+                name: "PTFE (Polytetrafluoroethylene)", type: "Non-Metallic", tags: ["corrosion-resistant", "non-metallic"],
+                youngModulus: "0.5-0.6", tensileYield: "15-30", ultimateStrength: "20-35", pren: "N/A",
+                maxClConc: "Excellent", maxTemp: "Up to 260", sccResistance: "Immune",
+                pittingResistance: "Immune", halideCompatibility: "Excellent chemical resistance to almost all chemicals, including halides."
+            },
+            {
+                name: "PEEK (Polyether Ether Ketone)", type: "Non-Metallic", tags: ["high-performance", "non-metallic"],
+                youngModulus: "3.6-4.1", tensileYield: "90-100", ultimateStrength: "100-110", pren: "N/A",
+                maxClConc: "Excellent", maxTemp: "Up to 260", sccResistance: "Immune",
+                pittingResistance: "Immune", halideCompatibility: "Excellent chemical resistance, high temperature and mechanical properties."
+            },
+            {
+                name: "Zirconium 702", type: "Reactive Metal", tags: ["high-performance", "corrosion-resistant"],
+                youngModulus: "96", tensileYield: "207-379", ultimateStrength: "379-552", pren: "N/A",
+                maxClConc: "Extremely High", maxTemp: "Up to 200 (boiling HCl)", sccResistance: "Excellent",
+                pittingResistance: "Excellent", halideCompatibility: "Exceptional resistance to hot concentrated mineral acids, esp. HCl, H2SO4, and many chlorides."
+            },
+            {
+                name: "Carbon Steel (A36)", type: "Carbon Steel", tags: ["less-costly", "commonly-used"],
+                youngModulus: "200", tensileYield: "250", ultimateStrength: "400-550", pren: "N/A",
+                maxClConc: "Very Low", maxTemp: "<50", sccResistance: "Susceptible (caustic/carbonate)",
+                pittingResistance: "Very Susceptible", halideCompatibility: "Poor, rapid general and localized corrosion in halide environments."
+            },
+            {
+                name: "Copper (C11000)", type: "Copper Alloy", tags: ["less-costly", "commonly-used"],
+                youngModulus: "110-120", tensileYield: "69-310", ultimateStrength: "207-379", pren: "N/A",
+                maxClConc: "<100 (aerated)", maxTemp: "<100", sccResistance: "Immune",
+                pittingResistance: "Moderate (aerated chlorides)", halideCompatibility: "Good in deaerated non-oxidizing acids/salts. Susceptible to oxidizing acids/aerated chlorides."
+            }
+        ];
+
+        let currentSortColumn = -1;
+        let sortDirection = 'asc';
+
+        // Chart instances
+        let chlorideTempChartInstance = null;
+        let mechanicalPropertiesChartInstance = null;
+
+        // Function to parse numerical values from string ranges
+        function parseNumericValue(valueString) {
+            if (typeof valueString !== 'string') return null;
+            const match = valueString.match(/(\d+(\.\d+)?)/);
+            return match ? parseFloat(match[1]) : null;
+        }
+
+        // Function to assign colors based on material type
+        function getColorForType(type) {
+            switch (type) {
+                case "Austenitic Stainless Steel": return 'rgba(255, 99, 132, 0.8)'; // Red
+                case "Duplex Stainless Steel": return 'rgba(54, 162, 235, 0.8)'; // Blue
+                case "Nickel-based Alloy": return 'rgba(75, 192, 192, 0.8)'; // Green
+                case "Titanium Alloy": return 'rgba(153, 102, 255, 0.8)'; // Purple
+                case "Aluminum Alloy": return 'rgba(255, 159, 64, 0.8)'; // Orange
+                case "Brass": return 'rgba(255, 205, 86, 0.8)'; // Yellow
+                case "Non-Metallic": return 'rgba(201, 203, 207, 0.8)'; // Gray
+                case "Coating": return 'rgba(25, 100, 50, 0.8)'; // Dark Green
+                case "Reactive Metal": return 'rgba(100, 50, 25, 0.8)'; // Brown
+                case "Carbon Steel": return 'rgba(128, 128, 128, 0.8)'; // Dark Gray
+                case "Copper Alloy": return 'rgba(205, 92, 92, 0.8)'; // Indian Red
+                default: return 'rgba(0, 0, 0, 0.8)'; // Black
+            }
+        }
+
+        function renderMaterialsTable(data) {
+            const tableBody = document.getElementById('materialsTableBody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            data.forEach(material => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = material.name;
+                row.insertCell().textContent = material.type;
+                const tagsCell = row.insertCell();
+                material.tags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = `tag tag-${tag.toLowerCase().replace(/ /g, '-')}`;
+                    span.textContent = tag.replace(/-/g, ' '); // Display tags nicely
+                    tagsCell.appendChild(span);
+                });
+                row.insertCell().textContent = material.youngModulus;
+                row.insertCell().textContent = material.tensileYield;
+                row.insertCell().textContent = material.ultimateStrength;
+                row.insertCell().textContent = material.pren;
+                row.insertCell().textContent = material.maxClConc;
+                row.insertCell().textContent = material.maxTemp;
+                row.insertCell().textContent = material.sccResistance;
+                row.insertCell().textContent = material.pittingResistance;
+                row.insertCell().textContent = material.halideCompatibility;
+            });
+        }
+
+        function filterMaterials() {
+            const searchTerm = document.getElementById('materialSearch').value.toLowerCase();
+            const typeFilter = document.getElementById('materialTypeFilter').value;
+            const tagFilter = document.getElementById('materialTagFilter').value;
+
+            const filteredData = materialsData.filter(material => {
+                const matchesSearch = material.name.toLowerCase().includes(searchTerm) ||
+                                      material.type.toLowerCase().includes(searchTerm) ||
+                                      material.halideCompatibility.toLowerCase().includes(searchTerm) ||
+                                      material.sccResistance.toLowerCase().includes(searchTerm) ||
+                                      material.pittingResistance.toLowerCase().includes(searchTerm) ||
+                                      material.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+
+                const matchesType = typeFilter === "" || material.type === typeFilter;
+                const matchesTag = tagFilter === "" || material.tags.includes(tagFilter.replace(/-/g, ' '));
+
+                return matchesSearch && matchesType && matchesTag;
+            });
+            renderMaterialsTable(filteredData);
+            updateCharts(filteredData); // Update charts when data is filtered
+        }
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById("materialsTable");
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.rows);
+
+            // Determine sort direction
+            if (currentSortColumn === columnIndex) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = columnIndex;
+                sortDirection = 'asc';
+            }
+
+            rows.sort((rowA, rowB) => {
+                let cellA = rowA.cells[columnIndex].textContent;
+                let cellB = rowB.cells[columnIndex].textContent;
+
+                // Handle numerical columns
+                if ([3, 4, 5, 6, 7, 8].includes(columnIndex)) { // Young's, Tensile, Ultimate, PREN, Cl Conc, Temp
+                    // Attempt to parse numbers, handle ranges/non-numeric gracefully
+                    const parseValue = (text) => {
+                        const num = parseFloat(text.split('-')[0].replace(/[^0-9.-]/g, ''));
+                        return isNaN(num) ? -Infinity : num; // Treat non-numeric as very small for sorting
+                    };
+                    cellA = parseValue(cellA);
+                    B = parseValue(cellB);
+                } else {
+                    // Case-insensitive string comparison
+                    cellA = cellA.toLowerCase();
+                    cellB = cellB.toLowerCase();
+                }
+
+                if (cellA < cellB) {
+                    return sortDirection === 'asc' ? -1 : 1;
+                }
+                if (cellA > cellB) {
+                    return sortDirection === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function createChlorideTempChart(data) {
+            const ctx = document.getElementById('chlorideTempChart').getContext('2d');
+
+            // Prepare data for the chart
+            const chartData = data.map(material => {
+                const clConc = parseNumericValue(material.maxClConc);
+                const temp = parseNumericValue(material.maxTemp);
+                return {
+                    x: clConc,
+                    y: temp,
+                    name: material.name,
+                    type: material.type,
+                    color: getColorForType(material.type)
+                };
+            }).filter(d => d.x !== null && d.y !== null); // Filter out data points with null values
+
+            // Group data by type for distinct datasets
+            const datasets = [];
+            const types = [...new Set(chartData.map(d => d.type))];
+            types.forEach(type => {
+                const typeData = chartData.filter(d => d.type === type);
+                datasets.push({
+                    label: type,
+                    data: typeData.map(d => ({ x: d.x, y: d.y })),
+                    backgroundColor: typeData[0] ? typeData[0].color : 'rgba(0,0,0,0.8)',
+                    borderColor: typeData[0] ? typeData[0].color.replace('0.8', '1') : 'rgba(0,0,0,1)',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    showLine: false, // Scatter plot
+                    fill: false
+                });
+            });
+
+            if (chlorideTempChartInstance) {
+                chlorideTempChartInstance.destroy();
+            }
+
+            chlorideTempChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const material = chartData.find(d => d.x === context.parsed.x && d.y === context.parsed.y);
+                                    return `${material.name}: Cl Conc. ${material.x} ppm, Temp. ${material.y}°C`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Max Chloride Concentration (ppm)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Max Temperature (°C)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createMechanicalPropertiesChart(data) {
+            const ctx = document.getElementById('mechanicalPropertiesChart').getContext('2d');
+
+            const chartData = data.map(material => {
+                const youngModulus = parseNumericValue(material.youngModulus);
+                const tensileYield = parseNumericValue(material.tensileYield);
+                return {
+                    x: youngModulus,
+                    y: tensileYield,
+                    name: material.name,
+                    type: material.type,
+                    color: getColorForType(material.type)
+                };
+            }).filter(d => d.x !== null && d.y !== null);
+
+            const datasets = [];
+            const types = [...new Set(chartData.map(d => d.type))];
+            types.forEach(type => {
+                const typeData = chartData.filter(d => d.type === type);
+                datasets.push({
+                    label: type,
+                    data: typeData.map(d => ({ x: d.x, y: d.y })),
+                    backgroundColor: typeData[0] ? typeData[0].color : 'rgba(0,0,0,0.8)',
+                    borderColor: typeData[0] ? typeData[0].color.replace('0.8', '1') : 'rgba(0,0,0,1)',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    showLine: false,
+                    fill: false
+                });
+            });
+
+            if (mechanicalPropertiesChartInstance) {
+                mechanicalPropertiesChartInstance.destroy();
+            }
+
+            mechanicalPropertiesChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const material = chartData.find(d => d.x === context.parsed.x && d.y === context.parsed.y);
+                                    return `${material.name}: Young's Modulus ${material.x} GPa, Tensile Yield ${material.y} MPa`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Young’s Modulus (GPa)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Tensile Yield (MPa)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            createChlorideTempChart(data);
+            createMechanicalPropertiesChart(data);
+        }
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMaterialsTable(materialsData);
+            updateCharts(materialsData); // Initial chart rendering
+        });
+    </script>
+</body>
+</html>

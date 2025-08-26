@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Material Selection for Halide Environments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Glassmorphic background */
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #e2e8f0; /* Light slate for general text */
+        }
+        /* Custom class for glassmorphism effect */
+        .glassmorphic-card {
+            background: rgba(255, 255, 255, 0.15); /* Slightly visible background */
+            backdrop-filter: blur(10px); /* Blur effect */
+            -webkit-backdrop-filter: blur(10px); /* For Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+            border-radius: 15px; /* Rounded corners */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Subtle shadow */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+            color: #cbd5e1; /* slate-300 */
+        }
+        .nav-link:hover {
+            color: #99f6e4; /* teal-200 */
+            border-bottom-color: #99f6e4;
+        }
+        .group .group-hover\:block {
+            display: none;
+        }
+        .group:hover .group-hover\:block {
+            display: block;
+        }
+        .failure-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border-bottom: 2px solid transparent; /* Initial transparent border */
+            background: rgba(255, 255, 255, 0.1); /* Lighter glassmorphic for cards */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        .failure-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.4);
+            border-color: #38bdf8; /* sky-400 on hover */
+        }
+        .accordion-button.active {
+            background-color: rgba(255, 255, 255, 0.2); /* Lighter background for active accordion */
+        }
+        .accordion-button.active span:last-child {
+            transform: rotate(180deg);
+        }
+        /* Adjusting select and input styles for glassmorphism */
+        select, input[type="text"] {
+            /* Apply glassmorphic properties directly */
+            background: rgba(255, 255, 255, 0.15); /* Match glassmorphic-card background */
+            backdrop-filter: blur(10px); /* Apply blur */
+            -webkit-backdrop-filter: blur(10px); /* For Safari */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Match glassmorphic-card border */
+            border-radius: 0.375rem; /* Tailwind's rounded-md */
+            color: #e2e8f0;
+            appearance: none; /* Remove default browser styling for select */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 2.5rem; /* Space for custom arrow */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); /* Custom SVG arrow */
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: #99f6e4; /* teal-200 */
+            box-shadow: 0 0 0 2px rgba(153, 246, 228, 0.5);
+        }
+
+        /* Styling for the options within the select dropdown */
+        /* This is tricky as browser rendering varies. We'll aim for a dark, semi-transparent background. */
+        select option {
+            background-color: rgba(0, 0, 0, 0.7); /* Darker, semi-transparent background for options */
+            color: #e2e8f0; /* Light text for options */
+        }
+
+        /* Style for the selected option in the dropdown list */
+        select option:checked {
+            background-color: rgba(37, 117, 252, 0.7); /* A blue highlight for selected option */
+            color: #fff;
+        }
+        /* Chart.js tooltip background */
+        .chartjs-tooltip {
+            background-color: rgba(0, 0, 0, 0.7) !important;
+            border-radius: 5px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="smooth-scroll">
+
+    <header class="bg-white/10 backdrop-blur-lg sticky top-0 z-40 shadow-sm border-b border-white/20">
+        <nav class="container mx-auto px-4 lg:px-6 py-4">
+            <div class="flex flex-wrap justify-between items-center">
+                <h1 class="text-xl lg:text-2xl font-bold text-white">Material Selector for Halide Environments</h1>
+                <div class="flex items-center space-x-4 lg:space-x-8 text-sm lg:text-base font-medium text-slate-300">
+                    <a href="#comparator" class="nav-link">Comparator</a>
+                    <a href="#failures" class="nav-link">Failure Modes</a>
+                    <a href="#design" class="nav-link">Design Principles</a>
+                    <a href="#standards" class="nav-link">Standards</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 lg:px-6 py-8">
+
+        <section id="intro" class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow-lg">Navigate Material Selection with Confidence</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-200">
+                This interactive guide translates a comprehensive technical report into a practical tool for engineers and scientists. Selecting the right material for halide-rich environments is critical for safety, longevity, and cost-effectiveness. Use the dashboard below to compare materials, understand their performance limits, and learn key design principles to avoid common pitfalls.
+            </p>
+        </section>
+
+        <section id="comparator" class="mb-16 glassmorphic-card p-6 rounded-2xl">
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-white mb-2">Material Comparator Dashboard</h3>
+                <p class="text-slate-200">
+                    This is the core of the application. Select a material class and then a specific grade to dynamically load its properties and performance data. The charts and tables will update instantly, allowing you to easily compare different materials for your specific application. This interactive approach helps visualize the trade-offs between strength, temperature resistance, and corrosion performance.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div>
+                    <label for="material-class" class="block text-sm font-medium text-slate-200 mb-1">1. Select Material Class</label>
+                    <select id="material-class" class="w-full p-2 border border-white/30 rounded-md shadow-sm focus:ring-teal-200 focus:border-teal-200 text-white">
+                        <option value="" class="bg-slate-700">-- Choose a Class --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="material-grade" class="block text-sm font-medium text-slate-200 mb-1">2. Select Material Grade</label>
+                    <select id="material-grade" class="w-full p-2 border border-white/30 rounded-md shadow-sm focus:ring-teal-200 focus:border-teal-200 text-white" disabled>
+                        <option value="" class="bg-slate-700">-- Choose a Grade --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="material-details" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glassmorphic-card p-6 rounded-xl">
+                        <h4 class="text-xl font-semibold text-white mb-4" id="material-name">Material Properties</h4>
+                        <div id="properties-table" class="overflow-x-auto"></div>
+                    </div>
+
+                    <div class="glassmorphic-card p-6 rounded-xl">
+                        <h4 class="text-xl font-semibold text-white mb-4">Performance Overview</h4>
+                        <div class="chart-container mx-auto">
+                            <canvas id="performanceRadarChart"></canvas>
+                        </div>
+                         <p class="text-xs text-center text-slate-300 mt-2">Normalized performance metrics. Higher values are generally better. Hover for details.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                     <div class="glassmorphic-card p-6 rounded-xl">
+                        <h4 class="text-xl font-semibold text-white mb-4">Mechanical Strength Comparison</h4>
+                        <div class="chart-container mx-auto">
+                            <canvas id="strengthBarChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-300 mt-2">Compares Yield and Tensile Strength (MPa) for the selected material.</p>
+                    </div>
+                    <div class="glassmorphic-card p-6 rounded-xl">
+                        <h4 class="text-xl font-semibold text-white mb-4">Use Cases & Limitations</h4>
+                        <p id="use-cases" class="text-slate-200"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="failures" class="mb-16">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-white mb-2 drop-shadow-lg">Common Failure Mechanisms</h3>
+                <p class="max-w-3xl mx-auto text-slate-200">
+                    Understanding how materials fail is as important as knowing their strengths. Halide environments induce specific, often insidious, forms of degradation. Interact with the cards below to learn about the most common failure mechanisms, their causes, and the environmental factors that accelerate them.
+                </p>
+            </div>
+            <div id="failure-modes-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        </section>
+
+        <section id="design" class="mb-16 glassmorphic-card p-6 rounded-2xl">
+             <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-white mb-2 drop-shadow-lg">Critical Design Principles & Common Mistakes</h3>
+                <p class="max-w-3xl mx-auto text-slate-200">
+                    Effective material selection goes beyond data sheets. It requires a critical design approach that anticipates problems and incorporates best practices. Explore the key principles and common mistakes below to build more resilient and reliable systems.
+                </p>
+            </div>
+            <div id="design-principles-container" class="space-y-4">
+            </div>
+        </section>
+
+        <section id="standards" class="mb-16">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-white mb-2 drop-shadow-lg">Key Industry Standards & Guidelines</h3>
+                <p class="max-w-3xl mx-auto text-slate-200">
+                    Adherence to established standards is fundamental for ensuring safety, reliability, and regulatory compliance. This section provides a summary of key standards referenced in material selection for corrosive environments.
+                </p>
+            </div>
+            <div id="standards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-black/20 text-slate-300 py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>This interactive application was generated based on the "Comprehensive Technical Investigation into Material Selection for Halide-Rich Environments" report.</p>
+            <p class="text-sm text-slate-400 mt-2">Designed for educational and informational purposes.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const materialsData = {
+        "Stainless Steel": {
+            "316L": {
+                composition: "Cr (16-18%), Ni (10-14%), Mo (2-3%), C (<0.03%)",
+                tensileStrength: 483,
+                yieldStrength: 172,
+                youngsModulus: 200,
+                tempRange: "Cryogenic to 49°C",
+                halideResistance: "PREN 24.2. Good for moderate chlorides, but susceptible to high concentrations.",
+                sccResistance: "Highly Susceptible to chloride SCC, especially with 8-10% Ni.",
+                corrosionRate: "0.96 μm/year in deep-sea (localized).",
+                useCases: "Marine atmospheres, chemical/food processing, medical devices. Susceptible to SCC in high chloride/temp conditions.",
+                perf: { temp: 2, halide: 3, scc: 1, strength: 4 }
+            }
+        },
+        "Duplex Stainless Steel": {
+            "2205": {
+                composition: "Cr (22-23%), Ni (4.5-6.5%), Mo (3-3.5%), N (0.14-0.20%)",
+                tensileStrength: 655,
+                yieldStrength: 448,
+                youngsModulus: 190,
+                tempRange: "Up to 300°C max continuous.",
+                halideResistance: "PREN 35. Superior pitting/crevice resistance vs. 316L.",
+                sccResistance: "High Resistance to chloride SCC.",
+                corrosionRate: "Significantly lower than 316L in salt spray.",
+                useCases: "Chemical process vessels, heat exchangers, oil field piping. A cost-effective solution where 300-series SS fails by SCC.",
+                perf: { temp: 4, halide: 6, scc: 7, strength: 6 }
+            },
+            "2507": {
+                composition: "Cr (25%), Ni (7%), Mo (4%), N (high)",
+                tensileStrength: 795,
+                yieldStrength: 550,
+                youngsModulus: 200,
+                tempRange: "Up to 316°C max continuous.",
+                halideResistance: "PREN ~43. Exceptional resistance to pitting/crevice corrosion.",
+                sccResistance: "Excellent Resistance to chloride SCC.",
+                corrosionRate: "<0.05 mm/year in organic acids. Very low.",
+                useCases: "Desalination, offshore oil & gas, chemical processing. For highly demanding applications requiring strength and corrosion resistance.",
+                perf: { temp: 5, halide: 9, scc: 9, strength: 8 }
+            }
+        },
+        "Nickel Alloy": {
+            "Alloy 625": {
+                composition: "Ni (bal), Cr (20-23%), Mo (8-10%), Nb (3.15-4.15%)",
+                tensileStrength: 827,
+                yieldStrength: 414,
+                youngsModulus: 205,
+                tempRange: "Cryogenic to 593°C (long term).",
+                halideResistance: "Excellent pitting/crevice resistance in seawater and brines.",
+                sccResistance: "Excellent Resistance, considered immune to chloride-ion SCC.",
+                corrosionRate: "Practically corrosion-free in mild environments.",
+                useCases: "Aerospace, chemical processing, pressure vessels. Used where stainless steels are inadequate.",
+                perf: { temp: 8, halide: 8, scc: 10, strength: 7 }
+            },
+            "Alloy C-276": {
+                composition: "Ni (bal), Mo (15-17%), Cr (14.5-16.5%), W (3-4.5%)",
+                tensileStrength: 690,
+                yieldStrength: 290,
+                youngsModulus: 221,
+                tempRange: "High temperature service, annealing at 1050-1175°C.",
+                halideResistance: "Exceptional resistance to wet chlorine, hypochlorite, and brines.",
+                sccResistance: "Exceptional Resistance to SCC in chloride solutions.",
+                corrosionRate: "Universally corrosion-resistant in oxidizing and reducing media.",
+                useCases: "The workhorse for severe corrosive environments: chemical processing, pollution control, pulp/paper, waste treatment.",
+                perf: { temp: 9, halide: 10, scc: 10, strength: 5 }
+            }
+        },
+        "Titanium Alloy": {
+            "Grade 2 (CP Ti)": {
+                composition: "Ti (99% min)",
+                tensileStrength: 345,
+                yieldStrength: 275,
+                youngsModulus: 105,
+                tempRange: "Up to 425°C continuous.",
+                halideResistance: "Excellent in seawater/chlorides. Vulnerable to crevice corrosion >75°C and rapid attack by HF.",
+                sccResistance: "Fully Resistant in aqueous solutions.",
+                corrosionRate: "Negligible in seawater.",
+                useCases: "Seawater piping, heat exchangers, desalination. Not for HF acid environments.",
+                perf: { temp: 6, halide: 7, scc: 8, strength: 3 }
+            },
+            "Grade 5 (Ti-6Al-4V)": {
+                composition: "Ti (90%), Al (6%), V (4%)",
+                tensileStrength: 1170,
+                yieldStrength: 1100,
+                youngsModulus: 114,
+                tempRange: "Up to 400°C.",
+                halideResistance: "Excellent in seawater. Lower SCC risk than SS. Attacked by HF.",
+                sccResistance: "Good resistance, but can be susceptible in some conditions.",
+                corrosionRate: "Extremely low in ambient seawater.",
+                useCases: "Aerospace, biomedical implants, marine hardware. High strength-to-weight ratio is a key advantage.",
+                perf: { temp: 6, halide: 7, scc: 6, strength: 10 }
+            }
+        },
+        "Fluoropolymer": {
+            "PTFE": {
+                composition: "[CF₂-CF₂]n",
+                tensileStrength: 21,
+                yieldStrength: "N/A",
+                youngsModulus: 0.55,
+                tempRange: "Cryogenic to 260°C.",
+                halideResistance: "Unsurpassed chemical resistance to virtually all chemicals.",
+                sccResistance: "N/A (not a metallic failure mode).",
+                corrosionRate: "Degrades with radiation or molten alkali metals.",
+                useCases: "Seals, gaskets, linings, and components for ultrapure or highly aggressive fluid handling. Low mechanical strength.",
+                perf: { temp: 7, halide: 10, scc: 10, strength: 1 }
+            },
+            "PVDF": {
+                composition: "[C₂H₂F₂]n",
+                tensileStrength: 55,
+                yieldStrength: "N/A",
+                youngsModulus: 2,
+                tempRange: "-50°C to 150°C.",
+                halideResistance: "Excellent resistance to most acids, hydrocarbons, halogens. Attacked by strong bases, ketones.",
+                sccResistance: "Can exhibit environmental stress cracking.",
+                corrosionRate: "Excellent aging resistance. Attacked by some solvents.",
+                useCases: "Pipes, coatings, valves, pumps. Offers better mechanical strength than PTFE but less chemical/thermal resistance.",
+                perf: { temp: 5, halide: 8, scc: 5, strength: 2 }
+            }
+        },
+         "Ceramic": {
+            "Alumina (Al₂O₃)": {
+                composition: "Al₂O₃ (≥ 99.5% purity)",
+                tensileStrength: 465,
+                yieldStrength: "N/A",
+                youngsModulus: 350,
+                tempRange: "Up to 1750°C.",
+                halideResistance: "Excellent general corrosion resistance. Attacked by Hydrofluoric (HF) acid.",
+                sccResistance: "N/A",
+                corrosionRate: "Low, but purity and microstructure are critical.",
+                useCases: "High-temperature furnace parts, wear components, insulators, chemical reactors. Brittle.",
+                perf: { temp: 10, halide: 6, scc: 10, strength: 4 }
+            },
+            "Silicon Carbide (SiC)": {
+                composition: "SiC",
+                tensileStrength: "420 (Flexural)",
+                yieldStrength: "N/A",
+                youngsModulus: 405,
+                tempRange: "Up to 1800°C (inert gas).",
+                halideResistance: "Extremely resistant to chemical corrosion, acids, and lyes.",
+                sccResistance: "N/A",
+                corrosionRate: "Very low, even at high temperatures.",
+                useCases: "Seals, bearings, nozzles, and components for extremely abrasive and corrosive environments.",
+                perf: { temp: 10, halide: 9, scc: 10, strength: 3 }
+            }
+        }
+    };
+
+    const failureModesData = [
+        {
+            name: "Pitting Corrosion",
+            icon: "🎯",
+            description: "A localized form of corrosion creating small holes or 'pits' in the metal. It's dangerous because it can lead to failure with very little overall metal loss. Initiated by the local breakdown of the passive film, often by chloride ions."
+        },
+        {
+            name: "Stress Corrosion Cracking (SCC)",
+            icon: "⚡",
+            description: "Cracking caused by the combined action of tensile stress and a corrosive environment. It is particularly insidious as it can occur with no obvious signs of corrosion. A major issue for austenitic stainless steels in chloride environments."
+        },
+        {
+            name: "Crevice Corrosion",
+            icon: "틈",
+            description: "Localized corrosion in confined spaces (crevices) where access to the bulk environment is restricted. Oxygen depletion inside the crevice creates an aggressive, acidic microenvironment that accelerates attack."
+        },
+        {
+            name: "Galvanic Corrosion",
+            icon: "🔋",
+            description: "Occurs when two dissimilar metals are in electrical contact in an electrolyte. The more 'active' metal corrodes at an accelerated rate while the more 'noble' metal is protected. A common design oversight."
+        },
+        {
+            name: "Intergranular Corrosion (IGC)",
+            icon: "⛓️",
+            description: "Preferential corrosion along the grain boundaries of a metal. Often caused by 'sensitization' during welding, where chromium-rich carbides precipitate, depleting adjacent areas of corrosion-resistant chromium."
+        },
+        {
+            name: "Embrittlement",
+            icon: " ",
+            description: "Loss of ductility in a material, making it brittle. In halide environments, this can be caused by temperature-induced phase transformations (e.g., sigma phase in duplex steels) or hydrogen absorption."
+        }
+    ];
+
+    const designPrinciplesData = [
+        {
+            title: "Overreliance on Static Properties",
+            content: "<strong>Mistake:</strong> Selecting materials based only on room-temperature tensile strength without considering the operating environment. <strong>Principle:</strong> Always evaluate material properties (strength, ductility, toughness) under the actual service conditions, including temperature, stress, and chemical exposure."
+        },
+        {
+            title: "Misinterpreting 'Corrosion-Resistant'",
+            content: "<strong>Mistake:</strong> Assuming a 'stainless' or 'corrosion-resistant' alloy is immune to all corrosion. <strong>Principle:</strong> Understand that resistance is relative. The passive film that protects stainless steel can be broken down by specific chemicals (especially chlorides), leading to localized corrosion. Select the correct grade for the specific environment."
+        },
+        {
+            title: "Ignoring Galvanic Coupling",
+            content: "<strong>Mistake:</strong> Joining dissimilar metals in an electrolyte without proper design considerations. <strong>Principle:</strong> Avoid creating galvanic cells. If dissimilar metals must be used, select metals close in the galvanic series, electrically insulate them, or ensure a favorable area ratio (avoid small anode, large cathode)."
+        },
+        {
+            title: "Underestimating SCC Thresholds",
+            content: "<strong>Mistake:</strong> Assuming a material is safe from SCC because bulk chloride levels are low. <strong>Principle:</strong> Recognize that SCC is synergistic. Localized concentrating mechanisms (e.g., evaporation at wet/dry zones) can dramatically increase halide concentration at the surface. Consider the combined effect of stress, temperature, and potential localized chemistry."
+        },
+        {
+            title: "Forgetting Phase Transformations",
+            content: "<strong>Mistake:</strong> Using an alloy outside its recommended temperature range, ignoring potential microstructural changes. <strong>Principle:</strong> Be aware of temperature-induced phase transformations, such as sigma phase formation in duplex steels above ~300°C, which can cause severe embrittlement and loss of corrosion resistance."
+        }
+    ];
+
+    const standardsData = [
+        { name: "NACE MR0175 / ISO 15156", description: "Specifies material requirements for H₂S-containing (sour) environments in oil and gas production to prevent sulfide stress cracking (SSC)." },
+        { name: "ASTM G48", description: "Standard test methods for determining the resistance of stainless steels and related alloys to pitting and crevice corrosion using a ferric chloride solution." },
+        { name: "ASTM A923", description: "Standard test methods for detecting detrimental intermetallic phases (like sigma phase) in duplex austenitic/ferritic stainless steels." },
+        { name: "ASME BPVC Sec II Part D", description: "Provides tables of material properties, including allowable stresses, tensile strength, and yield strength for materials used in pressure vessel design." },
+        { name: "ISO 9227", description: "Defines procedures for salt spray tests (neutral, acetic acid, and copper-accelerated) to assess the corrosion resistance of materials and coatings." },
+    ];
+
+
+    const classSelect = document.getElementById('material-class');
+    const gradeSelect = document.getElementById('material-grade');
+    const detailsDiv = document.getElementById('material-details');
+    const materialNameEl = document.getElementById('material-name');
+    const propertiesTableEl = document.getElementById('properties-table');
+    const useCasesEl = document.getElementById('use-cases');
+
+    let performanceRadarChart, strengthBarChart;
+
+    function populateClassSelect() {
+        const classes = Object.keys(materialsData);
+        classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls;
+            option.textContent = cls;
+            classSelect.appendChild(option);
+        });
+    }
+
+    function populateGradeSelect(selectedClass) {
+        gradeSelect.innerHTML = '<option value="" class="bg-slate-700">-- Choose a Grade --</option>';
+        if (selectedClass && materialsData[selectedClass]) {
+            const grades = Object.keys(materialsData[selectedClass]);
+            grades.forEach(grade => {
+                const option = document.createElement('option');
+                option.value = grade;
+                option.textContent = grade;
+                gradeSelect.appendChild(option);
+            });
+            gradeSelect.disabled = false;
+        } else {
+            gradeSelect.disabled = true;
+        }
+    }
+
+    function displayMaterialDetails(materialClass, materialGrade) {
+        const material = materialsData[materialClass]?.[materialGrade];
+        if (!material) {
+            detailsDiv.classList.add('hidden');
+            return;
+        }
+
+        materialNameEl.textContent = `${materialGrade} (${materialClass})`;
+
+        propertiesTableEl.innerHTML = `
+            <table class="w-full text-sm text-left text-slate-200">
+                <tbody class="divide-y divide-white/20">
+                    <tr class="bg-white/5"><td class="px-4 py-2 font-medium text-white">Composition</td><td class="px-4 py-2">${material.composition}</td></tr>
+                    <tr class="bg-white/10"><td class="px-4 py-2 font-medium text-white">Tensile Strength</td><td class="px-4 py-2">${material.tensileStrength} MPa</td></tr>
+                    <tr class="bg-white/5"><td class="px-4 py-2 font-medium text-white">Yield Strength</td><td class="px-4 py-2">${material.yieldStrength} MPa</td></tr>
+                    <tr class="bg-white/10"><td class="px-4 py-2 font-medium text-white">Young’s Modulus</td><td class="px-4 py-2">${material.youngsModulus} GPa</td></tr>
+                    <tr class="bg-white/5"><td class="px-4 py-2 font-medium text-white">Temperature Range</td><td class="px-4 py-2">${material.tempRange}</td></tr>
+                    <tr class="bg-white/10"><td class="px-4 py-2 font-medium text-white">Halide Resistance</td><td class="px-4 py-2">${material.halideResistance}</td></tr>
+                    <tr class="bg-white/5"><td class="px-4 py-2 font-medium text-white">SCC Resistance</td><td class="px-4 py-2">${material.sccResistance}</td></tr>
+                </tbody>
+            </table>
+        `;
+
+        useCasesEl.textContent = material.useCases;
+        
+        updatePerformanceChart(material);
+        updateStrengthChart(material);
+
+        detailsDiv.classList.remove('hidden');
+    }
+
+    function updatePerformanceChart(material) {
+        const ctx = document.getElementById('performanceRadarChart').getContext('2d');
+        const data = {
+            labels: ['Temp. Resistance', 'Halide Resistance', 'SCC Resistance', 'Mech. Strength'],
+            datasets: [{
+                label: materialNameEl.textContent,
+                data: [
+                    material.perf.temp,
+                    material.perf.halide,
+                    material.perf.scc,
+                    material.perf.strength
+                ],
+                fill: true,
+                backgroundColor: 'rgba(153, 246, 228, 0.3)', /* Teal-200 with transparency */
+                borderColor: 'rgb(153, 246, 228)',
+                pointBackgroundColor: 'rgb(153, 246, 228)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(153, 246, 228)'
+            }]
+        };
+        const options = {
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { display: true, color: 'rgba(255, 255, 255, 0.3)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.3)' },
+                    suggestedMin: 0,
+                    suggestedMax: 10,
+                    pointLabels: { font: { size: 10, weight: 'bold' }, color: '#e2e8f0' }, /* Light slate */
+                    ticks: {
+                       backdropColor: 'rgba(0, 0, 0, 0.5)', /* Darker background for ticks */
+                       stepSize: 2,
+                       color: '#cbd5e1' /* slate-300 */
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.r !== null) {
+                                label += `${context.parsed.r} / 10`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        if (performanceRadarChart) {
+            performanceRadarChart.destroy();
+        }
+        performanceRadarChart = new Chart(ctx, { type: 'radar', data, options });
+    }
+    
+    function updateStrengthChart(material) {
+        const ctx = document.getElementById('strengthBarChart').getContext('2d');
+        
+        const data = {
+            labels: ['Yield Strength', 'Tensile Strength'],
+            datasets: [{
+                label: 'Strength (MPa)',
+                data: [material.yieldStrength, material.tensileStrength],
+                backgroundColor: [
+                    'rgba(56, 189, 248, 0.5)', /* sky-400 with transparency */
+                    'rgba(153, 246, 228, 0.5)'  /* teal-200 with transparency */
+                ],
+                borderColor: [
+                    'rgb(56, 189, 248)',
+                    'rgb(153, 246, 228)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const options = {
+            indexAxis: 'y',
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Strength (MPa)',
+                        color: '#e2e8f0' /* Light slate */
+                    },
+                    ticks: {
+                        color: '#cbd5e1' /* slate-300 */
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: '#cbd5e1' /* slate-300 */
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        };
+
+        if (strengthBarChart) {
+            strengthBarChart.destroy();
+        }
+        strengthBarChart = new Chart(ctx, { type: 'bar', data, options });
+    }
+
+    function populateFailureModes() {
+        const container = document.getElementById('failure-modes-container');
+        failureModesData.forEach(mode => {
+            const card = document.createElement('div');
+            card.className = 'failure-card p-6 shadow-md cursor-pointer group';
+            card.innerHTML = `
+                <div class="flex items-center mb-3">
+                    <span class="text-3xl mr-4 text-teal-200">${mode.icon}</span>
+                    <h4 class="text-lg font-semibold text-white">${mode.name}</h4>
+                </div>
+                <p class="text-slate-200 text-sm">${mode.description}</p>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function populateDesignPrinciples() {
+        const container = document.getElementById('design-principles-container');
+        designPrinciplesData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'border border-white/20 rounded-lg';
+            div.innerHTML = `
+                <button class="accordion-button w-full flex justify-between items-center p-4 text-left font-semibold text-teal-200 focus:outline-none" data-toggle="accordion" data-target="#accordion-${index}">
+                    <span>${item.title}</span>
+                    <span class="transform transition-transform duration-300">▼</span>
+                </button>
+                <div id="accordion-${index}" class="hidden p-4 border-t border-white/20 bg-white/10">
+                    <p class="text-slate-200">${item.content}</p>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        container.addEventListener('click', e => {
+            const button = e.target.closest('[data-toggle="accordion"]');
+            if (button) {
+                const targetId = button.dataset.target;
+                const targetPanel = document.querySelector(targetId);
+                
+                // Toggle active class on button
+                button.classList.toggle('active');
+
+                if (targetPanel.classList.contains('hidden')) {
+                    targetPanel.classList.remove('hidden');
+                } else {
+                    targetPanel.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    function populateStandards() {
+        const container = document.getElementById('standards-container');
+        standardsData.forEach(standard => {
+            const card = document.createElement('div');
+            card.className = 'glassmorphic-card p-5 rounded-lg border-l-4 border-amber-300'; /* Amber border for accent */
+            card.innerHTML = `
+                <h4 class="font-bold text-teal-200 mb-2">${standard.name}</h4>
+                <p class="text-sm text-slate-200">${standard.description}</p>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+
+    classSelect.addEventListener('change', (e) => {
+        populateGradeSelect(e.target.value);
+        detailsDiv.classList.add('hidden');
+    });
+
+    gradeSelect.addEventListener('change', (e) => {
+        const selectedClass = classSelect.value;
+        const selectedGrade = e.target.value;
+        if (selectedClass && selectedGrade) {
+            displayMaterialDetails(selectedClass, selectedGrade);
+        } else {
+            detailsDiv.classList.add('hidden');
+        }
+    });
+    
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    populateClassSelect();
+    populateFailureModes();
+    populateDesignPrinciples();
+    populateStandards();
+});
+</script>
+
+</body>
+</html>
+ 
