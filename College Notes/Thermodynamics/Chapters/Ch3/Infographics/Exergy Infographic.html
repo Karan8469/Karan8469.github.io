@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exergy & Irreversibility: An Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: The infographic follows a clear narrative flow designed for progressive understanding. It starts with a strong hook comparing Energy vs. Exergy (Section 1), establishing the core concept. It then visually explains the "quality" of heat (Section 2), followed by the exergy of finite bodies (Section 3). Section 4 presents the "culprits" of exergy loss in a digestible, visual format. Section 5 provides a flowchart of the Gouy-Stodola theorem, linking theory to consequence. Section 6 introduces a dedicated "Key Formulas" section for numerical problem-solving. Section 7 provides guidance on tackling numerical problems and common student errors. Section 8 introduces Second Law Efficiency as the true measure of performance. Finally, Sections 9 & 10 break down two complex engineering problems (Piston & Turbine) into visual, step-by-step analyses, making them easier to follow than pure text. This structure was chosen to transform a dense report into a scannable, engaging learning tool. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Energy vs. Exergy. Goal: Compare. Viz: Donut charts side-by-side. Justification: Instantly shows the difference between quantity (full donut) and quality (partial donut). Library: Chart.js.
+        - Report Info: Exergy of Heat. Goal: Change. Viz: Line chart showing exergy vs. temperature. Justification: Clearly demonstrates how exergy (work potential) increases with source temperature. Library: Chart.js.
+        - Report Info: Exergy of a Finite Heat Capacity Body. Goal: Change. Viz: Line chart showing exergy as body cools to dead state. Justification: Illustrates the diminishing work potential as a body approaches equilibrium. Library: Chart.js.
+        - Report Info: Sources of Irreversibility. Goal: Organize. Viz: Grid of styled cards with icons. Justification: Breaks down a list into a more visually appealing and memorable format. Method: HTML/CSS with Unicode icons.
+        - Report Info: Gouy-Stodola Theorem. Goal: Organize/Process. Viz: Flowchart using styled HTML divs. Justification: Visually represents the relationship between entropy generation and exergy destruction. Method: HTML/CSS.
+        - Report Info: Key Formulas. Goal: Inform. Viz: List of equations with brief descriptions. Justification: Provides a quick reference for numerical calculations. Method: HTML/CSS with MathJax.
+        - Report Info: Numerical Problem Solving. Goal: Inform. Viz: Text-based guidance with bullet points. Justification: Provides practical advice for students. Method: HTML/CSS.
+        - Report Info: Second Law Efficiency. Goal: Compare. Viz: Bar chart comparing 1st Law vs. 2nd Law efficiency. Justification: Highlights the difference between energy conservation and work potential utilization. Library: Chart.js.
+        - Report Info: Piston-Cylinder Analysis. Goal: Inform/Compare. Viz: Stacked bar chart showing work breakdown. Justification: Clearly visualizes the huge gap between actual work and destroyed exergy. Library: Chart.js.
+        - Report Info: Steam Turbine Analysis. Goal: Inform/Compare. Viz: Bar chart comparing actual vs. reversible power. Justification: Provides a direct, powerful comparison of real-world vs. ideal performance. Library: Chart.js.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDF0D5; /* Cream background from palette */
+            color: #003049; /* Dark Blue from palette */
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #ddd;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #D62828; /* Red from palette */
+        }
+        .flowchart-box {
+            background-color: #C1121F; /* Darker Red */
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .flowchart-arrow {
+            font-size: 2.5rem;
+            color: #003049;
+            line-height: 1;
+        }
+        .formula-box {
+            background-color: #EAE2B7; /* Light grey/yellow from palette */
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 5px solid #F77F00; /* Orange accent */
+        }
+        .formula-box h4 {
+            font-weight: 600;
+            color: #003049;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- Header Section -->
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-[#003049] mb-4">The Story of Lost Work</h1>
+            <p class="text-xl md:text-2xl text-[#D62828] font-semibold">An Engineer's Guide to Exergy & Irreversibility</p>
+            <p class="max-w-3xl mx-auto mt-4 text-lg text-gray-700">
+                The First Law of Thermodynamics says energy is conserved. The Second Law, through exergy, tells us its *quality* is not. This guide reveals why not all energy is created equal and where useful work potential gets lost forever.
+            </p>
+        </header>
+
+        <!-- Section 1: Energy vs Exergy -->
+        <section id="energy-vs-exergy" class="mb-20">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">Energy vs. Exergy: Quantity vs. Quality</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">Imagine you have 100 kJ of energy. The First Law sees them as equal. Exergy analysis reveals the truth: their potential to do useful work is vastly different.</p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-semibold text-[#003049] mb-4">100 kJ of Electricity</h3>
+                        <div class="chart-container h-64 max-h-[250px]">
+                            <canvas id="electricityExergyChart"></canvas>
+                        </div>
+                        <p class="mt-4 text-lg font-medium">Electricity is high-quality energy. Its ability to do work (exergy) is nearly 100% of its total energy.</p>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-2xl font-semibold text-[#003049] mb-4">100 kJ of Heat at 100°C</h3>
+                        <div class="chart-container h-64 max-h-[250px]">
+                            <canvas id="heatExergyChart"></canvas>
+                        </div>
+                        <p class="mt-4 text-lg font-medium">Low-temperature heat is low-quality. Its exergy is only a fraction of its total energy, limited by the ambient temperature.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Exergy of Heat -->
+        <section id="exergy-of-heat" class="mb-20">
+             <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">The Value of Heat is in its Temperature</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">The work potential (exergy) of heat isn't fixed. It dramatically increases with the temperature of the heat source, as defined by the Carnot efficiency. This chart shows the maximum work you can get from 1000 kJ of heat at different temperatures.</p>
+                <div class="chart-container h-96 max-h-[400px]">
+                    <canvas id="heatQualityChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Exergy of a Finite Heat Capacity Body -->
+        <section id="finite-body-exergy" class="mb-20">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">Exergy from Cooling a Hot Object</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">A hot object, like a metal block, contains exergy because it's not in equilibrium with its surroundings. As it cools down to the ambient temperature, it can theoretically produce useful work. This chart shows how the exergy of a 1 kg copper block ($c_p = 0.385 \text{ kJ/kg} \cdot \text{K}$) changes as it cools from an initial temperature to the dead state ($25^\circ\text{C}$).</p>
+                <div class="chart-container h-96 max-h-[400px]">
+                    <canvas id="finiteBodyExergyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Sources of Irreversibility -->
+        <section id="irreversibility-sources" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-8">The Culprits: Where is Exergy Destroyed?</h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">All real-world processes are irreversible, meaning they generate entropy and destroy exergy. These are the most common sources of lost work potential in engineering systems.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card p-6 text-center">
+                    <div class="text-6xl mb-4">🔥</div>
+                    <h3 class="text-2xl font-bold mb-2">Heat Transfer</h3>
+                    <p class="text-gray-600">Across a finite temperature difference. The larger the gap between hot and cold, the more exergy is destroyed.</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <div class="text-6xl mb-4">⚙️</div>
+                    <h3 class="text-2xl font-bold mb-2">Friction</h3>
+                    <p class="text-gray-600">In machines and fluids, friction converts high-quality mechanical work directly into low-quality, unusable heat.</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <div class="text-6xl mb-4">💧</div>
+                    <h3 class="text-2xl font-bold mb-2">Mixing</h3>
+                    <p class="text-gray-600">Combining fluids of different temperatures, pressures, or compositions is a spontaneous, irreversible process that destroys exergy.</p>
+                </div>
+                <div class="card p-6 text-center md:col-span-2 lg:col-span-3">
+                     <div class="text-6xl mb-4">💨</div>
+                    <h3 class="text-2xl font-bold mb-2">Unrestrained Expansion</h3>
+                    <p class="text-gray-600">When a gas expands without doing work (like in a throttling valve), its pressure potential is lost, destroying exergy.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Gouy-Stodola Theorem -->
+        <section id="gouy-stodola" class="mb-20">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">The Law of Lost Work: Gouy-Stodola Theorem</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">This theorem provides the direct link between inefficiency and lost work. It states that exergy destruction is simply the entropy generated by a process multiplied by the ambient temperature: $\dot{Ex}_{destruction} = T_0 \dot{S}_{gen}$.</p>
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
+                    <div class="flowchart-box">
+                        <h3 class="text-xl font-bold">Entropy Generation ($S_{gen}$)</h3>
+                        <p>A measure of process chaos and inefficiency (friction, heat transfer, etc.)</p>
+                    </div>
+                    <div class="flowchart-arrow">✖️</div>
+                    <div class="flowchart-box">
+                        <h3 class="text-xl font-bold">Ambient Temp ($T_0$)</h3>
+                        <p>The temperature of the ultimate "dead state" environment.</p>
+                    </div>
+                    <div class="flowchart-arrow">＝</div>
+                     <div class="flowchart-box bg-[#F77F00]">
+                        <h3 class="text-xl font-bold">Exergy Destruction ($Ex_{dest}$)</h3>
+                        <p>The useful work potential that is permanently lost.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Key Formulas for Calculations -->
+        <section id="key-formulas" class="mb-20">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">Key Formulas for Exergy Analysis</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">Here are the essential equations you'll need to calculate exergy and analyze thermodynamic systems. Remember to use consistent units (e.g., Kelvin for temperatures).</p>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="formula-box">
+                            <h4>Exergy of a Closed System (Non-Flow Exergy)</h4>
+                            <p>$Ex = (U - U_0) + P_0(V - V_0) - T_0(S - S_0) + KE + PE$</p>
+                            <p class="text-sm text-gray-600 mt-2">Where $KE = \frac{1}{2}mV^2$ and $PE = mgZ$. Subscript '0' denotes properties at the dead state.</p>
+                        </div>
+                        <div class="formula-box">
+                            <h4>Exergy of a Steady Flow System (Flow Exergy)</h4>
+                            <p>$\psi = (h - h_0) - T_0(s - s_0) + \frac{1}{2}V^2 + gZ$</p>
+                            <p class="text-sm text-gray-600 mt-2">Per unit mass. $\psi$ represents the maximum work obtainable from a flow stream.</p>
+                        </div>
+                        <div class="formula-box">
+                            <h4>Exergy Transfer by Heat</h4>
+                            <p>$Ex_Q = Q(1 - T_0/T)$</p>
+                            <p class="text-sm text-gray-600 mt-2">Where $T$ is the temperature of the heat transfer, and $T_0$ is the dead state temperature (in Kelvin).</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="formula-box">
+                            <h4>Exergy Transfer by Work</h4>
+                            <p>$Ex_W = W - P_0 \Delta V$ (for boundary work)</p>
+                            <p class="text-sm text-gray-600 mt-2">This is the useful work, excluding work done against the atmosphere. For shaft work, $Ex_W = W_{shaft}$.</p>
+                        </div>
+                        <div class="formula-box">
+                            <h4>Exergy Destruction (Irreversibility)</h4>
+                            <p>$Ex_{destruction} = T_0 S_{gen}$</p>
+                            <p class="text-sm text-gray-600 mt-2">The Gouy-Stodola theorem. $S_{gen}$ is the entropy generated during the process.</p>
+                        </div>
+                        <div class="formula-box">
+                            <h4>Exergy Balance for a System</h4>
+                            <p>$Ex_{in} - Ex_{out} - Ex_{destruction} = \Delta Ex_{system}$</p>
+                            <p class="text-sm text-gray-600 mt-2">This is the fundamental exergy balance equation, accounting for all exergy transfers and destructions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Numerical Problem Solving -->
+        <section id="numerical-problems" class="mb-20">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">Mastering Exergy Numerical Problems</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">Solving exergy problems requires a systematic approach and careful attention to detail. Here’s a guide to help you tackle them effectively in exams and assignments, along with common pitfalls to avoid.</p>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-[#003049] mb-4">How to Tackle Numerical Problems</h3>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700">
+                            <li><strong>1. Understand the Problem:</strong> Read carefully. Identify the system (closed or steady flow), what's given, what needs to be found, and any assumptions.</li>
+                            <li><strong>2. Sketch and Label:</strong> Draw a clear diagram of the system. Label all inlets, outlets, heat transfers, work interactions, and states (T, P, h, s, V, z).</li>
+                            <li><strong>3. Define the Dead State ($T_0, P_0$):</strong> This is crucial. Ensure you use the correct environmental conditions.</li>
+                            <li><strong>4. Identify Relevant Formulas:</strong> Based on the system type and what's asked, select the appropriate exergy balance equation and property relations (e.g., ideal gas laws, steam tables).</li>
+                            <li><strong>5. Convert Units:</strong> Always convert temperatures to absolute scales (Kelvin) and ensure all energy terms are consistent (e.g., kJ, kW). Pay attention to kinetic energy terms ($\frac{V^2}{2}$) which need division by 1000 for kJ/kg.</li>
+                            <li><strong>6. Obtain Properties:</strong> Use property tables (steam, refrigerant, ideal gas) to find necessary values (h, s, u, v) at all relevant states, including the dead state.</li>
+                            <li><strong>7. Apply Balances Systematically:</strong> Start with the First Law (energy balance) if needed to find unknown heat or work. Then apply the Second Law (entropy balance) to find entropy generation, and finally the exergy balance.</li>
+                            <li><strong>8. Check Signs and Directions:</strong> Be consistent with sign conventions for heat and work (e.g., heat added to system positive, work done by system positive).</li>
+                            <li><strong>9. Interpret Results:</strong> Don't just get a number. Understand what the calculated exergy destruction or efficiency means physically.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-[#003049] mb-4">Common Mistakes Students Make</h3>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700">
+                            <li><strong>Incorrect Temperature Scale:</strong> Using Celsius/Fahrenheit for $T_0$ or in $\ln(T_2/T_1)$ terms. Always use Kelvin.</li>
+                            <li><strong>Confusing Energy and Exergy:</strong> Assuming exergy is conserved or that First Law efficiency is sufficient.</li>
+                            <li><strong>Wrong Dead State:</strong> Using a system boundary temperature or an internal process temperature as $T_0$.</li>
+                            <li><strong>Neglecting $P_0 \Delta V$ for Closed Systems:</strong> Forgetting to subtract $P_0 \Delta V$ from total work to get useful work.</li>
+                            <li><strong>Ignoring Kinetic/Potential Exergy:</strong> Assuming these are always negligible, especially in high-velocity or high-elevation change problems.</li>
+                            <li><strong>Errors in Entropy Calculation:</strong> Incorrectly calculating $\Delta S$ for ideal gases, liquids, or solids, or forgetting to account for entropy transfer with heat.</li>
+                            <li><strong>Misapplying Formulas:</strong> Using a closed system exergy formula for a steady flow system, or vice-versa.</li>
+                            <li><strong>Unit Inconsistencies:</strong> Mixing kJ/kg with kW, or not converting kinetic energy terms from J/kg to kJ/kg.</li>
+                            <li><strong>Overlooking Irreversibilities:</strong> Assuming ideal processes (e.g., adiabatic, reversible) when they are not explicitly stated, leading to zero exergy destruction.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 8: Second Law Efficiency -->
+        <section id="second-law-efficiency" class="mb-20">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">Second Law Efficiency: The True Measure of Performance</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">While first-law efficiency (energy efficiency) tells us how much energy is converted, second-law efficiency (exergetic efficiency) tells us how effectively the *quality* of energy is utilized. It's always lower than first-law efficiency because no process is perfectly reversible.</p>
+                <div class="chart-container h-96 max-h-[400px]">
+                    <canvas id="secondLawEfficiencyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 9: Piston-Cylinder Example -->
+        <section id="piston-example" class="mb-20">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">Case Study 1: Compressing Air in a Piston</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">A piston compresses air, requiring 1.2 kJ of useful work. Exergy analysis shows us where that work actually went.</p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-[#003049] mb-4">Work Input Breakdown (1.2 kJ Total)</h3>
+                        <div class="chart-container h-80 max-h-[320px]">
+                            <canvas id="pistonWorkChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-lg text-gray-700">The minimum theoretical work needed was only:</p>
+                        <div class="stat-number my-4">0.170 kJ</div>
+                        <p class="text-lg text-gray-700">This results in a staggering amount of destroyed work potential:</p>
+                        <div class="stat-number my-4 text-[#C1121F]">1.03 kJ</div>
+                        <p class="text-2xl font-bold text-[#003049] mt-6">Second-Law Efficiency: <span class="text-[#D62828]">Only 14.2%</span></p>
+                        <p class="mt-2 text-gray-600">Over 85% of the work input was wasted due to irreversibilities like friction and non-ideal compression.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 10: Steam Turbine Example -->
+        <section id="turbine-example">
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">Case Study 2: Steam Turbine Power Generation</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">Steam enters a turbine at 6 MPa, 600°C, 80 m/s and leaves at 50 kPa, 100°C, 140 m/s. The actual power output is 5 MW. Surroundings are at 25°C. Let's find the reversible power and the second-law efficiency.</p>
+                 <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-[#003049] mb-4 text-center">Actual vs. Reversible Power</h3>
+                        <div class="chart-container h-96 max-h-[400px]">
+                            <canvas id="turbinePowerChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-lg text-gray-700">The difference between the ideal and the real is the exergy destroyed by internal friction and turbulence:</p>
+                        <div class="stat-number my-4">0.81 MW</div>
+                        <p class="text-lg text-gray-700">This lost potential is equivalent to the power needed for hundreds of homes, dissipated as unusable heat.</p>
+                        <p class="text-2xl font-bold text-[#003049] mt-6">Second-Law Efficiency: <span class="text-[#F77F00]">A solid 86.1%</span></p>
+                         <p class="mt-2 text-gray-600">While efficient, exergy analysis shows there's still 0.81 MW of room for improvement.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chartColors = {
+                red: '#D62828',
+                orange: '#F77F00',
+                yellow: '#FCBF49',
+                blue: '#003049',
+                cream: '#FDF0D5',
+                grey: '#eae2b7'
+            };
+
+            const T0_K = 298.15; // 25°C in Kelvin
+
+            // Chart 1: Electricity Exergy
+            const electricityCtx = document.getElementById('electricityExergyChart').getContext('2d');
+            new Chart(electricityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Exergy (Work Potential)', 'Anergy (Unavailable)'],
+                    datasets: [{
+                        data: [99.9, 0.1], // Almost pure exergy
+                        backgroundColor: [chartColors.orange, chartColors.grey],
+                        borderColor: chartColors.cream,
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                             callbacks: {
+                                title: (tooltipItems) => tooltipItems[0].label,
+                                label: (context) => `${context.formattedValue} kJ`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Heat Exergy
+            const heatCtx = document.getElementById('heatExergyChart').getContext('2d');
+            const heatExergyValue = 100 * (1 - T0_K / (100 + 273.15));
+            new Chart(heatCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Exergy (Work Potential)', 'Anergy (Unavailable)'],
+                    datasets: [{
+                        data: [heatExergyValue, 100 - heatExergyValue],
+                        backgroundColor: [chartColors.orange, chartColors.grey],
+                        borderColor: chartColors.cream,
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                             callbacks: {
+                                title: (tooltipItems) => tooltipItems[0].label,
+                                label: (context) => `${context.formattedValue} kJ`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 3: Heat Quality Line Chart
+            const heatQualityCtx = document.getElementById('heatQualityChart').getContext('2d');
+            const temperatures = [100, 200, 400, 600, 800, 1000, 1200];
+            const exergyValues = temperatures.map(t => 1000 * (1 - T0_K / (t + 273.15)));
+            new Chart(heatQualityCtx, {
+                type: 'line',
+                data: {
+                    labels: temperatures.map(t => `${t}°C`),
+                    datasets: [{
+                        label: 'Exergy (Useful Work Potential) in kJ',
+                        data: exergyValues,
+                        borderColor: chartColors.red,
+                        backgroundColor: 'rgba(214, 40, 40, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Exergy (kJ) from 1000 kJ of Heat' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Heat Source Temperature (°C)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return `At ${tooltipItems[0].label}`;
+                                },
+                                label: function(context) {
+                                    return `Max Work: ${context.parsed.y.toFixed(0)} kJ`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 4: Exergy of Finite Heat Capacity Body
+            const finiteBodyCtx = document.getElementById('finiteBodyExergyChart').getContext('2d');
+            const initialTempC = 500;
+            const finalTempC = 25;
+            const mc = 1 * 0.385; // m * c_p for 1 kg copper
+
+            const bodyTempsC = [];
+            for (let t = initialTempC; t >= finalTempC; t -= (initialTempC - finalTempC) / 10) {
+                bodyTempsC.push(t);
+            }
+            if (bodyTempsC[bodyTempsC.length - 1] !== finalTempC) {
+                bodyTempsC.push(finalTempC);
+            }
+
+            const finiteBodyExergyValues = bodyTempsC.map(tC => {
+                const tK = tC + 273.15;
+                return mc * (tK - T0_K - T0_K * Math.log(tK / T0_K));
+            });
+
+            new Chart(finiteBodyCtx, {
+                type: 'line',
+                data: {
+                    labels: bodyTempsC.map(t => `${t.toFixed(0)}°C`),
+                    datasets: [{
+                        label: 'Exergy of Copper Block (kJ)',
+                        data: finiteBodyExergyValues,
+                        borderColor: chartColors.blue,
+                        backgroundColor: 'rgba(0, 48, 73, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Exergy (kJ)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Block Temperature (°C)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return `At ${tooltipItems[0].label}`;
+                                },
+                                label: function(context) {
+                                    return `Exergy: ${context.parsed.y.toFixed(2)} kJ`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 5: Second Law Efficiency Comparison
+            const secondLawEfficiencyCtx = document.getElementById('secondLawEfficiencyChart').getContext('2d');
+            new Chart(secondLawEfficiencyCtx, {
+                type: 'bar',
+                data: {
+                    labels: [['First Law', 'Efficiency'], ['Second Law', 'Efficiency']],
+                    datasets: [{
+                        label: 'Efficiency (%)',
+                        data: [85, 45], // Example values for a typical power plant
+                        backgroundColor: [chartColors.yellow, chartColors.orange],
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Efficiency (%)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                           callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                },
+                                label: (context) => `${context.formattedValue}%`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 6: Piston Work Breakdown
+            const pistonWorkCtx = document.getElementById('pistonWorkChart').getContext('2d');
+            new Chart(pistonWorkCtx, {
+                type: 'bar',
+                data: {
+                    labels: [['Work Input', 'Analysis']],
+                    datasets: [{
+                        label: 'Minimum Required Work (Exergy Change)',
+                        data: [0.170],
+                        backgroundColor: chartColors.orange
+                    }, {
+                        label: 'Destroyed Work (Irreversibility)',
+                        data: [1.03],
+                        backgroundColor: chartColors.red
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Work (kJ)' } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                title: (tooltipItems) => tooltipItems[0].dataset.label,
+                                label: (context) => `${context.formattedValue} kJ`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 7: Turbine Power Comparison
+            const turbinePowerCtx = document.getElementById('turbinePowerChart').getContext('2d');
+            new Chart(turbinePowerCtx, {
+                type: 'bar',
+                data: {
+                    labels: [['Actual Power', 'Output'], ['Reversible Power', '(Ideal Maximum)']],
+                    datasets: [{
+                        label: 'Power (MW)',
+                        data: [5.0, 5.81],
+                        backgroundColor: [chartColors.orange, chartColors.blue],
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Power Output (MW)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                           callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                },
+                                label: (context) => `${context.formattedValue} MW`
+                            }
+                        }
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

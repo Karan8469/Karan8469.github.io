@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: The Unstoppable Rise of Entropy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <!-- Chosen Palette: Brilliant Blues -->
+    <!-- Application Structure Plan: The infographic follows a linear, top-to-bottom narrative structure, guiding the user through the core concepts of entropy in a logical sequence. This mirrors the pedagogical flow of the source material, building from foundational ideas to more complex applications. The design uses distinct sections with clear headings, large typography for key takeaways, and a mix of diagrams and charts to tell a cohesive story about entropy's role in engineering. New sections for Exergy, Third Law, and Gibbs/Helmholtz Free Energy are added to expand on energy quality, absolute entropy, and spontaneity, respectively. Formulas for numerical calculations are integrated into relevant sections. Layout adjustments have been made to ensure formulas fit within card boundaries. A new section on tackling numerical problems is added to provide practical problem-solving guidance. All unwanted vertical scrollbars (perceived as "sliders") next to equations have been removed, and text size adjusted for clarity. -->
+    <!-- Visualization & Content Choices: 
+        - Clausius Theorem -> Goal: Inform -> Viz: HTML/CSS Diagram -> Justification: A simple visual is best to illustrate the "impossible uphill heat flow" analogy without needing complex data.
+        - Properties of Entropy -> Goal: Compare/Inform -> Viz: Donut Chart (Chart.js) -> Justification: Visually separates the components of entropy change (transfer vs. generation) to highlight the concept of S_gen.
+        - Clausius Inequality -> Goal: Compare -> Viz: Bar Chart (Chart.js) -> Justification: Directly compares the ideal Carnot efficiency with a real engine's lower efficiency to make the concept of "lost potential" tangible.
+        - Irreversible Processes -> Goal: Organize -> Viz: HTML/CSS Flowchart -> Justification: A simple flowchart made with styled divs clearly shows that real processes lead to irreversibilities, which cause entropy generation.
+        - Principle of Increase of Entropy -> Goal: Compare -> Viz: Stacked Bar Chart (Chart.js) -> Justification: Perfectly illustrates how a local decrease in system entropy is overcome by a larger increase in surroundings' entropy, resulting in a net universal increase.
+        - Third Law of Thermodynamics -> Goal: Inform -> Viz: HTML/CSS Diagram -> Justification: A simple visual representation of a perfect crystal at absolute zero for clarity.
+        - Flow/Non-Flow Processes -> Goal: Compare -> Viz: Bar Chart (Chart.js) -> Justification: A bar chart comparing actual vs. isentropic turbine work provides a concrete engineering example of performance loss due to entropy.
+        - Exergy (Availability) -> Goal: Inform/Quantify -> Viz: Donut Chart (Chart.js) -> Justification: Visually shows the breakdown of energy into useful exergy and useless anergy.
+        - Gibbs/Helmholtz Free Energy -> Goal: Inform -> Viz: HTML/CSS Diagram -> Justification: Simple diagram to illustrate the spontaneity conditions.
+        - Tackling Numerical Problems -> Goal: Organize/Instruct -> Viz: HTML/CSS structured text -> Justification: Step-by-step guidance is best presented as clear, formatted text.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .bg-primary { background-color: #0B486B; }
+        .text-primary { color: #0B486B; }
+        .bg-secondary { background-color: #3B8686; }
+        .text-secondary { color: #3B8686; }
+        .bg-accent1 { background-color: #79BD9A; }
+        .text-accent1 { color: #79BD9A; }
+        .bg-accent2 { background-color: #A8DBA8; }
+        .text-accent2 { color: #A8DBA8; }
+        .bg-accent3 { background-color: #CFF09E; }
+        .text-accent3 { color: #CFF09E; }
+
+        .section-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px; /* Default max-width for charts */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .big-number {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .flowchart-arrow {
+            font-size: 2.5rem;
+            color: #A8DBA8;
+            line-height: 1;
+        }
+        /* Global MathJax container styling to remove all scrollbars */
+        mjx-container {
+            overflow: hidden !important; /* Force hide all scrollbars */
+            max-width: 100% !important; /* Ensure it respects parent width */
+            margin: 0 !important; /* Remove any default margins */
+            padding: 0 !important; /* Remove any default padding */
+        }
+        /* Specific styling for display equations (block level) */
+        mjx-container[display="true"] {
+            display: block !important; /* Ensure block display for centered equations */
+            text-align: center !important; /* Center the content within mjx-container */
+        }
+        /* Specific styling for inline equations */
+        mjx-container:not([display="true"]) {
+            display: inline !important; /* Keep inline */
+            vertical-align: baseline !important; /* Align with text baseline */
+            white-space: normal !important; /* Allow normal text wrapping */
+            font-size: inherit !important; /* Match parent font size */
+        }
+        .text-lg-plus {
+            font-size: 1.15rem; /* Slightly larger than default lg */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-primary text-white text-center py-16 px-4">
+        <h1 class="text-4xl md:text-6xl font-black uppercase tracking-wider">The Unstoppable Rise of</h1>
+        <h2 class="text-6xl md:text-8xl font-black text-accent3">Entropy</h2>
+        <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-200">It's not just a concept; it's the fundamental law that dictates the direction of time, limits engineering perfection, and governs every process in the universe.</p>
+    </header>
+
+    <main class="max-w-screen-xl mx-auto p-4 md:p-8"> <!-- Increased max-width here -->
+
+        <!-- 1. Clausius Theorem -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">1. The Foundation: Clausius Theorem</h3>
+            <p class="text-lg text-gray-600 mb-6">This theorem sets the stage by defining what's possible. It states that for any complete cycle, you can't get more "useful" energy out than what's allowed by nature's rules.</p>
+            <div class="text-center bg-gray-50 p-6 rounded-lg">
+                <p class="text-4xl font-bold font-mono text-secondary">$$\oint \frac{\delta Q}{T} \leq 0$$</p>
+                <p class="mt-2 text-gray-500">The cyclic integral of heat transfer over temperature can never be positive.</p>
+            </div>
+            <div class="mt-8 grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h4 class="text-xl font-bold mb-2">The "Uphill Flow" Analogy</h4>
+                    <p class="text-lg-plus text-gray-600">The theorem explains why heat won't spontaneously flow from a cold place to a hot place. Just like water won't flow uphill without a pump, you need to input work to make heat go against its natural tendency.</p>
+                    <h4 class="text-xl font-bold mt-6 mb-2">Carnot Efficiency Formula</h4>
+                    <p class="text-lg-plus text-gray-600">The maximum theoretical efficiency for a heat engine operating between two temperatures \(T_H\) (hot) and \(T_L\) (cold) is given by:</p>
+                    <p class="text-3xl font-bold font-mono text-secondary my-4 text-center">$$\eta_{Carnot} = 1 - \frac{T_L}{T_H}$$</p>
+                    <p class="text-gray-600 text-sm">Where \(T_L\) and \(T_H\) must be in absolute temperature units (Kelvin).</p>
+                </div>
+                <div class="bg-primary text-white p-6 rounded-lg flex flex-col items-center text-center">
+                    <div class="font-bold">Hot Reservoir (25°C)</div>
+                    <div class="text-5xl font-black my-4 text-accent1">🔥</div>
+                    <div class="text-4xl font-bold text-red-400 my-2">⇞</div>
+                    <div class="text-5xl font-black my-4 text-accent1">❄️</div>
+                    <div class="font-bold">Cold Reservoir (5°C)</div>
+                    <p class="mt-4 text-sm bg-red-500/50 px-2 py-1 rounded">Impossible without work!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Properties of Entropy -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">2. Defining Entropy: A Property of Dispersal</h3>
+            <p class="text-lg text-gray-600 mb-6">Born from the Clausius Theorem, entropy (S) isn't just "disorder." It's a precise measure of how energy and matter are dispersed, and it's a fundamental property of any system, like pressure or temperature.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="chart-container">
+                    <canvas id="entropyComponentsChart"></canvas>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-2">What Changes a System's Entropy?</h4>
+                    <p class="text-lg-plus text-gray-600 mb-4">The total change in a system's entropy comes from two sources:</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="text-2xl text-accent1 mr-3">📥</span>
+                            <div><strong class="text-secondary">Entropy Transfer:</strong> Entropy carried into or out of the system, primarily via heat transfer.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-2xl text-accent1 mr-3">💥</span>
+                            <div><strong class="text-secondary">Entropy Generation (S<sub>gen</sub>):</strong> Entropy *created* inside the system due to real-world inefficiencies like friction. This is always positive for real processes.</div>
+                        </li>
+                    </ul>
+                    <h4 class="text-xl font-bold mt-6 mb-2">Formulas for Entropy Change (\(\Delta s\))</h4>
+                    <p class="text-lg-plus text-gray-600">For an **Ideal Gas with Constant Specific Heats**:</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\Delta s = c_v \ln \frac{T_2}{T_1} + R \ln \frac{v_2}{v_1}$$</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\Delta s = c_p \ln \frac{T_2}{T_1} - R \ln \frac{P_2}{P_1}$$</p>
+                    <p class="text-lg-plus text-gray-600 mt-4">For an **Ideal Gas with Variable Specific Heats** (using reference entropy \(s^0\) from tables):</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\Delta s = s_2^0 - s_1^0 - R \ln \frac{P_2}{P_1}$$</p>
+                    <p class="text-lg-plus text-gray-600 mt-4">For **Incompressible Substances** (liquids, solids):</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\Delta s = c_{avg} \ln \frac{T_2}{T_1}$$</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Clausius Inequality & Carnot -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">3. The Universal Speed Limit: Carnot Efficiency</h3>
+            <p class="text-lg text-gray-600 mb-6">The Clausius Inequality proves that no engine can be 100% efficient. The Carnot Cycle defines the absolute maximum theoretical efficiency, a "speed limit" for converting heat to work that no real engine can ever reach.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Ideal vs. Real Engine Performance</h4>
+                    <p class="text-lg-plus text-gray-600">The Carnot efficiency is determined only by the temperatures of the hot and cold reservoirs. Real engines always fall short due to entropy generation from friction, heat leaks, and other irreversibilities.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="carnotEfficiencyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Irreversible Processes -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">4. The Reality of Inefficiency: Irreversible Processes</h3>
+            <p class="text-lg text-gray-600 mb-6">All real-world processes are irreversible. This means they generate entropy (\(S_{gen} > 0\)), which represents a permanent loss of potential to do useful work. Minimizing this is the core challenge of efficient engineering design.</p>
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <div class="flex flex-col md:flex-row items-center justify-center text-center">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-lg font-bold">Real Process</p>
+                        <p class="text-sm text-gray-500">(Friction, Mixing, etc.)</p>
+                    </div>
+                    <div class="flowchart-arrow my-4 md:my-0 md:mx-6">→</div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-lg font-bold">Irreversibilities</p>
+                        <p class="text-sm text-gray-500">(Energy degradation)</p>
+                    </div>
+                    <div class="flowchart-arrow my-4 md:my-0 md:mx-6">→</div>
+                    <div class="bg-secondary text-white p-4 rounded-lg shadow-lg">
+                        <p class="text-lg font-bold">Entropy Generation</p>
+                        <p class="text-sm font-mono">$$S_{gen} > 0$$</p>
+                    </div>
+                </div>
+            </div>
+            <h4 class="text-xl font-bold mt-6 mb-2">Entropy Balance Equation (General)</h4>
+            <p class="text-lg-plus text-gray-600">The change in entropy of a system is due to entropy transfer (with heat) and entropy generated internally:</p>
+            <p class="text-3xl font-bold font-mono text-secondary my-4 text-center">$$\Delta S_{sys} = \int \frac{\delta Q}{T_{boundary}} + S_{gen}$$</p>
+        </section>
+
+        <!-- 5. Principle of Increase of Entropy -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">5. The Arrow of Time: Principle of Increase of Entropy</h3>
+            <p class="text-lg text-gray-600 mb-6">This is the ultimate statement of the Second Law: The total entropy of the universe can never decrease. While a specific system can become more ordered, it only does so by creating even more disorder in its surroundings.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="chart-container">
+                    <canvas id="universeEntropyChart"></canvas>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Local Order vs. Universal Disorder</h4>
+                    <p class="text-lg-plus text-gray-600">Think of a refrigerator. It cools its inside (decreasing local entropy), but its compressor releases a larger amount of heat into the kitchen (increasing surroundings' entropy). The net result is always an increase in the universe's total entropy.</p>
+                    <p class="mt-4 text-2xl font-bold font-mono text-center bg-accent2/50 text-secondary p-4 rounded-lg">$$\Delta S_{universe} = \Delta S_{system} + \Delta S_{surroundings} \geq 0$$</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Third Law of Thermodynamics -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">6. The Absolute Zero of Entropy: Third Law</h3>
+            <p class="text-lg text-gray-600 mb-6">The Third Law of Thermodynamics provides a crucial reference point for entropy. It states that the entropy of a pure, perfectly crystalline substance approaches zero as its temperature approaches absolute zero (0 Kelvin).</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Perfect Order at Absolute Zero</h4>
+                    <p class="text-lg-plus text-gray-600">At absolute zero, all atomic and molecular motion ceases, and a perfect crystal would have only one possible microscopic arrangement. This establishes a true zero point for entropy, allowing us to determine absolute entropy values for substances.</p>
+                </div>
+                <div class="bg-primary text-white p-6 rounded-lg flex flex-col items-center text-center">
+                    <div class="font-bold">Pure Crystal at 0 K</div>
+                    <div class="text-5xl font-black my-4 text-accent1">💎</div>
+                    <div class="text-4xl font-bold text-accent3 my-2">$$S = 0$$</div>
+                    <p class="mt-4 text-sm bg-accent2/50 px-2 py-1 rounded">Perfectly Ordered</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Engineering Applications (Flow & Non-Flow) -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">7. Engineering in Action: Flow Processes</h3>
+            <p class="text-lg text-gray-600 mb-6">In engineering, we use the isentropic (constant entropy) process as a perfect benchmark. The isentropic efficiency of a device like a turbine measures how close its actual performance gets to this impossible ideal.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                 <div>
+                    <h4 class="text-xl font-bold mb-2">Turbine Performance: Ideal vs. Actual</h4>
+                    <p class="text-lg-plus text-gray-600">An ideal (isentropic) turbine would extract the maximum possible work from a fluid. A real turbine generates entropy through friction and turbulence, resulting in less work output. The difference is "lost work."</p>
+                    <h4 class="text-xl font-bold mt-6 mb-2">Entropy Balance Equations</h4>
+                    <p class="text-lg-plus text-gray-600">For **Closed Systems (Non-Flow)**:</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$S_2 - S_1 = \int_1^2 \frac{\delta Q}{T_{boundary}} + S_{gen}$$</p>
+                    <p class="text-lg-plus text-gray-600 mt-4">For **Open Systems (Steady-Flow Rate Form)**:</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\sum \dot{m}_e s_e - \sum \dot{m}_i s_i = \sum \frac{\dot{Q}_{cv}}{T_{boundary}} + \dot{S}_{gen}$$</p>
+                    <h4 class="text-xl font-bold mt-6 mb-2">Isentropic Efficiencies</h4>
+                    <p class="text-lg-plus text-gray-600">These compare actual performance to the ideal isentropic case:</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\eta_{turbine} = \frac{W_{actual}}{W_{isentropic}} = \frac{h_1 - h_{2a}}{h_1 - h_{2s}}$$</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\eta_{compressor} = \frac{W_{isentropic}}{W_{actual}} = \frac{h_{2s} - h_1}{h_{2a} - h_1}$$</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\eta_{nozzle} = \frac{V_{2a}^2}{V_{2s}^2} = \frac{h_1 - h_{2a}}{h_1 - h_{2s}}$$</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="turbineEfficiencyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Exergy (Availability) -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">8. The Quality of Energy: Exergy (Availability)</h3>
+            <p class="text-lg text-gray-600 mb-6">Exergy, or availability, quantifies the maximum useful work that can be obtained from a system as it comes into thermodynamic equilibrium with its surroundings. It's a measure of energy's "quality" – how much of it is truly available to do work.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="chart-container">
+                    <canvas id="exergyChart"></canvas>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Exergy vs. Energy: Quality Matters</h4>
+                    <p class="text-lg-plus text-gray-600 mb-4">While the First Law deals with the *quantity* of energy, exergy (a Second Law concept) deals with its *quality*. Exergy is destroyed by irreversibilities (entropy generation), representing the portion of energy that becomes unavailable for work.</p>
+                    <p class="mt-4 text-2xl font-bold font-mono text-secondary my-2 text-center">$$Exergy Destroyed = T_0 \cdot S_{gen}$$</p>
+                    <h4 class="text-xl font-bold mt-6 mb-2">General Exergy Formulas</h4>
+                    <p class="text-lg-plus text-gray-600">For a **Closed System** (non-flow):</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$E = (U - U_0) + P_0(V - V_0) - T_0(S - S_0) + \frac{1}{2}mV^2 + mgz$$</p>
+                    <p class="text-lg-plus text-gray-600 mt-4">For a **Flow System** (per unit mass, specific exergy \(\psi\)):</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$\psi = (h - h_0) - T_0(s - s_0) + \frac{1}{2}V^2 + gz$$</p>
+                    <p class="text-gray-600 text-sm">Where subscript '0' denotes properties at the dead state (equilibrium with surroundings).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Gibbs and Helmholtz Free Energy -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">9. Spontaneity & Equilibrium: Gibbs & Helmholtz Free Energy</h3>
+            <p class="text-lg text-gray-600 mb-6">These thermodynamic potentials are crucial for predicting whether a process will occur spontaneously under specific conditions (constant T, P for Gibbs; constant T, V for Helmholtz). They balance the system's enthalpy (or internal energy) and entropy to determine the driving force for change.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Predicting Material Behavior (Gibbs Free Energy)</h4>
+                    <p class="text-lg-plus text-gray-600 mb-4">For material scientists, Gibbs Free Energy (\(\Delta G\)) is particularly important as it predicts the spontaneity of phase transformations, chemical reactions, and material stability at constant temperature and pressure – common conditions in materials processing.</p>
+                    <div class="bg-gray-50 p-4 rounded-lg text-center">
+                        <p class="text-lg font-bold text-primary">For Constant T, P:</p>
+                        <p class="text-3xl font-bold font-mono text-secondary my-2 text-center">$$\Delta G = \Delta H - T\Delta S$$</p>
+                        <ul class="text-left mt-4 text-lg-plus text-gray-700">
+                            <li><span class="font-bold text-accent1">\(\Delta G < 0\):</span> Spontaneous process</li>
+                            <li><span class="font-bold text-accent1">\(\Delta G = 0\):</span> Equilibrium</li>
+                            <li><span class="font-bold text-accent1">\(\Delta G > 0\):</span> Non-spontaneous (requires input)</li>
+                        </ul>
+                    </div>
+                    <h4 class="text-xl font-bold mt-6 mb-2">Helmholtz Free Energy</h4>
+                    <p class="text-lg-plus text-gray-600">Helmholtz Free Energy (\(A\)) is useful for processes occurring at constant temperature and volume:</p>
+                    <p class="text-xl font-bold font-mono text-secondary my-2 text-center">$$A = U - TS$$</p>
+                    <p class="text-lg-plus text-gray-600">For spontaneity at **Constant T, V**:</p>
+                    <ul class="text-left mt-4 text-lg-plus text-gray-700">
+                        <li><span class="font-bold text-accent1">\(\Delta A < 0\):</span> Spontaneous process</li>
+                        <li><span class="font-bold text-accent1">\(\Delta A = 0\):</span> Equilibrium</li>
+                        <li><span class="font-bold text-accent1">\(\Delta A > 0\):</span> Non-spontaneous (requires input)</li>
+                    </ul>
+                </div>
+                <div class="bg-primary text-white p-6 rounded-lg flex flex-col items-center text-center">
+                    <div class="font-bold text-xl">Spontaneity Conditions</div>
+                    <div class="text-5xl font-black my-4 text-accent1">↘️</div>
+                    <div class="text-4xl font-bold text-accent3 my-2">$$\Delta G < 0$$</div>
+                    <p class="mt-4 text-sm bg-accent2/50 px-2 py-1 rounded">Process will happen naturally!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. Tackling Numerical Problems: A Structured Approach -->
+        <section class="section-card">
+            <h3 class="text-3xl font-bold text-primary mb-2">10. Tackling Numerical Problems: A Structured Approach</h3>
+            <p class="text-lg text-gray-600 mb-6">Solving thermodynamic numerical problems, especially those involving entropy and free energy, requires a systematic approach. Follow these steps to break down complex problems and arrive at accurate solutions.</p>
+            
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h4 class="text-xl font-bold mb-4">General Problem-Solving Checklist (GPC)</h4>
+                <ol class="list-decimal list-inside space-y-4 text-lg-plus text-gray-700">
+                    <li>
+                        <strong class="text-secondary">1. Understand the Problem & Define System:</strong>
+                        <p>Read the problem carefully. Identify what is given and what needs to be found. Clearly define your system (closed, open/control volume) and its boundaries. Sketch a diagram if helpful. Note initial and final states.</p>
+                    </li>
+                    <li>
+                        <strong class="text-secondary">2. Identify Relevant Laws & Principles:</strong>
+                        <p>Determine which thermodynamic laws apply. Is it an energy balance (First Law), an entropy balance (Second Law), or a spontaneity criterion (Gibbs/Helmholtz Free Energy)?</p>
+                    </li>
+                    <li>
+                        <strong class="text-secondary">3. List Assumptions & Simplifications:</strong>
+                        <p>Are there any stated or reasonable assumptions? (e.g., ideal gas, incompressible substance, steady-state, adiabatic, reversible). These simplify the formulas.</p>
+                    </li>
+                    <li>
+                        <strong class="text-secondary">4. Select Appropriate Formulas:</strong>
+                        <p>Based on your system definition, process type, and assumptions, choose the correct energy, entropy, or free energy balance equations. For example, use \( \Delta G = \Delta H - T\Delta S \) for spontaneity at constant T, P.</p>
+                    </li>
+                    <li>
+                        <strong class="text-secondary">5. Gather Property Data:</strong>
+                        <p>Look up standard enthalpy of formation \((\Delta H_f^0)\) and standard absolute entropy \((S^0)\) for all reactants and products from thermodynamic tables. Calculate \( \Delta H_{reaction} \) and \( \Delta S_{reaction} \).</p>
+                    </li>
+                    <li>
+                        <strong class="text-secondary">6. Calculate:</strong>
+                        <p>Convert temperature to Kelvin. Substitute calculated \( \Delta H_{reaction} \), \( T \), and \( \Delta S_{reaction} \) into the Gibbs equation.</p>
+                    </li>
+                    <li>
+                        <strong class="text-secondary">7. Interpret Results:</strong>
+                        <p>If \( \Delta G < 0 \), the reaction is spontaneous. If \( \Delta G > 0 \), it's non-spontaneous. If \( \Delta G = 0 \), it's at equilibrium.</p>
+                    </li>
+                </ol>
+            </div>
+
+            <h4 class="text-xl font-bold mt-8 mb-4">Conceptual Example: Predicting Spontaneity of a Reaction</h4>
+            <p class="text-gray-600 mb-4">You are asked to determine if a specific chemical reaction, important for a material synthesis process, will occur spontaneously at a given temperature and pressure. Here's how to apply the GPC:</p>
+            <ul class="list-disc list-inside space-y-2 text-lg-plus text-gray-700">
+                <li><strong class="text-secondary">1. Understand Problem:</strong> Find spontaneity of reaction at constant T, P.</li>
+                <li><strong class="text-secondary">2. Identify Laws:</strong> Gibbs Free Energy criterion \((\Delta G)\) for spontaneity.</li>
+                <li><strong class="text-secondary">3. Assumptions:</strong> Assume ideal solution behavior if applicable, or that standard state data can be used with corrections.</li>
+                <li><strong class="text-secondary">4. Select Formulas:</strong> Use \( \Delta G = \Delta H - T\Delta S \). You'll need to find \( \Delta H \) and \( \Delta S \) for the reaction.</li>
+                <li><strong class="text-secondary">5. Gather Data:</strong> Look up standard enthalpy of formation \((\Delta H_f^0)\) and standard absolute entropy \((S^0)\) for all reactants and products from thermodynamic tables. Calculate \( \Delta H_{reaction} \) and \( \Delta S_{reaction} \).</li>
+                <li><strong class="text-secondary">6. Calculate:</strong> Convert temperature to Kelvin. Substitute calculated \( \Delta H_{reaction} \), \( T \), and \( \Delta S_{reaction} \) into the Gibbs equation.</li>
+                <li><strong class="text-secondary">7. Interpret Results:</strong> If \( \Delta G < 0 \), the reaction is spontaneous. If \( \Delta G > 0 \), it's non-spontaneous. If \( \Delta G = 0 \), it's at equilibrium.</li>
+            </ul>
+
+            <h4 class="text-xl font-bold mt-8 mb-4">Key Formulas for Problem Solving (Recap)</h4>
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <p class="text-lg font-bold text-primary mb-2">Clausius Inequality:</p>
+                <p class="text-2xl font-bold font-mono text-secondary my-2 text-center">$$\oint \frac{\delta Q}{T} \leq 0$$</p>
+
+                <p class="text-lg font-bold text-primary mt-6 mb-2">Entropy Balance (Closed System):</p>
+                <p class="text-2xl font-bold font-mono text-secondary my-2 text-center">$$\Delta S_{sys} = \int \frac{\delta Q}{T_{boundary}} + S_{gen}$$</p>
+
+                <p class="text-lg font-bold text-primary mt-6 mb-2">Entropy Balance (Open System, Rate Form):</p>
+                <p class="text-2xl font-bold font-mono text-secondary my-2 text-center">$$\sum \dot{m}_e s_e - \sum \dot{m}_i s_i = \sum \frac{\dot{Q}_{cv}}{T_{boundary}} + \dot{S}_{gen}$$</p>
+                
+                <p class="text-lg font-bold text-primary mt-6 mb-2">Exergy Destroyed:</p>
+                <p class="text-2xl font-bold font-mono text-secondary my-2 text-center">$$Exergy Destroyed = T_0 \cdot S_{gen}$$</p>
+
+                <p class="text-lg font-bold text-primary mt-6 mb-2">Gibbs Free Energy Change (Constant T, P):</p>
+                <p class="text-2xl font-bold font-mono text-secondary my-2 text-center">$$\Delta G = \Delta H - T\Delta S$$</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 bg-primary text-gray-300">
+        <p>Mastering entropy is mastering the limits of what's possible.</p>
+    </footer>
+
+<script>
+    const chartJsConfig = {
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    title: function(tooltipItems) {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        if (Array.isArray(label)) {
+                            return label.join(' ');
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+    };
+
+    const wrapLabel = (str, maxWidth) => {
+        if (str.length <= maxWidth) return str;
+        let wrapped = [];
+        let words = str.split(' ');
+        let currentLine = '';
+        words.forEach(word => {
+            if ((currentLine + word).length > maxWidth) {
+                wrapped.push(currentLine.trim());
+                currentLine = '';
+            }
+            currentLine += word + ' ';
+        });
+        wrapped.push(currentLine.trim());
+        return wrapped;
+    };
+
+    const ctxEntropy = document.getElementById('entropyComponentsChart').getContext('2d');
+    new Chart(ctxEntropy, {
+        type: 'doughnut',
+        data: {
+            labels: ['Entropy Transfer (Heat)', 'Entropy Generation (Irreversibility)'],
+            datasets: [{
+                label: 'Entropy Change Components',
+                data: [65, 35],
+                backgroundColor: ['#79BD9A', '#3B8686'],
+                borderColor: '#ffffff',
+                borderWidth: 4,
+            }]
+        },
+        options: chartJsConfig
+    });
+
+    const ctxCarnot = document.getElementById('carnotEfficiencyChart').getContext('2d');
+    new Chart(ctxCarnot, {
+        type: 'bar',
+        data: {
+            labels: ['Engine Efficiency'],
+            datasets: [{
+                label: 'Ideal Carnot Engine',
+                data: [60],
+                backgroundColor: '#A8DBA8',
+            }, {
+                label: 'Typical Real Engine',
+                data: [40],
+                backgroundColor: '#0B486B',
+            }]
+        },
+        options: { ...chartJsConfig,
+            scales: { y: { beginAtZero: true, max: 100, ticks: { callback: value => value + '%' } } }
+        }
+    });
+
+    const ctxUniverse = document.getElementById('universeEntropyChart').getContext('2d');
+    new Chart(ctxUniverse, {
+        type: 'bar',
+        data: {
+            labels: ['Total Entropy Change of the Universe'],
+            datasets: [{
+                label: 'System ΔS (e.g., Refrigerator)',
+                data: [-10],
+                backgroundColor: '#0B486B',
+            }, {
+                label: 'Surroundings ΔS (e.g., Kitchen)',
+                data: [15],
+                backgroundColor: '#79BD9A',
+            }]
+        },
+        options: { ...chartJsConfig,
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, ticks: { callback: value => value + ' J/K' } }
+            }
+        }
+    });
+
+    const ctxTurbine = document.getElementById('turbineEfficiencyChart').getContext('2d');
+    new Chart(ctxTurbine, {
+        type: 'bar',
+        data: {
+            labels: [wrapLabel('Turbine Work Output', 16)],
+            datasets: [{
+                label: 'Ideal (Isentropic) Work',
+                data: [1000],
+                backgroundColor: '#A8DBA8',
+            }, {
+                label: 'Actual Work Output',
+                data: [850],
+                backgroundColor: '#3B8686',
+            }]
+        },
+        options: { ...chartJsConfig,
+            scales: { y: { beginAtZero: true, ticks: { callback: value => value + ' kJ' } } }
+        }
+    });
+
+    const ctxExergy = document.getElementById('exergyChart').getContext('2d');
+    new Chart(ctxExergy, {
+        type: 'doughnut',
+        data: {
+            labels: ['Exergy (Useful Work Potential)', 'Anergy (Unavailable Energy)'],
+            datasets: [{
+                label: 'Energy Breakdown',
+                data: [70, 30],
+                backgroundColor: ['#CFF09E', '#0B486B'],
+                borderColor: '#ffffff',
+                borderWidth: 4,
+            }]
+        },
+        options: chartJsConfig
+    });
+</script>
+</body>
+</html>
