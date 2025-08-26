@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Phase Diagrams</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a top navigation bar for both linear scrolling and direct topic access. The structure is thematic: 1. Intro, 2. Fundamentals (grouping core theory including Allotropy), 3. The Interactive Iron-Carbon Diagram (centerpiece, now with detailed reaction explanations and Lever Rule), 4. Steel Microstructures (with an interactive Cooling Simulator and expanded constituent properties), 5. Alloy Families (comparative cards for Pig Iron, Wrought Iron, Steels, Cast Irons), 6. Codification, and 7. Study Corner (Concept Map, Comparative Table, Exam Pitfalls). This structure breaks down a complex topic into manageable, interactive sections, prioritizing a guided learning path over a rigid report format, enhancing usability and comprehension. The concept map now uses a vertical hierarchical layout for improved clarity. -->
+    <!-- Visualization & Content Choices: The application uses a variety of interactive elements tailored to educational goals. The core is a custom-drawn HTML Canvas for the Fe-Fe3C diagram, controlled by sliders for temperature and composition, providing a dynamic, exploratory experience. A second canvas animation simulates the cooling process, making the abstract concept of microstructure formation tangible. Standard charts are used for comparing properties, and interactive HTML cards are used for alloy families. HTML/CSS is used for the concept map and comparative table, with the concept map now featuring a vertical flow with clear arrowed connections. This multi-faceted approach ensures engagement and caters to different learning styles, all without using SVG or Mermaid JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7; /* Warm Neutral - Off-white */
+            color: #2F4F4F; /* Dark Slate Gray */
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #A0522D; /* Soft Brown */
+            border-bottom-color: #A0522D;
+        }
+        .content-card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .interactive-button {
+            background-color: #4682B4; /* Accent Blue */
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .interactive-button:hover {
+            background-color: #5a9bd8;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 500px;
+            max-height: 70vh;
+        }
+        .concept-map-container {
+            display: flex; /* Changed to flex */
+            flex-direction: column; /* Arranges items vertically */
+            align-items: center; /* Centers items horizontally */
+            gap: 3rem; /* Increased gap for vertical spacing */
+            position: relative;
+            padding: 2rem;
+        }
+        .concept-map-item {
+            border: 2px solid #A0522D;
+            background-color: #FFF;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            font-weight: 600;
+            position: relative;
+            z-index: 10;
+            min-width: 180px; /* Ensure consistent width */
+        }
+        .concept-map-line {
+            position: absolute;
+            background-color: #A0522D;
+            z-index: 1;
+            transform-origin: 0 0; /* Rotate around its start point */
+            height: 2px; /* Line thickness */
+        }
+        .concept-map-line::after {
+            content: '';
+            position: absolute;
+            /* Position at the end of the line */
+            left: 100%; /* At the end of the line */
+            top: 50%; /* Center vertically on the line */
+            transform: translateY(-50%); /* Adjust for vertical centering */
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 5px 0 5px 8px; /* Creates a triangle pointing right */
+            border-color: transparent transparent transparent #A0522D; /* Match line color */
+            /* The rotation of the parent `.concept-map-line` will rotate this arrowhead automatically */
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .data-table th, .data-table td {
+            padding: 0.75rem;
+            border: 1px solid #EAEAEA;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #F3F4F6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header and Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-bold text-gray-800">Phase Diagrams 101</h1>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#intro" class="nav-link">Introduction</a>
+                    <a href="#fundamentals" class="nav-link">Fundamentals</a>
+                    <a href="#fe-c-diagram" class="nav-link">Fe-C Diagram</a>
+                    <a href="#microstructures" class="nav-link">Microstructures</a>
+                    <a href="#alloys" class="nav-link">Alloys</a>
+                    <a href="#codification" class="nav-link">Codification</a>
+                    <a href="#study-corner" class="nav-link">Study Corner</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option value="#intro">Introduction</option>
+                        <option value="#fundamentals">Fundamentals</option>
+                        <option value="#fe-c-diagram">Fe-C Diagram</option>
+                        <option value="#microstructures">Microstructures</option>
+                        <option value="#alloys">Alloys</option>
+                        <option value="#codification">Codification</option>
+                        <option value="#study-corner">Study Corner</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Section: Introduction -->
+        <section id="intro" class="min-h-screen flex items-center">
+            <div class="w-full">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 text-center">The Material Scientist's Map</h2>
+                <p class="text-lg md:text-xl text-center max-w-3xl mx-auto text-gray-600">
+                    Welcome! This guide unlocks the power of phase diagrams, the essential "maps" for mechanical engineers. They reveal how materials like steel behave under different conditions, allowing us to predict properties, design new alloys, and build safer, more efficient products. Let's explore the story written in these diagrams, from fundamental concepts to real-world steel applications.
+                </p>
+                <div class="text-6xl text-center mt-12 animate-bounce">🗺️</div>
+            </div>
+        </section>
+
+        <!-- Section: Fundamentals -->
+        <section id="fundamentals" class="py-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">The Building Blocks</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                To read our material "maps," we first need to learn the language. This section covers the core vocabulary—systems, phases, and components—the fundamental law that governs their behavior (Gibbs' Phase Rule), and the fascinating allotropy of iron itself. Grasping these concepts is the first step to mastering phase diagrams.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="content-card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4">Systems, Phases & Components</h3>
+                    <p class="mb-4">Think of a glass of ice water. The whole glass is the <strong class="text-blue-600">System</strong>. The ice, liquid water, and water vapor are three distinct <strong class="text-blue-600">Phases</strong>—physically separate and chemically uniform regions. The only chemical ingredient needed to describe it all is H₂O, which is the single <strong class="text-blue-600">Component</strong>.</p>
+                    <div class="bg-blue-50 p-4 rounded-md">
+                        <p><strong class="text-blue-700">Key Misconception:</strong> A "phase" is not just a "state of matter" (solid, liquid, gas). A material can have multiple solid phases! For example, solid iron has different crystal structures (and thus phases) at different temperatures.</p>
+                    </div>
+                </div>
+                <div class="content-card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4">Gibbs' Phase Rule</h3>
+                    <p class="mb-4">This rule is a powerful thermodynamic equation that tells us how much freedom we have to change variables like temperature or pressure without changing the number of phases in equilibrium.</p>
+                    <div class="text-center bg-gray-100 p-4 rounded-lg font-mono text-lg">
+                        F = C - P + 1
+                    </div>
+                    <p class="mt-4 text-sm text-gray-500 text-center">(Simplified for constant pressure, as used in most material diagrams)</p>
+                    <ul class="mt-4 space-y-2">
+                        <li><strong>F:</strong> Degrees of Freedom (how many variables you can change).</li>
+                        <li><strong>C:</strong> Number of Components (e.g., Fe and C are 2 components).</li>
+                        <li><strong>P:</strong> Number of Phases present.</li>
+                    </ul>
+                </div>
+                <div class="md:col-span-2 content-card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4">Allotropy of Iron</h3>
+                    <p class="mb-4">Iron itself undergoes fascinating phase transformations depending on temperature. This ability to exist in different crystal structures is called allotropy.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Alpha (α) Ferrite:</strong> Body-Centered Cubic (BCC) structure. Stable below 912°C and between 1394°C and 1538°C (as Delta Ferrite, δ). It's magnetic and can dissolve very little carbon.</li>
+                        <li><strong>Gamma (γ) Austenite:</strong> Face-Centered Cubic (FCC) structure. Stable between 912°C and 1394°C. It's non-magnetic and can dissolve significantly more carbon than ferrite, up to 2.14% at 1147°C. This high carbon solubility is crucial for steel heat treatment.</li>
+                    </ul>
+                    <div class="bg-yellow-50 p-4 rounded-md mt-4">
+                        <p><strong class="text-yellow-700">Why it matters:</strong> The ability of iron to transform between BCC and FCC structures (and their differing carbon solubilities) is the fundamental reason why steel can be heat-treated to achieve a wide range of properties.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Interactive Fe-C Diagram -->
+        <section id="fe-c-diagram" class="py-20">
+            <h2 class="text-3xl font-bold mb-2 text-center">The Iron-Carbon Diagram Explorer</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-8 text-gray-600">
+                This is the most important phase diagram for any mechanical engineer. It's the master key to understanding steel. Use the sliders to explore how temperature and carbon content change the structure of iron-carbon alloys. Click the key reaction points to learn more.
+            </p>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div class="chart-container mx-auto">
+                    <canvas id="ironCarbonDiagram"></canvas>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label for="carbonSlider" class="block mb-2 text-sm font-medium">Carbon Content (%C): <span id="carbonValue" class="font-bold">0.8</span>%</label>
+                        <input id="carbonSlider" type="range" min="0" max="6.67" value="0.8" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <label for="tempSlider" class="block mb-2 text-sm font-medium">Temperature (°C): <span id="tempValue" class="font-bold">800</span>°C</label>
+                        <input id="tempSlider" type="range" min="400" max="1600" value="800" step="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+                <div id="phaseInfo" class="mt-6 text-center bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-lg">Current Phase(s):</h4>
+                    <p id="phaseText" class="text-xl text-blue-800 font-bold">Austenite (γ)</p>
+                </div>
+            </div>
+             <!-- Modal for reaction info -->
+            <div id="reactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+                    <h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
+                    <p id="modalText" class="mb-4"></p>
+                    <button id="closeModal" class="interactive-button w-full py-2 rounded-lg">Close</button>
+                </div>
+            </div>
+
+            <div class="mt-12">
+                <h3 class="text-2xl font-bold mb-4 text-center">Key Reactions in the Fe-Fe₃C Diagram</h3>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8 text-gray-600">
+                    These three invariant reactions are critical points where three phases coexist in equilibrium, allowing for unique transformations upon cooling or heating.
+                </p>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="content-card p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold mb-2">Eutectoid Reaction</h4>
+                        <p class="text-sm text-gray-500 mb-2">At 727°C, 0.76% C</p>
+                        <p>A single solid phase (Austenite, γ) transforms into two new solid phases (Ferrite, α, and Cementite, Fe₃C) upon cooling. The resulting lamellar (layered) microstructure is called <strong>Pearlite</strong>.</p>
+                        <p class="mt-2 font-mono text-sm text-center">γ (solid) → α (solid) + Fe₃C (solid)</p>
+                    </div>
+                    <div class="content-card p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold mb-2">Eutectic Reaction</h4>
+                        <p class="text-sm text-gray-500 mb-2">At 1147°C, 4.3% C</p>
+                        <p>A single liquid phase transforms directly into two solid phases (Austenite, γ, and Cementite, Fe₃C) upon cooling. This reaction is important for cast irons.</p>
+                        <p class="mt-2 font-mono text-sm text-center">L (liquid) → γ (solid) + Fe₃C (solid)</p>
+                    </div>
+                    <div class="content-card p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold mb-2">Peritectic Reaction</h4>
+                        <p class="text-sm text-gray-500 mb-2">At 1493°C, 0.16% C</p>
+                        <p>A liquid phase and a solid phase (Delta Ferrite, δ) react to form a new solid phase (Austenite, γ) upon cooling. This reaction is less common in everyday steels due to its high temperature and low carbon content.</p>
+                        <p class="mt-2 font-mono text-sm text-center">L (liquid) + δ (solid) → γ (solid)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="lever-rule" class="mt-12 content-card p-6 rounded-lg">
+                <h3 class="text-2xl font-bold mb-4 text-center">The Lever Rule: Quantifying Phases</h3>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8 text-gray-600">
+                    The Lever Rule is a powerful tool used with binary phase diagrams to determine the relative amounts (weight fractions) of each phase present in a two-phase region at a given temperature and composition.
+                </p>
+                <div class="bg-gray-100 p-4 rounded-lg text-center">
+                    <p class="font-mono text-lg mb-2">Fraction of Phase A = (C₀ - C_B) / (C_A - C_B)</p>
+                    <p class="font-mono text-lg">Fraction of Phase B = (C_A - C₀) / (C_A - C_B)</p>
+                    <p class="mt-4 text-sm text-gray-600">Where:</p>
+                    <ul class="list-disc list-inside text-sm text-gray-600 text-left mx-auto max-w-sm">
+                        <li><strong>C₀:</strong> Overall composition of the alloy.</li>
+                        <li><strong>C_A:</strong> Composition of Phase A (from the phase boundary line).</li>
+                        <li><strong>C_B:</b> Composition of Phase B (from the phase boundary line).</li>
+                    </ul>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-md mt-4">
+                    <p><strong class="text-blue-700">Analogy:</strong> Imagine a lever with the alloy's composition (C₀) as the fulcrum. The two phases (A and B) are at the ends of the lever (C_A and C_B). To find the amount of phase A, you "weigh" the arm on the opposite side (C₀ to C_B).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Microstructures -->
+        <section id="microstructures" class="py-20 bg-gray-50">
+            <h2 class="text-3xl font-bold mb-2 text-center">Cooling Simulator & Microstructures</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-8 text-gray-600">
+                The properties of steel are determined by its microstructure—the arrangement of its internal phases. See how different steels evolve as they cool slowly from a high temperature. Select a steel type and watch the transformation unfold.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="content-card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Select Steel Type & Simulate</h3>
+                    <div class="flex justify-center space-x-4 mb-4 flex-wrap gap-2">
+                        <button onclick="simulateCooling('hypo')" class="interactive-button px-4 py-2 rounded-lg">Hypo-eutectoid (<0.76%C)</button>
+                        <button onclick="simulateCooling('eutectoid')" class="interactive-button px-4 py-2 rounded-lg">Eutectoid (0.76%C)</button>
+                        <button onclick="simulateCooling('hyper')" class="interactive-button px-4 py-2 rounded-lg">Hyper-eutectoid (>0.76%C)</button>
+                    </div>
+                    <div class="relative w-full aspect-square bg-gray-200 rounded-md overflow-hidden">
+                        <canvas id="coolingCanvas"></canvas>
+                    </div>
+                    <div id="simulationInfo" class="mt-4 text-center bg-gray-100 p-3 rounded-lg min-h-[60px]">
+                        <p class="font-semibold">Select a steel to begin simulation.</p>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                     <div class="content-card p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold">Ferrite (α)</h4>
+                        <p>A soft, ductile, and magnetic phase of iron with a Body-Centered Cubic (BCC) structure. It can dissolve very little carbon (max 0.022 wt% C at 727°C). Ferrite contributes to the steel's toughness and ductility.</p>
+                    </div>
+                    <div class="content-card p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold">Cementite (Fe₃C)</h4>
+                        <p>An interstitial compound of iron and carbon, also known as iron carbide. It is extremely hard and brittle, contributing significantly to the strength and hardness of steel, but also reducing its ductility.</p>
+                    </div>
+                    <div class="content-card p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold">Pearlite (α + Fe₃C)</h4>
+                        <p>A lamellar (layered) microconstituent consisting of alternating plates of ferrite (soft) and cementite (hard). It forms from the eutectoid reaction and offers a good balance of strength and ductility, often described as having properties similar to a medium carbon steel.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Section: Alloy Families -->
+        <section id="alloys" class="py-20">
+            <h2 class="text-3xl font-bold mb-2 text-center">The Iron-Carbon Family: Alloy Groups</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                The Fe-C system encompasses a broad spectrum of alloys, each with distinct properties due to their varying carbon content and resulting microstructures.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="content-card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-2">Wrought Iron</h3>
+                    <p class="text-sm text-gray-500 mb-2">Very Low Carbon (&lt; 0.008% C)</p>
+                    <p>Essentially pure iron, often with slag (iron silicate) inclusions that give it a fibrous structure. It's very soft, ductile, and easily forgeable. Historically used for decorative ironwork, chains, and rivets.</p>
+                </div>
+                <div class="content-card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-2">Steels</h3>
+                    <p class="text-sm text-gray-500 mb-2">0.008% - 2.14% C</p>
+                    <p>The most versatile group. Properties vary greatly with carbon content and heat treatment. Includes:</p>
+                    <ul class="list-disc list-inside text-sm mt-2">
+                        <li><strong>Low Carbon Steel:</strong> &lt;0.25% C. Soft, ductile, easily welded (e.g., car bodies, structural shapes).</li>
+                        <li><strong>Medium Carbon Steel:</strong> 0.25-0.60% C. Good balance of strength and ductility, often heat-treated (e.g., gears, crankshafts).</li>
+                        <li><strong>High Carbon Steel:</strong> 0.60-2.14% C. Very hard, strong, and wear-resistant (e.g., cutting tools, springs).</li>
+                    </ul>
+                </div>
+                <div class="content-card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-2">Cast Irons</h3>
+                    <p class="text-sm text-gray-500 mb-2">2.14% - 6.67% C</p>
+                    <p>High carbon content leads to low melting points and good fluidity in the liquid state, making them suitable for casting. They are typically brittle but have good compressive strength and wear resistance. Used for engine blocks, machine bases, and pipes.</p>
+                </div>
+                <div class="content-card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-2">Pig Iron</h3>
+                    <p class="text-sm text-gray-500 mb-2">High Carbon (3.5% - 4.5% C)</p>
+                    <p>An intermediate product from the blast furnace, high in carbon and other impurities. It's very brittle and primarily used as a raw material for producing steel and cast iron.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Codification -->
+        <section id="codification" class="py-20 bg-gray-50">
+            <h2 class="text-3xl font-bold mb-8 text-center">Steel Codification & Designations</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                To ensure consistency and quality, steels are systematically classified and designated by various international and national standards. This helps engineers and manufacturers communicate precisely about material properties.
+            </p>
+            <div class="content-card p-6 rounded-lg max-w-2xl mx-auto">
+                <h3 class="text-2xl font-semibold mb-4">Understanding Steel Designations</h3>
+                <p class="mb-4">Different organizations use various systems, but they often convey information about composition, mechanical properties, or intended use.</p>
+                <div class="bg-blue-50 p-4 rounded-md mb-4">
+                    <h4 class="font-semibold text-lg mb-2">Example: AISI/SAE 1040 Steel</h4>
+                    <ul class="list-disc list-inside text-sm text-gray-700">
+                        <li><strong>1:</strong> Carbon Steel</li>
+                        <li><strong>0:</strong> No significant alloying elements (plain carbon steel)</li>
+                        <li><strong>40:</strong> Indicates approximately 0.40% carbon content (the last two digits typically represent carbon content in hundredths of a percent).</li>
+                    </ul>
+                    <p class="mt-2 text-sm text-gray-600">This designation immediately tells an engineer that it's a plain carbon steel with about 0.40% carbon, implying certain strength and ductility characteristics.</p>
+                </div>
+                <p class="mb-2"><strong>Key Standards:</strong></p>
+                <ul class="list-disc list-inside text-gray-700">
+                    <li><strong>IS (Indian Standards):</strong> National standards for India.</li>
+                    <li><strong>ISO (International Organization for Standardization):</strong> Global standards, aiming for worldwide consistency.</li>
+                    <li><strong>ASTM (American Society for Testing and Materials):</strong> Widely used in North America.</li>
+                    <li><strong>JIS (Japanese Industrial Standards):</strong> Standards for Japan.</li>
+                </ul>
+                <div class="bg-yellow-50 p-4 rounded-md mt-4">
+                    <p><strong class="text-yellow-700">Importance:</strong> Proper codification ensures that the correct material is selected for an application, meeting design requirements for strength, corrosion resistance, weldability, and other critical properties.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Study Corner -->
+        <section id="study-corner" class="py-20 bg-blue-50">
+            <h2 class="text-3xl font-bold mb-8 text-center">Study & Review Corner</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                Consolidate your knowledge. This section provides a high-level concept map connecting all the topics, a comparative table for steel types, and highlights common pitfalls to help you ace your exams.
+            </p>
+
+            <div class="content-card p-8 rounded-lg mb-12">
+                <h3 class="text-2xl font-semibold mb-6 text-center">Concept Map: Navigating Phase Diagrams</h3>
+                <div class="concept-map-container" id="conceptMap">
+                    <div class="concept-map-item" id="item1">Phase Diagrams</div>
+                    <div class="flex flex-col md:flex-row gap-x-12 gap-y-8 mt-8 w-full justify-center items-center">
+                        <div class="concept-map-item" id="item2">Fundamentals</div>
+                        <div class="concept-map-item" id="item3">Fe-Fe₃C Diagram</div>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-x-8 gap-y-8 mt-8 w-full justify-center items-center">
+                        <div class="concept-map-item" id="item4">Key Reactions</div>
+                        <div class="concept-map-item" id="item5">Lever Rule</div>
+                        <div class="concept-map-item" id="item6">Microstructures</div>
+                        <div class="concept-map-item" id="item7">Alloy Groups</div>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-x-12 gap-y-8 mt-8 w-full justify-center items-center">
+                        <div class="concept-map-item" id="item8">Codification</div>
+                        <div class="concept-map-item" id="item9">Properties</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card p-8 rounded-lg mb-12">
+                <h3 class="text-2xl font-semibold mb-6 text-center">Comparative Table: Steel Types & Applications</h3>
+                <div class="table-container">
+                    <table class="data-table w-full border-collapse">
+                        <thead>
+                            <tr>
+                                <th>Steel Type</th>
+                                <th>Carbon Content (wt%)</th>
+                                <th>Typical Microstructure (Equilibrium)</th>
+                                <th>Key Properties</th>
+                                <th>Common Applications</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Wrought Iron</td>
+                                <td>&lt;0.008</td>
+                                <td>Ferrite + Slag</td>
+                                <td>Very ductile, malleable, corrosion-resistant</td>
+                                <td>Ornamental ironwork, chains, pipes (historical)</td>
+                            </tr>
+                            <tr>
+                                <td>Low Carbon Steel</td>
+                                <td>0.008 – 0.25</td>
+                                <td>Ferrite + small Pearlite</td>
+                                <td>Soft, ductile, easily welded & machined</td>
+                                <td>Structural shapes, sheet metal, wire, pipes</td>
+                            </tr>
+                            <tr>
+                                <td>Medium Carbon Steel</td>
+                                <td>0.25 – 0.60</td>
+                                <td>Ferrite + Pearlite</td>
+                                <td>Good strength & ductility, heat-treatable</td>
+                                <td>Gears, crankshafts, railway components, machine parts</td>
+                            </tr>
+                            <tr>
+                                <td>High Carbon Steel</td>
+                                <td>0.60 – 2.14</td>
+                                <td>Pearlite + Proeutectoid Cementite</td>
+                                <td>High strength & hardness, less ductile</td>
+                                <td>Cutting tools, springs, dies, high-strength wires</td>
+                            </tr>
+                            <tr>
+                                <td>Cast Iron</td>
+                                <td>2.14 – 6.67</td>
+                                <td>Pearlite, Cementite, Graphite (flakes/nodules)</td>
+                                <td>Good castability, brittle (except ductile)</td>
+                                <td>Engine blocks, machine bases, pipes, automotive parts</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="content-card p-8 rounded-lg">
+                <h3 class="text-2xl font-semibold mb-6 text-center">Common Exam Pitfalls & Tips</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold">1. Confusing Eutectic vs. Eutectoid</h4>
+                        <p class="text-sm text-gray-600"><strong>Tip:</strong> Remember Eutec<strong class="text-red-500">tic</strong> involves a <strong class="text-red-500">L</strong>iquid (L → S₁ + S₂). Eutec<strong class="text-blue-500">toid</strong> involves one <strong class="text-blue-500">S</strong>olid transforming into two other solids (S₁ → S₂ + S₃).</p>
+                    </div>
+                     <div>
+                        <h4 class="font-semibold">2. Lever Rule Errors</h4>
+                        <p class="text-sm text-gray-600"><strong>Tip:</strong> Always use the "opposite arm" of the lever. To find the fraction of the phase on the left, use the length of the lever arm on the right side of your composition point, and vice-versa. Ensure you're using the correct compositions from the tie-line ends.</p>
+                    </div>
+                     <div>
+                        <h4 class="font-semibold">3. Forgetting the "Equilibrium" Assumption</h4>
+                        <p class="text-sm text-gray-600"><strong>Tip:</strong> These diagrams show what happens with very <strong class="text-green-600">slow cooling</strong> (equilibrium conditions). Real-world rapid cooling (quenching) creates different non-equilibrium structures like Martensite, which are not represented on this diagram directly.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold">4. Misinterpreting Phase Regions</h4>
+                        <p class="text-sm text-gray-600"><strong>Tip:</strong> Always identify if you are in a single-phase region (e.g., γ Austenite) or a two-phase region (e.g., α + γ). In single-phase regions, composition of the phase is the alloy's composition. In two-phase regions, use tie-lines and the Lever Rule.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Interactive Learning. An educational tool.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Mobile Navigation
+            const mobileNav = document.getElementById('mobile-nav');
+            mobileNav.addEventListener('change', () => {
+                window.location.hash = mobileNav.value;
+            });
+
+            // Desktop Navigation Scrollspy
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 60) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Iron-Carbon Diagram Logic
+            const canvas = document.getElementById('ironCarbonDiagram');
+            const ctx = canvas.getContext('2d');
+            const carbonSlider = document.getElementById('carbonSlider');
+            const tempSlider = document.getElementById('tempSlider');
+            const carbonValue = document.getElementById('carbonValue');
+            const tempValue = document.getElementById('tempValue');
+            const phaseText = document.getElementById('phaseText');
+
+            const modal = document.getElementById('reactionModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalText = document.getElementById('modalText');
+            const closeModal = document.getElementById('closeModal');
+
+            let pointX, pointY;
+
+            function drawDiagram() {
+                const { width, height } = canvas.parentElement.getBoundingClientRect();
+                canvas.width = width;
+                canvas.height = height;
+
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#FDFBF7';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Simplified phase boundaries
+                const tempToY = (t) => height - ((t - 400) / (1600 - 400)) * height;
+                const carbonToX = (c) => (c / 6.67) * width;
+
+                // Key points
+                const eutectoid = { t: 727, c: 0.76 };
+                const eutectic = { t: 1147, c: 4.3 };
+                const peritectic = { t: 1493, c: 0.16 };
+                
+                // Draw phase regions (simplified)
+                ctx.strokeStyle = '#D1D5DB';
+                ctx.lineWidth = 2;
+
+                // Liquidus
+                ctx.beginPath();
+                ctx.moveTo(carbonToX(0), tempToY(1538));
+                ctx.lineTo(carbonToX(peritectic.c), tempToY(peritectic.t)); // L-delta peritectic point
+                ctx.lineTo(carbonToX(eutectic.c), tempToY(eutectic.t));
+                ctx.lineTo(carbonToX(6.67), tempToY(1320)); // Approximate liquidus for Fe3C side
+                ctx.stroke();
+                ctx.font = '14px Inter';
+                ctx.fillStyle = '#2F4F4F';
+                ctx.fillText('L', carbonToX(3.5), tempToY(1500));
+
+                // Solidus and other lines
+                ctx.beginPath();
+                ctx.moveTo(carbonToX(0), tempToY(1538)); // Pure Fe melting point
+                ctx.lineTo(carbonToX(0), tempToY(1394)); // Delta-gamma transformation
+                ctx.lineTo(carbonToX(0.1), tempToY(1493)); // Delta-gamma line
+                ctx.lineTo(carbonToX(peritectic.c), tempToY(peritectic.t)); // Peritectic point (delta + L -> gamma)
+                ctx.lineTo(carbonToX(0.5), tempToY(1400)); // Gamma region upper boundary
+                ctx.lineTo(carbonToX(2.14), tempToY(eutectic.t)); // Max carbon in Austenite
+                ctx.lineTo(carbonToX(eutectic.c), tempToY(eutectic.t)); // Eutectic point (L -> gamma + Fe3C)
+                ctx.lineTo(carbonToX(6.67), tempToY(eutectic.t)); // Eutectic horizontal line to Cementite
+                ctx.stroke();
+
+                // Eutectoid line
+                ctx.beginPath();
+                ctx.moveTo(carbonToX(0.022), tempToY(eutectoid.t)); // Max carbon in Ferrite
+                ctx.lineTo(carbonToX(2.14), tempToY(eutectoid.t)); // Eutectoid horizontal line
+                ctx.stroke();
+
+                // A3 line (gamma to alpha + gamma)
+                ctx.beginPath();
+                ctx.moveTo(carbonToX(0), tempToY(912));
+                ctx.lineTo(carbonToX(eutectoid.c), tempToY(eutectoid.t));
+                ctx.stroke();
+
+                // Acm line (gamma to gamma + Fe3C)
+                ctx.beginPath();
+                ctx.moveTo(carbonToX(eutectoid.c), tempToY(eutectoid.t));
+                ctx.lineTo(carbonToX(2.14), tempToY(eutectic.t));
+                ctx.stroke();
+                
+                // Phase labels
+                ctx.fillText('γ (Austenite)', carbonToX(1.1), tempToY(1000));
+                ctx.fillText('α (Ferrite)', carbonToX(0.01), tempToY(600));
+                ctx.fillText('Fe₃C (Cementite)', carbonToX(6.0), tempToY(600));
+                ctx.fillText('α + γ', carbonToX(0.2), tempToY(800));
+                ctx.fillText('γ + Fe₃C', carbonToX(1.5), tempToY(900));
+                ctx.fillText('α + Fe₃C (Pearlite)', carbonToX(0.4), tempToY(500));
+                ctx.fillText('L + γ', carbonToX(3), tempToY(1250));
+                ctx.fillText('L + Fe₃C', carbonToX(5.5), tempToY(1200));
+                ctx.fillText('δ (Delta Ferrite)', carbonToX(0.05), tempToY(1450));
+                ctx.fillText('L + δ', carbonToX(0.1), tempToY(1500));
+                ctx.fillText('δ + γ', carbonToX(0.15), tempToY(1450));
+
+
+                // Draw reaction points
+                drawReactionPoint(carbonToX(eutectoid.c), tempToY(eutectoid.t), 'Eutectoid');
+                drawReactionPoint(carbonToX(eutectic.c), tempToY(eutectic.t), 'Eutectic');
+                drawReactionPoint(carbonToX(peritectic.c), tempToY(peritectic.t), 'Peritectic');
+
+                // Draw current point
+                if (pointX !== undefined && pointY !== undefined) {
+                    ctx.beginPath();
+                    ctx.arc(pointX, pointY, 8, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'red';
+                    ctx.fill();
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                // Axes labels
+                ctx.fillStyle = '#2F4F4F';
+                ctx.font = '14px Inter';
+                ctx.fillText('Temperature (°C)', 10, 20);
+                ctx.fillText('Carbon Content (%C)', width / 2 - 60, height - 10);
+            }
+
+            function drawReactionPoint(x, y, label) {
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = '#4682B4';
+                ctx.fill();
+                ctx.font = '12px Inter';
+                ctx.fillStyle = 'black';
+                ctx.fillText(label, x + 15, y + 5);
+            }
+
+            function getPhase(c, t) {
+                // Approximate phase regions based on the diagram
+                // Liquid region
+                if (t > 1538 - c * 50) return 'Liquid (L)';
+                if (t > 1493 && c < 0.16) return 'Liquid (L) + Delta Ferrite (δ)';
+                if (t > 1147 && c > 2.14) return 'Liquid (L) + Cementite (Fe₃C)';
+                if (t > 1147 && c >= 0.16 && c <= 4.3 &&
+                    (t > (1147 + (c - 2.14) * (1493 - 1147) / (0.16 - 2.14)) || // Line from 2.14%C, 1147C to 0.16%C, 1493C
+                     t > (1147 + (c - 4.3) * (1320 - 1147) / (6.67 - 4.3)))) { // Line from 4.3%C, 1147C to 6.67%C, 1320C
+                    return 'Liquid (L) + Austenite (γ)';
+                }
+
+                // Solid regions
+                if (t > 1394 && c < 0.1) return 'Delta Ferrite (δ)';
+                if (t > 912 - (c / 0.76) * (912 - 727) && c < 0.76 && t > 727) return 'Ferrite (α) + Austenite (γ)';
+                if (t > 727 && c > 0.76 && t < 727 + (c - 0.76) / (2.14 - 0.76) * (1147 - 727)) return 'Austenite (γ) + Cementite (Fe₃C)';
+                if (t > 727 && c <= 2.14) return 'Austenite (γ)';
+                
+                // Below eutectoid
+                if (c <= 0.022) return 'Ferrite (α)';
+                if (c > 0.022 && c < 0.76) return 'Ferrite (α) + Pearlite';
+                if (c === 0.76) return 'Pearlite';
+                if (c > 0.76 && c <= 2.14) return 'Pearlite + Cementite (Fe₃C)';
+                if (c > 2.14 && c <= 6.67) return 'Pearlite + Cementite (Fe₃C) (Cast Iron)';
+                
+                return 'Unknown Phase';
+            }
+
+
+            function update() {
+                const c = parseFloat(carbonSlider.value);
+                const t = parseInt(tempSlider.value);
+
+                carbonValue.textContent = c.toFixed(2);
+                tempValue.textContent = t;
+
+                pointX = (c / 6.67) * canvas.width;
+                pointY = canvas.height - ((t - 400) / (1600 - 400)) * canvas.height;
+                
+                phaseText.textContent = getPhase(c, t);
+                drawDiagram();
+            }
+
+            function showModal(type) {
+                if (type === 'Eutectoid') {
+                    modalTitle.textContent = 'Eutectoid Reaction';
+                    modalText.textContent = 'At 727°C and 0.76% C, a single solid phase (Austenite) transforms into two new solid phases (Ferrite and Cementite), forming Pearlite. Reaction: γ → α + Fe₃C.';
+                } else if (type === 'Eutectic') {
+                    modalTitle.textContent = 'Eutectic Reaction';
+                    modalText.textContent = 'At 1147°C and 4.3% C, a single liquid phase transforms directly into two solid phases (Austenite and Cementite). Reaction: L → γ + Fe₃C.';
+                } else if (type === 'Peritectic') {
+                    modalTitle.textContent = 'Peritectic Reaction';
+                    modalText.textContent = 'At 1493°C and 0.16% C, a liquid phase and a solid phase (Delta Ferrite) react to form a new solid phase (Austenite). Reaction: L + δ → γ.';
+                }
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const tempToY = (t) => canvas.height - ((t - 400) / (1600 - 400)) * canvas.height;
+                const carbonToX = (c) => (c / 6.67) * canvas.width;
+
+                const points = [
+                    { name: 'Eutectoid', x: carbonToX(0.76), y: tempToY(727) },
+                    { name: 'Eutectic', x: carbonToX(4.3), y: tempToY(1147) },
+                    { name: 'Peritectic', x: carbonToX(0.16), y: tempToY(1493) },
+                ];
+
+                points.forEach(p => {
+                    const dist = Math.sqrt((x - p.x)**2 + (y - p.y)**2);
+                    if (dist < 12) {
+                        showModal(p.name);
+                    }
+                });
+            });
+
+            closeModal.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+            
+            carbonSlider.addEventListener('input', update);
+            tempSlider.addEventListener('input', update);
+            
+            window.addEventListener('resize', update);
+            update();
+
+            // Cooling Simulator Logic
+            const coolCanvas = document.getElementById('coolingCanvas');
+            const coolCtx = coolCanvas.getContext('2d');
+            const simInfo = document.getElementById('simulationInfo');
+            let animationFrameId;
+
+            window.simulateCooling = (type) => {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                
+                const { width, height } = coolCanvas.parentElement.getBoundingClientRect();
+                coolCanvas.width = width;
+                coolCanvas.height = height;
+
+                let progress = 0;
+                let grains = Array.from({ length: 10 }, () => ({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    radius: 10 + Math.random() * 15
+                }));
+
+                function animate() {
+                    progress += 0.005;
+                    if (progress > 1) progress = 1;
+
+                    coolCtx.clearRect(0, 0, width, height);
+                    coolCtx.fillStyle = '#E5E7EB'; // gray-200
+                    coolCtx.fillRect(0, 0, width, height);
+
+                    // Draw Austenite Grains
+                    coolCtx.strokeStyle = 'rgba(47, 79, 79, 0.5)';
+                    coolCtx.lineWidth = 2;
+                    grains.forEach(g => {
+                        coolCtx.beginPath();
+                        coolCtx.arc(g.x, g.y, g.radius, 0, 2 * Math.PI);
+                        coolCtx.stroke();
+                    });
+                    
+                    if (progress < 0.2) {
+                        simInfo.innerHTML = `<p class="font-semibold">Cooling through Austenite (γ) region...</p>`;
+                    } else if (type === 'eutectoid') {
+                        drawPearlite(progress - 0.2);
+                        simInfo.innerHTML = `<p class="font-semibold">At 727°C: Eutectoid reaction begins...</p><p class="text-sm">Austenite transforms to Pearlite (α + Fe₃C).</p>`;
+                    } else if (type === 'hypo') {
+                        drawProeutectoidFerrite(progress - 0.2);
+                        if(progress > 0.6) drawPearlite((progress - 0.6) * 2.5, true);
+                        simInfo.innerHTML = `<p class="font-semibold">Below A₃: Proeutectoid Ferrite (α) forms...</p><p class="text-sm">At 727°C, remaining Austenite transforms to Pearlite.</p>`;
+                    } else if (type === 'hyper') {
+                        drawProeutectoidCementite(progress - 0.2);
+                        if(progress > 0.6) drawPearlite((progress - 0.6) * 2.5, true);
+                        simInfo.innerHTML = `<p class="font-semibold">Below Acm: Proeutectoid Cementite (Fe₃C) forms...</p><p class="text-sm">At 727°C, remaining Austenite transforms to Pearlite.</p>`;
+                    }
+
+                    if (progress < 1) {
+                        animationFrameId = requestAnimationFrame(animate);
+                    } else {
+                         simInfo.innerHTML = `<p class="font-semibold text-green-700">Cooling complete!</p><p class="text-sm">Final microstructure formed.</p>`;
+                    }
+                }
+
+                function drawPearlite(p, partial = false) {
+                    coolCtx.save();
+                    if (partial) {
+                        coolCtx.beginPath();
+                        grains.forEach(g => coolCtx.arc(g.x, g.y, g.radius, 0, 2 * Math.PI));
+                        coolCtx.clip();
+                    }
+                    for (let i = 0; i < width * p; i += 8) {
+                        coolCtx.beginPath();
+                        coolCtx.moveTo(i, 0);
+                        coolCtx.lineTo(i, height);
+                        coolCtx.strokeStyle = '#2F4F4F'; // dark
+                        coolCtx.lineWidth = 2;
+                        coolCtx.stroke();
+                        coolCtx.beginPath();
+                        coolCtx.moveTo(i + 4, 0);
+                        coolCtx.lineTo(i + 4, height);
+                        coolCtx.strokeStyle = '#A9A9A9'; // light
+                        coolCtx.lineWidth = 2;
+                        coolCtx.stroke();
+                    }
+                    coolCtx.restore();
+                }
+
+                function drawProeutectoidFerrite(p) {
+                    coolCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    grains.forEach(g => {
+                        let growth = g.radius * p * 0.3;
+                        coolCtx.beginPath();
+                        coolCtx.arc(g.x, g.y, g.radius, 0, 2 * Math.PI);
+                        coolCtx.arc(g.x, g.y, g.radius - growth, 0, 2 * Math.PI, true);
+                        coolCtx.fill();
+                    });
+                }
+                
+                function drawProeutectoidCementite(p) {
+                    coolCtx.strokeStyle = 'black';
+                    coolCtx.lineWidth = 3 * p;
+                     grains.forEach(g => {
+                        coolCtx.beginPath();
+                        coolCtx.arc(g.x, g.y, g.radius, 0, 2 * Math.PI);
+                        coolCtx.stroke();
+                    });
+                }
+
+                animate();
+            };
+
+            // Concept Map Drawing Logic (HTML/CSS based)
+            function drawConceptMapLines() {
+                const mapContainer = document.getElementById('conceptMap');
+                if (!mapContainer) return;
+
+                const items = {
+                    "Phase Diagrams": document.getElementById('item1'),
+                    "Fundamentals": document.getElementById('item2'),
+                    "Fe-Fe₃C Diagram": document.getElementById('item3'),
+                    "Key Reactions": document.getElementById('item4'),
+                    "Lever Rule": document.getElementById('item5'),
+                    "Microstructures": document.getElementById('item6'),
+                    "Alloy Groups": document.getElementById('item7'),
+                    "Codification": document.getElementById('item8'),
+                    "Properties": document.getElementById('item9')
+                };
+
+                const connections = [
+                    // Level 1 to Level 2
+                    ["Phase Diagrams", "Fundamentals"],
+                    ["Phase Diagrams", "Fe-Fe₃C Diagram"],
+                    
+                    // Level 2 to Level 3
+                    ["Fe-Fe₃C Diagram", "Key Reactions"],
+                    ["Fe-Fe₃C Diagram", "Lever Rule"],
+                    ["Fe-Fe₃C Diagram", "Microstructures"],
+                    ["Fe-Fe₃C Diagram", "Alloy Groups"],
+
+                    // Level 3 to Level 4
+                    ["Microstructures", "Properties"],
+                    ["Alloy Groups", "Properties"],
+                    ["Alloy Groups", "Codification"],
+                    ["Codification", "Properties"]
+                ];
+
+                // Clear existing lines
+                mapContainer.querySelectorAll('.concept-map-line').forEach(line => line.remove());
+
+                connections.forEach(([fromId, toId]) => {
+                    const fromEl = items[fromId];
+                    const toEl = items[toId];
+
+                    if (!fromEl || !toEl) return;
+
+                    const fromRect = fromEl.getBoundingClientRect();
+                    const toRect = toEl.getBoundingClientRect();
+                    const containerRect = mapContainer.getBoundingClientRect();
+
+                    // Calculate start and end points relative to the container
+                    const x1 = fromRect.left + fromRect.width / 2 - containerRect.left;
+                    const y1 = fromRect.top + fromRect.height / 2 - containerRect.top;
+                    const x2 = toRect.left + toRect.width / 2 - containerRect.left;
+                    const y2 = toRect.top + toRect.height / 2 - containerRect.top;
+
+                    // Calculate length and angle
+                    const length = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
+                    const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+                    const arrowheadLength = 8; // Based on CSS border-width
+                    const adjustedLength = Math.max(0, length - arrowheadLength); // Ensure non-negative length
+
+                    const line = document.createElement('div');
+                    line.className = 'concept-map-line';
+                    line.style.width = `${adjustedLength}px`; // Use adjusted length
+                    line.style.left = `${x1}px`;
+                    line.style.top = `${y1}px`;
+                    line.style.transform = `rotate(${angle}deg)`;
+                    mapContainer.appendChild(line);
+                });
+            }
+
+            // Redraw lines on resize and initial load
+            window.addEventListener('resize', drawConceptMapLines);
+            drawConceptMapLines(); // Initial draw
+        });
+    </script>
+</body>
+</html>
