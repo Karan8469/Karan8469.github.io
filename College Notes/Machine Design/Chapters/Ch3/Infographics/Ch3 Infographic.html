@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: The Theory of Bending</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: #424242;
+        }
+        .beam-diagram {
+            height: 50px;
+            width: 100%;
+            background-color: #E9ECEF;
+            border: 2px solid #ADB5BD;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+        .support-fixed {
+            width: 8px;
+            height: 100%;
+            background-color: #424242;
+        }
+        .support-pin::before {
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid #424242;
+        }
+        .support-roller::before {
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid #424242;
+        }
+        .support-roller::after {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 4px;
+            background-color: #424242;
+            border-radius: 2px;
+            margin-top: 2px;
+        }
+        .load-arrow {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #F45B69;
+        }
+        .load-arrow::before {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: -2px;
+            width: 4px;
+            height: 20px;
+            background-color: #F45B69;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .sfd-bmd-diagram {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #ADB5BD;
+            margin-top: 1rem;
+            position: relative;
+            background-color: #E9ECEF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #424242;
+            overflow: hidden;
+        }
+        .sfd-bmd-diagram::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #6C757D;
+        }
+        .sfd-bmd-line {
+            position: absolute;
+            height: 2px;
+            background-color: #00A6FB;
+        }
+        .sfd-bmd-shape {
+            position: absolute;
+            background-color: rgba(0, 166, 251, 0.3);
+            border: 1px solid #00A6FB;
+        }
+        .sfd-bmd-text {
+            position: absolute;
+            font-weight: bold;
+            color: #424242;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center my-12">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-[#424242]">The Theory of Bending</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">A visual guide for Mechanical Engineering students on how materials bend, deform, and resist loads—a core concept in designing everything from bridges to aircraft wings.</p>
+        </header>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">1. Building Blocks: Beams & Loads</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Types of Beams</h3>
+                    <p class="text-gray-600 mb-4">Beams are classified by how they are supported. This dictates how they react to forces.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-semibold">Cantilever</p>
+                            <div class="beam-diagram"><div class="support-fixed"></div></div>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Simply Supported</p>
+                            <div class="beam-diagram"><div class="support-pin"></div><div class="support-roller"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Types of Loads</h3>
+                    <p class="text-gray-600 mb-4">Loads are the external forces applied to beams, causing them to bend.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-semibold">Point Load</p>
+                            <div class="beam-diagram"><div class="load-arrow"></div></div>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Uniformly Distributed Load (UDL)</p>
+                            <div class="beam-diagram">
+                                <div class="w-full h-4 bg-[#F45B69] opacity-50 absolute top-[-16px] left-0"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">2. Internal Forces: SFD & BMD</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">Shear Force Diagrams (SFD) and Bending Moment Diagrams (BMD) illustrate how internal forces vary along a beam's length, crucial for identifying critical stress points.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold text-center mb-4">Simply Supported Beam with Point Load at Center</h3>
+                <div class="flex justify-center items-center h-20 relative">
+                    <div class="w-full h-2 bg-gray-300 rounded-md"></div>
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 support-pin"></div>
+                    <div class="absolute right-0 top-1/2 -translate-y-1/2 support-roller"></div>
+                    <div class="absolute top-0 -translate-y-full load-arrow"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                    <div>
+                        <h4 class="text-lg font-semibold mb-2">Shear Force Diagram (SFD)</h4>
+                        <div class="sfd-bmd-diagram">
+                            <div class="sfd-bmd-line" style="left: 0%; width: 50%; top: 25%; background-color: #F45B69;"></div>
+                            <div class="sfd-bmd-line" style="left: 50%; width: 50%; top: 75%; background-color: #00A6FB;"></div>
+                            <div class="sfd-bmd-text" style="left: 25%; top: 15%;">+V</div>
+                            <div class="sfd-bmd-text" style="left: 75%; top: 65%;">-V</div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">Shear force is constant on either side of the point load, with an abrupt change at the load.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold mb-2">Bending Moment Diagram (BMD)</h4>
+                        <div class="sfd-bmd-diagram">
+                            <div class="sfd-bmd-shape" style="clip-path: polygon(0 50%, 50% 0%, 100% 50%, 50% 100%); width: 100%; height: 100%; background-color: rgba(0, 166, 251, 0.3);"></div>
+                            <div class="sfd-bmd-line" style="left: 0%; width: 50%; top: 50%; transform-origin: left; transform: rotate(-26.5deg); background-color: #00A6FB; height: 1.5px;"></div>
+                            <div class="sfd-bmd-line" style="left: 50%; width: 50%; top: 50%; transform-origin: left; transform: rotate(26.5deg); background-color: #00A6FB; height: 1.5px;"></div>
+                            <div class="sfd-bmd-text" style="left: 50%; top: 15%; transform: translateX(-50%);">Max M</div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">Bending moment varies linearly, peaking at the point load location.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">3. The Heart of Bending: Stress Distribution</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">When a beam bends, it develops internal stresses. The top fibers are compressed, the bottom fibers are stretched (tension), and an imaginary line in the middle, the **Neutral Axis**, experiences zero stress.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold mb-2">Bending Visualized</h3>
+                        <div class="w-full h-16 bg-[#3E92CC] rounded-lg" style="transform: perspective(500px) rotateX(15deg);"></div>
+                        <p class="mt-4 font-semibold text-[#F45B69]">Compression on Top</p>
+                        <hr class="my-2 border-dashed border-gray-400">
+                        <p class="font-semibold text-[#00A6FB]">Tension on Bottom</p>
+                    </div>
+                    <div>
+                        <div class="chart-container h-64 md:h-80">
+                            <canvas id="stressDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">4. Transverse Shear Stress</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">Beyond bending stress, beams also experience shear stress due to transverse forces. This stress is often highest at the neutral axis.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold mb-4 text-[#F3C623] text-center">Jourawski's Formula</h3>
+                <p class="text-4xl font-mono font-bold text-center mb-4">&tau; = VQ / Ib</p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><span class="font-semibold">V:</span> Shear force at the section.</li>
+                    <li><span class="font-semibold">Q:</span> First moment of area above (or below) the point, about the neutral axis.</li>
+                    <li><span class="font-semibold">I:</span> Moment of inertia of the entire cross-section.</li>
+                    <li><span class="font-semibold">b:</span> Width of the cross-section at the point.</li>
+                </ul>
+                <p class="mt-4 text-gray-600">For a rectangular section, shear stress distribution is parabolic, peaking at the neutral axis and zero at the top/bottom surfaces. Maximum shear stress is $\tau_{max} = \frac{3}{2} \frac{V}{A}$.</p>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">5. Beam Deflection: The Sag</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">Deflection is the actual displacement of a beam under load. Limiting deflection is crucial for a structure's serviceability and aesthetics.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold mb-4 text-[#F3C623] text-center">Common Deflection Formulas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="font-semibold text-lg mb-2">Simply Supported Beam with Central Point Load</p>
+                        <p class="text-3xl font-mono font-bold text-center mb-4">&delta;<sub>max</sub> = PL<sup>3</sup> / 48EI</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-lg mb-2">Cantilever Beam with End Point Load</p>
+                        <p class="text-3xl font-mono font-bold text-center mb-4">&delta;<sub>max</sub> = PL<sup>3</sup> / 3EI</p>
+                    </div>
+                </div>
+                <p class="mt-6 text-gray-600">Where: <span class="font-semibold">P</span>=Point Load, <span class="font-semibold">L</span>=Length, <span class="font-semibold">E</span>=Young's Modulus, <span class="font-semibold">I</span>=Moment of Inertia.</p>
+                <p class="mt-2 text-gray-600">Deflection is highly sensitive to length ($L^3$) and inversely proportional to material stiffness (E) and cross-sectional resistance (I).</p>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">6. The Engineer's Toolkit: Key Formulas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-[#424242] text-white p-8 rounded-xl shadow-lg text-center">
+                    <h3 class="text-2xl font-bold mb-4 text-[#F3C623]">Flexure Formula</h3>
+                    <p class="text-4xl font-mono font-bold">&sigma; = My / I</p>
+                    <p class="mt-4">This master equation relates bending stress (&sigma;) to the bending moment (M), distance from the neutral axis (y), and the beam's cross-sectional shape (I).</p>
+                </div>
+                <div class="bg-[#424242] text-white p-8 rounded-xl shadow-lg text-center">
+                    <h3 class="text-2xl font-bold mb-4 text-[#F3C623]">Section Modulus</h3>
+                    <p class="text-4xl font-mono font-bold">S = I / y<sub>max</sub></p>
+                    <p class="mt-4">A shortcut for designers. Section Modulus (S) is a direct measure of a beam's strength in bending. A bigger 'S' means a stronger beam.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">7. Shape Matters: Bending Efficiency</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">For the same amount of material (cross-sectional area), some shapes are far better at resisting bending than others. This is why I-beams are so common in construction.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold text-center mb-4">Relative Bending Strength (Section Modulus) for Same Area</h3>
+                <div class="chart-container h-80">
+                    <canvas id="sectionModulusChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">8. Beyond the Basics: Advanced Concepts</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <p class="text-4xl mb-2">&#x26A0;</p>
+                    <h3 class="font-bold">Stress Concentration</h3>
+                    <p class="text-sm text-gray-600">Localized stress increases at geometric discontinuities (holes, sharp corners).</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <p class="text-4xl mb-2">&#x2699;</p>
+                    <h3 class="font-bold">Combined Loading</h3>
+                    <p class="text-sm text-gray-600">When a beam experiences multiple load types simultaneously (e.g., bending + torsion).</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <p class="text-4xl mb-2">&#x270D;</p>
+                    <h3 class="font-bold">Bending in Levers</h3>
+                    <p class="text-sm text-gray-600">Practical application of bending theory to common mechanical components.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <p class="text-4xl mb-2">&#x2194;</p>
+                    <h3 class="font-bold">Shear Center</h3>
+                    <p class="text-sm text-gray-600">The point through which transverse loads must pass to avoid twisting.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">9. Practical Tips for Exams</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">Mastering bending theory for exams requires a systematic approach and attention to detail. Here are some practical tips to help you tackle numerical problems effectively and avoid common mistakes.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold mb-4">How to Tackle Numerical Problems</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-2 mb-6">
+                    <li>Always start with a clear Free Body Diagram (FBD).</li>
+                    <li>Accurately determine Shear Force and Bending Moment Diagrams (SFD & BMD).</li>
+                    <li>Correctly locate the Neutral Axis (NA), especially for unsymmetrical sections.</li>
+                    <li>Calculate Moment of Inertia (I) and Section Modulus (S) precisely.</li>
+                    <li>Pay close attention to units and sign conventions.</li>
+                </ul>
+                <h3 class="text-xl font-bold mb-4">Common Mistakes Students Make</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li>Incorrectly identifying support reactions or misinterpreting load distributions.</li>
+                    <li>Errors in SFD/BMD calculations or mislocating the Neutral Axis.</li>
+                    <li>Using incorrect formulas for I or S for different cross-sections.</li>
+                    <li>Unit inconsistencies (mixing mm with meters, etc.).</li>
+                    <li>Neglecting shear stress in short/deep beams or ignoring stress concentration.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">10. Comprehensive Formula Sheet</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">A consolidated list of essential formulas for solving numerical problems in bending theory. Ensure consistent units!</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold mb-3 text-[#F3C623]">Fundamental Stress & Strain</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                    <li>Hooke's Law: &sigma; = E&epsilon;</li>
+                    <li>Longitudinal Strain in Bending: &epsilon; = y / R</li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-3 text-[#F3C623]">Bending Stress (Flexure Formula)</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                    <li>Flexure Formula: &sigma; = My / I</li>
+                    <li>Maximum Bending Stress: &sigma;<sub>max</sub> = M<sub>max</sub> / S</li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-3 text-[#F3C623]">Shear Stress in Beams</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                    <li>Jourawski's Formula: &tau; = VQ / Ib</li>
+                    <li>Max Shear Stress (Rectangular): &tau;<sub>max</sub> = (3/2) * (V/A)</li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-3 text-[#F3C623]">Beam Deflection (Max)</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                    <li>Simply Supported (Central Point Load): &delta;<sub>max</sub> = PL<sup>3</sup> / 48EI</li>
+                    <li>Cantilever (End Point Load): &delta;<sub>max</sub> = PL<sup>3</sup> / 3EI</li>
+                    <li>Simply Supported (UDL): &delta;<sub>max</sub> = 5wL<sup>4</sup> / 384EI</li>
+                    <li>Cantilever (UDL): &delta;<sub>max</sub> = wL<sup>4</sup> / 8EI</li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-3 text-[#F3C623]">Geometric Properties</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                    <li>Moment of Inertia (Rectangular): I = bh<sup>3</sup> / 12</li>
+                    <li>Moment of Inertia (Solid Circular): I = &pi;d<sup>4</sup> / 64</li>
+                    <li>Section Modulus (Rectangular): S = bh<sup>2</sup> / 6</li>
+                    <li>Section Modulus (Solid Circular): S = &pi;d<sup>3</sup> / 32</li>
+                    <li>Polar Moment of Inertia (Solid Circular): J = &pi;d<sup>4</sup> / 32</li>
+                    <li>Parallel Axis Theorem: I<sub>total</sub> = &Sigma; (I<sub>i</sub> + A<sub>i</sub>d<sub>i</sub><sup>2</sup>)</li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-3 text-[#F3C623]">Other Important Formulas</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                    <li>Stress Concentration Factor: K<sub>t</sub> = &sigma;<sub>max</sub> / &sigma;<sub>nom</sub></li>
+                    <li>Axial Stress: &sigma;<sub>a</sub> = P / A</li>
+                    <li>Torsional Shear Stress: &tau;<sub>t</sub> = Tr / J</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#00A6FB]">11. Bending Theory Concept Map</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">This map shows the hierarchical and interdependent relationships between the core concepts of bending theory. Follow the arrows and labels to understand the flow of analysis and how topics connect.</p>
+            <div class="flex flex-col items-center gap-4">
+                <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-sm text-center">
+                    <h3 class="font-bold text-lg text-[#00A6FB]">Beams & Loads</h3>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Define External Forces</div>
+                <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-sm text-center">
+                    <h3 class="font-bold text-lg text-[#00A6FB]">SFD & BMD</h3>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Quantify Internal Forces</div>
+                <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-sm text-center">
+                    <h3 class="font-bold text-lg text-[#00A6FB]">Neutral Axis</h3>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Reference for Stress Distribution</div>
+                <div class="flex flex-col md:flex-row items-center md:gap-4 w-full max-w-2xl">
+                    <div class="bg-white p-4 rounded-lg shadow-md flex-1 text-center w-full md:w-auto">
+                        <h3 class="font-bold text-lg text-[#00A6FB]">Bending Stress</h3>
+                    </div>
+                    <div class="text-gray-600 font-semibold md:rotate-90">&#x2194;</div>
+                    <div class="bg-white p-4 rounded-lg shadow-md flex-1 text-center w-full md:w-auto">
+                        <h3 class="font-bold text-lg text-[#00A6FB]">Shear Stress</h3>
+                    </div>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Lead to</div>
+                <div class="flex flex-col md:flex-row items-center md:gap-4 w-full max-w-2xl">
+                    <div class="bg-white p-4 rounded-lg shadow-md flex-1 text-center w-full md:w-auto">
+                        <h3 class="font-bold text-lg text-[#00A6FB]">Section Modulus</h3>
+                    </div>
+                    <div class="text-gray-600 font-semibold md:rotate-90">&#x2194;</div>
+                    <div class="bg-white p-4 rounded-lg shadow-md flex-1 text-center w-full md:w-auto">
+                        <h3 class="font-bold text-lg text-[#00A6FB]">Moment of Inertia</h3>
+                    </div>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Influence</div>
+                <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-sm text-center">
+                    <h3 class="font-bold text-lg text-[#00A6FB]">Beam Deflection</h3>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Consider for Real-World Scenarios</div>
+                <div class="flex flex-col md:flex-row items-center md:gap-4 w-full max-w-2xl">
+                    <div class="bg-white p-4 rounded-lg shadow-md flex-1 text-center w-full md:w-auto">
+                        <h3 class="font-bold text-lg text-[#00A6FB]">Stress Concentration</h3>
+                    </div>
+                    <div class="text-gray-600 font-semibold md:rotate-90">&#x2194;</div>
+                    <div class="bg-white p-4 rounded-lg shadow-md flex-1 text-center w-full md:w-auto">
+                        <h3 class="font-bold text-lg text-[#00A6FB]">Combined Loading</h3>
+                    </div>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Applied to</div>
+                <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-sm text-center">
+                    <h3 class="font-bold text-lg text-[#00A6FB]">Bending in Levers</h3>
+                </div>
+                <div class="text-gray-600 font-semibold">&#x2193; Requires</div>
+                <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-sm text-center">
+                    <h3 class="font-bold text-lg text-[#00A6FB]">Exam Tips</h3>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stressCtx = document.getElementById('stressDistributionChart').getContext('2d');
+            new Chart(stressCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tension', 'Neutral Axis', 'Compression'],
+                    datasets: [{
+                        label: 'Stress',
+                        data: [100, 0, -100],
+                        backgroundColor: [
+                            'rgba(0, 166, 251, 0.6)',
+                            'rgba(200, 200, 200, 0.6)',
+                            'rgba(244, 91, 105, 0.6)'
+                        ],
+                        borderColor: [
+                            '#00A6FB',
+                            '#424242',
+                            '#F45B69'
+                        ],
+                        borderWidth: 2,
+                        barPercentage: 1.0,
+                        categoryPercentage: 1.0,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: {
+                                callback: function (value) {
+                                    if (value === 100) return 'Max Stress';
+                                    if (value === -100) return 'Max Stress';
+                                    if (value === 0) return 'Zero Stress';
+                                    return null;
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { display: false },
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const sectionCtx = document.getElementById('sectionModulusChart').getContext('2d');
+            const labelsSection = [
+                ['Solid Square'],
+                ['Solid Circle'],
+                ['I-Beam', '(Efficient Shape)']
+            ];
+            new Chart(sectionCtx, {
+                type: 'bar',
+                data: {
+                    labels: labelsSection,
+                    datasets: [{
+                        label: 'Relative Bending Strength',
+                        data: [16.7, 11.8, 45.0],
+                        backgroundColor: ['#F45B69', '#F3C623', '#00A6FB'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Relative Section Modulus (S)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
