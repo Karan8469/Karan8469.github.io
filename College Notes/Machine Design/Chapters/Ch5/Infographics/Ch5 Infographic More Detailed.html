@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Decoding Static Load Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            CommonHTML: { matchFontHeight: false }
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFEA;
+            color: #00796B;
+        }
+        .section-title {
+            color: #00796B;
+        }
+        .card {
+            background-color: white;
+            border: 2px solid #00CECB;
+            box-shadow: 8px 8px 0px #00CECB;
+        }
+        .stat-card {
+            background-color: #00796B;
+            color: #FFFFEA;
+            border: 2px solid #FFED66;
+            box-shadow: 8px 8px 0px #FFED66;
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            height: 100%;
+            min-height: 250px;
+        }
+        .stress-flow {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            background-color: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .stress-flow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, #00796B 0%, #00796B 40%, transparent 40%, transparent 60%, #00796B 60%, #00796B 100%);
+            transform: translateY(-50%);
+        }
+        .stress-flow-hole {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border: 2px solid #00CECB;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        .stress-flow-arrow {
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 2px;
+            background-color: #FF5E5B;
+            transform: translateY(-50%);
+        }
+        .stress-flow-arrow::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 5px 0 5px 8px;
+            border-color: transparent transparent transparent #FF5E5B;
+            right: -8px;
+            top: -4px;
+        }
+        .stress-flow-arrow.left {
+            left: 10px;
+            transform: translateY(-50%) rotate(180deg);
+        }
+        .stress-flow-arrow.right {
+            right: 10px;
+        }
+        .stress-flow-line {
+            position: absolute;
+            background-color: #00796B;
+            height: 2px;
+        }
+        .stress-flow-line.top-left { top: 20%; left: 0; width: 40%; transform: rotate(-5deg); transform-origin: left center; }
+        .stress-flow-line.top-right { top: 20%; right: 0; width: 40%; transform: rotate(5deg); transform-origin: right center; }
+        .stress-flow-line.bottom-left { bottom: 20%; left: 0; width: 40%; transform: rotate(5deg); transform-origin: left center; }
+        .stress-flow-line.bottom-right { bottom: 20%; right: 0; width: 40%; transform: rotate(-5deg); transform-origin: right center; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+
+        <header class="text-center mb-20 md:mb-32">
+            <h1 class="text-4xl md:text-6xl font-extrabold section-title mb-4">Decoding Static Load Design</h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">A visual guide for mechanical engineering students on why things don't break under constant force.</p>
+        </header>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">1. The Building Blocks: Loads & Stresses</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Types of External Loads</h3>
+                    <p class="mb-8 text-gray-600">A <strong>load</strong> is an external force. In static design, we analyze five main types, each causing a unique internal reaction, or <strong>stress</strong>.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">↔️</div>
+                            <h4 class="font-bold">Tension</h4>
+                            <p class="text-xs text-gray-500">Pulling apart</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">➡️⬅️</div>
+                            <h4 class="font-bold">Compression</h4>
+                            <p class="text-xs text-gray-500">Squeezing</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">🔄</div>
+                            <h4 class="font-bold">Torsion</h4>
+                            <p class="text-xs text-gray-500">Twisting</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">↕️</div>
+                            <h4 class="font-bold">Shear</h4>
+                            <p class="text-xs text-gray-500">Sliding</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center col-span-2 sm:col-span-1">
+                            <div class="text-4xl mb-2">⤴️</div>
+                            <h4 class="font-bold">Bending</h4>
+                            <p class="text-xs text-gray-500">Curving</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Material Strength Comparison</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Different materials have different strengths. The choice of material is critical for handling stress.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="materialStrengthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 rounded-lg mt-8">
+                <h3 class="text-2xl font-semibold mb-4">Key Stress Formulas</h3>
+                <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                    <li>Normal Stress (Axial): $$\sigma = \frac{F}{A}$$</li>
+                    <li>Shear Stress (Direct): $$\tau = \frac{F}{A}$$</li>
+                    <li>Bending Stress (Flexure Formula): $$\sigma_b = \frac{My}{I}$$</li>
+                    <li>Torsional Stress (for Circular Shafts): $$\tau_t = \frac{Tr}{J}$$</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">2. The Safety Net: Factor of Safety (FoS)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                <div class="stat-card p-8 rounded-lg text-center md:col-span-1">
+                    <p class="text-lg font-medium text-yellow-300">Typical FoS</p>
+                    <p class="text-7xl font-extrabold">1.5-3.0</p>
+                    <p class="text-sm opacity-80 mt-2">A crucial buffer against the unknown.</p>
+                </div>
+                <div class="md:col-span-2 card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">What Does FoS Account For?</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">FoS is a multiplier that accounts for real-world uncertainties that calculations can't predict.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="fosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 rounded-lg mt-8">
+                <h3 class="text-2xl font-semibold mb-4">Factor of Safety Formulas</h3>
+                <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                    <li>General Formula: $$\text{FoS} = \frac{\text{Failure Stress}}{\text{Working Stress}}$$</li>
+                    <li>For Ductile Materials (Yielding): $$\text{FoS}_{\text{ductile}} = \frac{\sigma_y}{\sigma_{\text{allowable}}}$$</li>
+                    <li>For Brittle Materials (Fracture): $$\text{FoS}_{\text{brittle}} = \frac{\sigma_{UTS}}{\sigma_{\text{allowable}}}$$</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">3. Predicting the Breaking Point: Theories of Failure</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">How do we predict failure under complex, multi-axial stress? We use failure theories, which define a "safe zone" for a material's stress state. The choice depends on whether the material is ductile or brittle.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-bold mb-2">Rankine's Theory</h3>
+                    <p class="text-sm font-semibold text-red-500 mb-4">Best for BRITTLE Materials</p>
+                    <p class="text-xs text-gray-500 mb-4">This theory states that a material will fail when the maximum principal normal stress ($\sigma_1$) at any point reaches the ultimate tensile strength ($\sigma_{UTS}$) of the material.</p>
+                    <div class="chart-container h-56">
+                        <canvas id="rankineChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-700">Failure if: $$\sigma_1 \ge \sigma_{UTS} \text{ or } |\sigma_3| \ge \sigma_{compressive}$$</p>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-bold mb-2">Tresca's Theory</h3>
+                    <p class="text-sm font-semibold text-teal-500 mb-4">Best for DUCTILE Materials (Conservative)</p>
+                    <p class="text-xs text-gray-500 mb-4">This criterion states that a ductile material will yield when the maximum shear stress ($\tau_{max}$) at any point reaches half of the material's tensile yield strength ($\sigma_y/2$).</p>
+                    <div class="chart-container h-56">
+                        <canvas id="trescaChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-700">Failure if: $$\tau_{max} \ge \frac{\sigma_y}{2}$$</p>
+                    <p class="text-xs text-gray-700 mt-2">Where: $$\tau_{max} = \frac{1}{2} \max(|\sigma_1 - \sigma_2|, |\sigma_2 - \sigma_3|, |\sigma_3 - \sigma_1|)$$</p>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-bold mb-2">Von Mises' Theory</h3>
+                    <p class="text-sm font-semibold text-teal-500 mb-4">Best for DUCTILE Materials (Accurate)</p>
+                    <p class="text-xs text-gray-500 mb-4">This theory states that yielding of a ductile material begins when the distortion energy per unit volume reaches a critical value, equivalent to yielding in a uniaxial tension test.</p>
+                    <div class="chart-container h-56">
+                        <canvas id="vonMisesChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-700">Von Mises Equivalent Stress: $$\sigma_{VM} = \sqrt{\frac{(\sigma_1 - \sigma_2)^2 + (\sigma_2 - \sigma_3)^2 + (\sigma_3 - \sigma_1)^2}{2}}$$</p>
+                    <p class="text-sm text-gray-700 mt-2">Failure if: $$\sigma_{VM} \ge \sigma_y$$</p>
+                </div>
+            </div>
+
+            <div class="card p-6 rounded-lg mt-8">
+                <h3 class="text-xl font-bold mb-2">Mohr-Coulomb Theory</h3>
+                <p class="text-sm font-semibold text-red-500 mb-4">Best for BRITTLE Materials (with different tensile/compressive strengths)</p>
+                <p class="text-xs text-gray-500 mb-4">This theory defines a linear envelope in Mohr's circle space, and failure occurs when the stress state touches or crosses this envelope.</p>
+                <p class="mt-4 text-sm text-gray-700">Failure Envelope: $$\tau_f = c + \sigma_n \tan(\phi)$$</p>
+                <ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm mt-2">
+                    <li>$c$: Cohesion</li>
+                    <li>$\phi$: Angle of internal friction</li>
+                </ul>
+            </div>
+
+            <div class="card p-6 rounded-lg mt-8">
+                <h3 class="text-2xl font-semibold mb-4 text-center">Comparison of Failure Theories</h3>
+                <p class="text-center text-sm text-gray-500 mb-4">Choosing the right theory depends on the material's ductility and its failure mode. No single theory fits all.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="p-3 font-semibold text-gray-700">Theory Name</th>
+                                <th class="p-3 font-semibold text-gray-700">Primary Application</th>
+                                <th class="p-3 font-semibold text-gray-700">Basis/Criterion</th>
+                                <th class="p-3 font-semibold text-gray-700">Yield/Failure Condition</th>
+                                <th class="p-3 font-semibold text-gray-700">Conservatism</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="p-3 font-medium text-gray-800"><strong>Rankine</strong></td>
+                                <td class="p-3 text-gray-700">Brittle Materials</td>
+                                <td class="p-3 text-gray-700">Maximum Principal Normal Stress</td>
+                                <td class="p-3 text-gray-700">$$\sigma_1 \ge \sigma_{UTS} \text{ or } |\sigma_3| \ge \sigma_{compressive}$$</td>
+                                <td class="p-3 text-red-600">Can be unconservative for ductile materials</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-3 font-medium text-gray-800"><strong>Tresca</strong></td>
+                                <td class="p-3 text-gray-700">Ductile Materials</td>
+                                <td class="p-3 text-gray-700">Maximum Shear Stress</td>
+                                <td class="p-3 text-gray-700">$$\tau_{max} \ge \frac{\sigma_y}{2}$$</td>
+                                <td class="p-3 text-yellow-600">Conservative</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-3 font-medium text-gray-800"><strong>Von Mises</strong></td>
+                                <td class="p-3 text-gray-700">Ductile Materials</td>
+                                <td class="p-3 text-gray-700">Distortion Energy / Equivalent Stress</td>
+                                <td class="p-3 text-gray-700">$$\sigma_{VM} \ge \sigma_y$$</td>
+                                <td class="p-3 text-green-600">Less Conservative (more accurate for ductile)</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium text-gray-800"><strong>Mohr-Coulomb</strong></td>
+                                <td class="p-3 text-gray-700">Brittle Materials, Soils, Concrete</td>
+                                <td class="p-3 text-gray-700">Combined Normal & Shear Stress (Cohesion & Friction)</td>
+                                <td class="p-3 text-gray-700">$$\tau_f = c + \sigma_n \tan(\phi)$$</td>
+                                <td class="p-3 text-gray-700">Accounts for tension/compression difference</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">4. Stress Concentration: The Hidden Hotspots</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Where Stress Hides</h3>
+                    <p class="mb-8 text-gray-600">Stress isn't always uniform. At geometric discontinuities like holes or sharp corners, stress can localize and become significantly higher than the nominal (average) stress. This is called <strong>stress concentration</strong>.</p>
+                    <div class="stress-flow p-4">
+                        <div class="stress-flow-hole"></div>
+                        <div class="stress-flow-arrow left"></div>
+                        <div class="stress-flow-arrow right"></div>
+                        <div class="stress-flow-line top-left"></div>
+                        <div class="stress-flow-line top-right"></div>
+                        <div class="stress-flow-line bottom-left"></div>
+                        <div class="stress-flow-line bottom-right"></div>
+                    </div>
+                    <p class="text-center text-sm text-gray-500 mt-4">A hole disrupts stress flow, creating peaks.</p>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Impact of Stress Concentration</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">The Stress Concentration Factor (K<sub>t</sub>) quantifies this increase. Ignoring it can lead to unexpected failure.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="stressConcentrationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 rounded-lg mt-8">
+                <h3 class="text-2xl font-semibold mb-4">Stress Concentration Factor</h3>
+                <p class="text-gray-700">Actual Stress = Nominal Stress $\times$ Stress Concentration Factor ($K_t$)</p>
+                <p class="text-gray-700 mt-2">$$\sigma_{max} = K_t \sigma_{nom}$$</p>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">5. Column Buckling: Stability Under Compression</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">The Euler Buckling Curve</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Slender columns under compression can fail by buckling (sideways deflection) before the material yields. Euler's formula predicts this critical load.</p>
+                    <div class="chart-container h-96">
+                        <canvas id="bucklingChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Beyond Material Strength</h3>
+                    <p class="mb-8 text-gray-600">For slender columns, failure isn't just about material strength; it's about <strong>stability</strong>. An off-center load or initial imperfection can cause a column to bend and collapse suddenly. This is particularly critical in structural design.</p>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                        <div class="text-4xl mb-2">⬇️</div>
+                        <h4 class="font-bold">Compressive Load</h4>
+                        <p class="text-xs text-gray-500">Axial force</p>
+                    </div>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center mt-4">
+                        <div class="text-4xl mb-2">〰️</div>
+                        <h4 class="font-bold">Buckling</h4>
+                        <p class="text-xs text-gray-500">Lateral deflection</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 rounded-lg mt-8">
+                <h3 class="text-2xl font-semibold mb-4">Euler's Critical Buckling Load</h3>
+                <p class="text-gray-700">$$P_{cr} = \frac{\pi^2 E I}{(K L)^2}$$</p>
+                <ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm">
+                    <li>$P_{cr}$: Critical buckling load</li>
+                    <li>$E$: Modulus of Elasticity</li>
+                    <li>$I$: Minimum moment of inertia of the cross-section</li>
+                    <li>$L$: Unsupported length of the column</li>
+                    <li>$K$: Effective length factor (depends on end conditions)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">6. Pressure Vessels: Containing the Force</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Stresses in Thin-Walled Cylinders</h3>
+                    <p class="mb-8 text-gray-600">Pressure vessels (like tanks or pipes) are designed to safely contain fluids or gases under pressure. The internal pressure creates two primary normal stresses in the vessel walls: <strong>hoop stress</strong> and <strong>longitudinal stress</strong>.</p>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                        <div class="text-4xl mb-2">⭕</div>
+                        <h4 class="font-bold">Hoop Stress ($\sigma_h$)</h4>
+                        <p class="text-xs text-gray-500">Circumferential stress, twice the longitudinal stress.</p>
+                    </div>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center mt-4">
+                        <div class="text-4xl mb-2">↔️</div>
+                        <h4 class="font-bold">Longitudinal Stress ($\sigma_l$)</h4>
+                        <p class="text-xs text-gray-500">Axial stress, half the hoop stress.</p>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Stress Distribution in Cylindrical Vessels</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Hoop stress is generally the critical stress for cylindrical pressure vessels, as it's twice the longitudinal stress.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="pressureVesselChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 rounded-lg mt-8">
+                <h3 class="text-2xl font-semibold mb-4">Thin-Walled Pressure Vessel Formulas</h3>
+                <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                    <li>Hoop Stress: $$\sigma_h = \frac{PD}{2t}$$</li>
+                    <li>Longitudinal Stress: $$\sigma_l = \frac{PD}{4t}$$</li>
+                </ul>
+                <ul class="list-disc list-inside ml-4 space-y-1 text-gray-700 text-sm mt-2">
+                    <li>$P$: Internal pressure</li>
+                    <li>$D$: Inner diameter of the vessel</li>
+                    <li>$t$: Wall thickness</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">7. Key Formulas for Numerical Problems</h2>
+            <p class="text-lg text-gray-600 mb-8 text-center">This section compiles all the essential formulas needed for solving numerical problems related to static load design. Refer to the relevant sections for detailed explanations of each concept.</p>
+
+            <div class="space-y-6">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.1. Basic Stress Formulas</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>Normal Stress (Axial):</strong>
+                            $$ \sigma = \frac{F}{A} $$
+                        </li>
+                        <li><strong>Shear Stress (Direct):</strong>
+                            $$ \tau = \frac{F}{A} $$
+                        </li>
+                        <li><strong>Bending Stress (Flexure Formula):</strong>
+                            $$ \sigma_b = \frac{My}{I} $$
+                        </li>
+                        <li><strong>Torsional Stress (for Circular Shafts):</strong>
+                            $$ \tau_t = \frac{Tr}{J} $$
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.2. Factor of Safety (FoS)</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>General Formula:</strong>
+                            $$ \text{FoS} = \frac{\text{Failure Stress}}{\text{Working Stress}} $$
+                        </li>
+                        <li><strong>For Ductile Materials (Yielding):</strong>
+                            $$ \text{FoS}_{\text{ductile}} = \frac{\sigma_y}{\sigma_{\text{allowable}}} $$
+                        </li>
+                        <li><strong>For Brittle Materials (Fracture):</strong>
+                            $$ \text{FoS}_{\text{brittle}} = \frac{\sigma_{UTS}}{\sigma_{\text{allowable}}} $$
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.3. Combined & Principal Stresses</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>Normal Stress on inclined plane ($\sigma_{\theta}$):</strong>
+                            $$ \sigma_{\theta} = \frac{\sigma_x + \sigma_y}{2} + \frac{\sigma_x - \sigma_y}{2} \cos(2\theta) + \tau_{xy} \sin(2\theta) $$
+                        </li>
+                        <li><strong>Shear Stress on inclined plane ($\tau_{\theta}$):</strong>
+                            $$ \tau_{\theta} = - \frac{\sigma_x - \sigma_y}{2} \sin(2\theta) + \tau_{xy} \cos(2\theta) $$
+                        </li>
+                        <li><strong>Principal Stresses ($\sigma_1, \sigma_2$):</strong>
+                            $$ \sigma_{1,2} = \frac{\sigma_x + \sigma_y}{2} \pm \sqrt{\left(\frac{\sigma_x - \sigma_y}{2}\right)^2 + \tau_{xy}^2} $$
+                        </li>
+                        <li><strong>Orientation of Principal Planes ($\theta_p$):</strong>
+                            $$ \tan(2\theta_p) = \frac{2\tau_{xy}}{\sigma_x - \sigma_y} $$
+                        </li>
+                        <li><strong>Maximum In-Plane Shear Stress ($\tau_{max}$):</strong>
+                            $$ \tau_{max} = \sqrt{\left(\frac{\sigma_x - \sigma_y}{2}\right)^2 + \tau_{xy}^2} $$
+                            $$ \tau_{max} = \frac{\sigma_1 - \sigma_2}{2} $$
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.4. Theories of Failure</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>Maximum Normal Stress Theory (Rankine's Theory):</strong>
+                            $$ \text{Failure if: } \sigma_1 \ge \sigma_{UTS} \text{ or } |\sigma_3| \ge \sigma_{compressive} $$
+                        </li>
+                        <li><strong>Maximum Shear Stress Theory (Tresca Criterion):</strong>
+                            $$ \text{Failure if: } \tau_{max} \ge \frac{\sigma_y}{2} $$
+                            $$ \text{Where: } \tau_{max} = \frac{1}{2} \max(|\sigma_1 - \sigma_2|, |\sigma_2 - \sigma_3|, |\sigma_3 - \sigma_1|) $$
+                        </li>
+                        <li><strong>Maximum Distortion Energy Theory (Von Mises Criterion):</strong>
+                            $$ \sigma_{VM} = \sqrt{\frac{(\sigma_1 - \sigma_2)^2 + (\sigma_2 - \sigma_3)^2 + (\sigma_3 - \sigma_1)^2}{2}} $$
+                            $$ \text{Failure if: } \sigma_{VM} \ge \sigma_y $$
+                        </li>
+                        <li><strong>Mohr-Coulomb Theory:</strong>
+                            $$ \tau_f = c + \sigma_n \tan(\phi) $$
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.5. Stress Concentration</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>Stress Concentration Factor:</strong>
+                            $$ \sigma_{max} = K_t \sigma_{nom} $$
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.6. Column Buckling</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>Euler's Critical Buckling Load:</strong>
+                            $$ P_{cr} = \frac{\pi^2 E I}{(K L)^2} $$
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.7. Pressure Vessels (Thin-Walled Cylinders)</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>Hoop Stress:</strong>
+                            $$ \sigma_h = \frac{PD}{2t} $$
+                        </li>
+                        <li><strong>Longitudinal Stress:</strong>
+                            $$ \sigma_l = \frac{PD}{4t} $$
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">7.8. Design Applications Formulas (Key Examples)</h3>
+                    <h4 class="font-semibold mt-4 mb-2 text-gray-700">Knuckle Joint (Selected Formulas):</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                        <li><strong>Rod Tension:</strong> $$\sigma_t = \frac{P}{\frac{\pi}{4}d^2}$$</li>
+                        <li><strong>Pin Shear (Double Shear):</strong> $$\tau = \frac{P}{2 \cdot \frac{\pi}{4}d_p^2}$$</li>
+                        <li><strong>Pin Bending:</strong> $$\sigma_b = \frac{M_b y}{I}$$</li>
+                        <li><strong>Single Eye Tension (across pin hole):</strong> $$\sigma_t = \frac{P}{(d_2 - d_p)t}$$</li>
+                        <li><strong>Single Eye Shear (at pin hole):</strong> $$\tau = \frac{P}{2(d_2 - d_p)t}$$</li>
+                        <li><strong>Crushing (Single Eye/Pin):</strong> $$\sigma_c = \frac{P}{d_p t}$$</li>
+                        <li><strong>Forked End Tension (across pin holes):</strong> $$\sigma_t = \frac{P}{(d_2 - d_p)2t_1}$$</li>
+                        <li><strong>Forked End Shear (Four Shear Planes):</strong> $$\tau = \frac{P}{4(d_2 - d_p)t_1}$$</li>
+                        <li><strong>Crushing (Forked End/Pin):</strong> $$\sigma_c = \frac{P}{2d_p t_1}$$</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">8. Solving Numerical Problems & Common Mistakes</h2>
+            <p class="text-lg text-gray-600 mb-8 text-center">Mastering static load design involves not just understanding the concepts but also applying them to solve numerical problems. This section provides a systematic approach to tackle such problems in exams and highlights common mistakes to avoid.</p>
+
+            <div class="space-y-8">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">Step-by-Step Approach to Numerical Problems</h3>
+                    <p class="mb-4 text-gray-700">A structured approach can significantly improve accuracy and efficiency when solving design problems.</p>
+                    <ol class="list-decimal list-inside ml-4 space-y-3 text-gray-700">
+                        <li><strong>Understand the Problem Statement:</strong> Read the problem carefully. Identify what is given (knowns) and what needs to be found (unknowns). Draw a neat sketch if not provided.</li>
+                        <li><strong>Draw a Free Body Diagram (FBD):</strong> This is crucial. Isolate the component(s) of interest and clearly show all external forces, moments, and reactions acting on them. This helps in correctly identifying loads.</li>
+                        <li><strong>Determine Load Type(s) and Magnitude:</strong> Based on the FBD, classify the type of loading (axial, bending, torsion, shear) and calculate their magnitudes. For eccentric loads, remember to resolve them into an axial force and a moment.</li>
+                        <li><strong>Identify Critical Section(s):</strong> Determine the location(s) in the component where stresses are likely to be maximum or where failure is most probable (e.g., at holes, sharp corners, maximum bending moment).</li>
+                        <li><strong>Calculate Stresses:</strong> Use the appropriate formulas (from the "Key Formulas" section) to calculate the normal, shear, bending, or torsional stresses at the critical section(s). For combined stresses, determine the principal stresses and maximum shear stress.</li>
+                        <li><strong>Select Material Properties & Factor of Safety:</strong> Identify the material's yield strength ($\sigma_y$), ultimate tensile strength ($\sigma_{UTS}$), and any other relevant properties. Choose an appropriate Factor of Safety (FoS) based on the application and material type.</li>
+                        <li><strong>Apply Failure Theory:</strong> Based on the material (ductile or brittle), select the most suitable failure theory (e.g., Von Mises for ductile, Rankine or Mohr-Coulomb for brittle) and apply its criterion to check for safety or determine required dimensions.</li>
+                        <li><strong>Check Units and Consistency:</strong> Ensure all units are consistent throughout your calculations (e.g., all in N and mm, or all in kN and m). Convert as necessary.</li>
+                        <li><strong>Review and Interpret Results:</strong> Does your answer make sense? Is the component safe? If designing, are the dimensions reasonable? Briefly state your conclusion.</li>
+                    </ol>
+                </div>
+
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-[#00796B]">Common Mistakes and How to Avoid Them</h3>
+                    <p class="mb-4 text-gray-700">Being aware of common errors can save valuable time and prevent incorrect solutions.</p>
+                    <ul class="list-disc list-inside ml-4 space-y-3 text-gray-700">
+                        <li>
+                            <strong>Unit Inconsistency:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Mixing units (e.g., force in kN, length in mm, area in m$^2$) without proper conversion.</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Standardize all units to a consistent system (e.g., SI: N, m, Pa; or mm-based: N, mm, MPa) at the very beginning of the problem. Write down units with every value in your calculations.</p>
+                        </li>
+                        <li>
+                            <strong>Incorrect Area/Moment of Inertia:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Using gross area instead of net area at holes/slots, or using the wrong moment of inertia ($I$ vs. $J$) for bending/torsion.</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Always identify the <em>critical section</em> and use the <em>net</em> area for tensile/compressive calculations at discontinuities. Remember $I$ for bending and $J$ for torsion. For non-circular sections, calculate $I$ carefully.</p>
+                        </li>
+                        <li>
+                            <strong>Sign Convention Errors (Mohr's Circle/Stress Transformation):</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Incorrectly assigning positive/negative signs to normal and shear stresses, especially $\tau_{xy}$.</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Stick to a consistent sign convention (e.g., tension positive, compression negative; shear causing clockwise rotation on the element as positive for Mohr's Circle). Practice drawing Mohr's Circle to visually verify.</p>
+                        </li>
+                        <li>
+                            <strong>Neglecting Stress Concentrations:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Assuming uniform stress distribution everywhere, ignoring localized stress increases at fillets, holes, or notches.</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Recognize that stress concentrations exist. For exam problems, if a stress concentration factor ($K_t$) is given, apply it. In design, consider fillets and smooth transitions.</p>
+                        </li>
+                        <li>
+                            <strong>Choosing the Wrong Failure Theory:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Applying Tresca/Von Mises to brittle materials or Rankine to ductile materials.</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Always identify if the material is ductile or brittle first. Use yield strength for ductile materials (Tresca, Von Mises) and ultimate strength for brittle materials (Rankine, Mohr-Coulomb).</p>
+                        </li>
+                        <li>
+                            <strong>Overlooking Eccentric Loading:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Treating an eccentric load as purely axial, forgetting the induced bending moment ($P \cdot e$).</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Always check if the load passes through the centroid. If not, calculate both the direct stress and the bending stress, and superimpose them.</p>
+                        </li>
+                        <li>
+                            <strong>Missing "Double Shear" or Multiple Shear Planes:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Forgetting to multiply the shear area by 2 (for double shear) or 4 (for specific knuckle joint failures).</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Carefully visualize the failure mechanism. For pins/cotters in joints, count how many distinct planes would need to shear simultaneously.</p>
+                        </li>
+                        <li>
+                            <strong>Calculation Errors:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Simple arithmetic errors, incorrect use of calculator functions (e.g., degrees vs. radians for trigonometric functions).</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Double-check calculations. Break down complex calculations into smaller steps. Ensure your calculator is in the correct mode (degrees for angles in stress transformation if that's what you're using).</p>
+                        </li>
+                        <li>
+                            <strong>Not Stating Assumptions:</strong>
+                            <p class="mb-1"><strong>Mistake:</strong> Not explicitly stating assumptions made (e.g., plane stress, uniform stress distribution in direct shear, ignoring stress concentrations if not given $K_t$).</p>
+                            <p class="text-sm text-gray-600"><strong>How to Avoid:</strong> Clearly list any simplifying assumptions at the beginning of your solution. This shows understanding of the problem's scope.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">9. Real-World Design: The Knuckle Joint</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Failure Mode Analysis</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Design isn't about one calculation. For a knuckle joint, engineers must check multiple potential failure modes. The pin is often the most critical component.</p>
+                    <div class="chart-container h-96">
+                        <canvas id="failureModesChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Exploded View</h3>
+                    <p class="mb-8 text-gray-600">A knuckle joint connects two rods under tension while allowing for angular movement. It has three main parts, each with unique failure modes to consider.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-teal-100 text-2xl font-bold text-teal-600">PIN</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600">Fails in <strong>Double Shear</strong> and <strong>Bending</strong>. Often the most critical part.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-red-100 text-2xl font-bold text-red-600">FORK</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600">Fails in <strong>Tension</strong> across the pin hole, <strong>Shear-out</strong>, or <strong>Crushing</strong>.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-yellow-100 text-2xl font-bold text-yellow-600">EYE</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600">Fails in <strong>Tension</strong> across the pin hole, <strong>Shear-out</strong>, or <strong>Crushing</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center">
+            <h2 class="text-3xl md:text-4xl font-bold section-title mb-8">Key Takeaways for Aspiring Engineers</h2>
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">1. FBD is Non-Negotiable</h3>
+                    <p class="text-sm text-gray-600">Always start with a Free Body Diagram. It's the only way to ensure you've identified all forces correctly.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">2. Know Your Material</h3>
+                    <p class="text-sm text-gray-600">Ductile or Brittle? This single question dictates your choice of failure theory and safety factor approach.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">3. Check All Failure Modes</h3>
+                    <p class="text-sm text-gray-600">A design is only as strong as its weakest link. Systematically check every component for every possible way it can fail.</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+
+            const processLabels = (labels) => {
+                return labels.map(label => {
+                    if (typeof label === 'string' && label.length > 16) {
+                        const words = label.split(' ');
+                        const lines = [];
+                        let currentLine = '';
+                        words.forEach(word => {
+                            if ((currentLine + word).length > 16 && currentLine.length > 0) {
+                                lines.push(currentLine.trim());
+                                currentLine = '';
+                            }
+                            currentLine += word + ' ';
+                        });
+                        lines.push(currentLine.trim());
+                        return lines;
+                    }
+                    return label;
+                });
+            };
+            
+            const energeticPalette = {
+                red: '#FF5E5B',
+                cream: '#FFFFEA',
+                teal: '#00CECB',
+                yellow: '#FFED66',
+                darkTeal: '#00796B'
+            };
+
+            const materialStrengthCtx = document.getElementById('materialStrengthChart').getContext('2d');
+            new Chart(materialStrengthCtx, {
+                type: 'bar',
+                data: {
+                    labels: processLabels(['Structural Steel', 'Aluminum Alloy', 'Cast Iron (Brittle)', 'Titanium Alloy']),
+                    datasets: [{
+                        label: 'Yield Strength (MPa)',
+                        data: [250, 276, 0, 830],
+                        backgroundColor: energeticPalette.teal,
+                    }, {
+                        label: 'Ultimate Tensile Strength (MPa)',
+                        data: [400, 310, 150, 900],
+                        backgroundColor: energeticPalette.red,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Strength (MPa)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            const fosCtx = document.getElementById('fosChart').getContext('2d');
+            new Chart(fosCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: processLabels(['Load Uncertainty', 'Material Variation', 'Manufacturing Defects', 'Analysis Simplification']),
+                    datasets: [{
+                        data: [35, 30, 20, 15],
+                        backgroundColor: [energeticPalette.red, energeticPalette.teal, energeticPalette.yellow, energeticPalette.darkTeal],
+                        borderColor: energeticPalette.cream,
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+            
+            const failureChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { min: -1.5, max: 1.5, title: { display: true, text: 'σ₁ / σᵧ' } },
+                    y: { min: -1.5, max: 1.5, title: { display: true, text: 'σ₂ / σᵧ' } }
+                },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            };
+
+            const rankineCtx = document.getElementById('rankineChart').getContext('2d');
+            new Chart(rankineCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        data: [{x:1,y:1},{x:-1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:1,y:1}],
+                        borderColor: energeticPalette.red,
+                        backgroundColor: 'rgba(255, 94, 91, 0.2)',
+                        showLine: true,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: failureChartOptions
+            });
+
+            const trescaCtx = document.getElementById('trescaChart').getContext('2d');
+            new Chart(trescaCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        data: [{x:1,y:0},{x:1,y:1},{x:0,y:1},{x:-1,y:0},{x:-1,y:-1},{x:0,y:-1},{x:1,y:0}],
+                        borderColor: energeticPalette.teal,
+                        backgroundColor: 'rgba(0, 206, 203, 0.2)',
+                        showLine: true,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: failureChartOptions
+            });
+
+            const vonMisesCtx = document.getElementById('vonMisesChart').getContext('2d');
+            const ellipsePoints = [];
+            for (let i = 0; i <= 360; i++) {
+                const a = i * Math.PI / 180;
+                const r = 1 / Math.sqrt(Math.pow(Math.cos(a), 2) - Math.cos(a) * Math.sin(a) + Math.pow(Math.sin(a), 2));
+                ellipsePoints.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
+            }
+            new Chart(vonMisesCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        data: ellipsePoints,
+                        borderColor: energeticPalette.darkTeal,
+                        backgroundColor: 'rgba(0, 121, 107, 0.2)',
+                        showLine: true,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: failureChartOptions
+            });
+
+            const stressConcentrationCtx = document.getElementById('stressConcentrationChart').getContext('2d');
+            new Chart(stressConcentrationCtx, {
+                type: 'bar',
+                data: {
+                    labels: processLabels(['Nominal Stress', 'Stress at Hole (K=2.5)', 'Stress at Fillet (K=1.8)']),
+                    datasets: [{
+                        label: 'Stress Value (MPa)',
+                        data: [100, 250, 180],
+                        backgroundColor: [energeticPalette.teal, energeticPalette.red, energeticPalette.yellow],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Stress (MPa)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            const bucklingCtx = document.getElementById('bucklingChart').getContext('2d');
+            const slendernessRatios = Array.from({length: 20}, (_, i) => 20 + i * 5);
+            const criticalStresses = slendernessRatios.map(sr => {
+                const E = 200 * Math.pow(10, 9);
+                const pi = Math.PI;
+                return (pi * pi * E) / (sr * sr) / 1000000;
+            });
+            new Chart(bucklingCtx, {
+                type: 'line',
+                data: {
+                    labels: slendernessRatios,
+                    datasets: [{
+                        label: 'Critical Stress (MPa)',
+                        data: criticalStresses,
+                        borderColor: energeticPalette.red,
+                        backgroundColor: 'rgba(255, 94, 91, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Slenderness Ratio (L/r)' }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Critical Stress (MPa)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            const pressureVesselCtx = document.getElementById('pressureVesselChart').getContext('2d');
+            new Chart(pressureVesselCtx, {
+                type: 'bar',
+                data: {
+                    labels: processLabels(['Hoop Stress', 'Longitudinal Stress']),
+                    datasets: [{
+                        label: 'Stress Magnitude',
+                        data: [200, 100],
+                        backgroundColor: [energeticPalette.teal, energeticPalette.yellow],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Stress (MPa)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+            
+            const failureModesCtx = document.getElementById('failureModesChart').getContext('2d');
+            new Chart(failureModesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Knuckle Pin', 'Single Eye', 'Fork End'],
+                    datasets: [{
+                        label: 'Shear Failure',
+                        data: [40, 25, 30],
+                        backgroundColor: energeticPalette.red,
+                    }, {
+                        label: 'Bending Failure',
+                        data: [50, 5, 5],
+                        backgroundColor: energeticPalette.teal,
+                    }, {
+                        label: 'Tensile Failure',
+                        data: [0, 40, 35],
+                        backgroundColor: energeticPalette.yellow,
+                    }, {
+                        label: 'Crushing Failure',
+                        data: [10, 30, 30],
+                        backgroundColor: energeticPalette.darkTeal,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, title: { display: true, text: 'Relative Design Consideration (%)' } }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

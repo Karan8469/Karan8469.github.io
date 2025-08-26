@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Decoding Static Load Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFEA;
+            color: #00796B;
+        }
+        .section-title {
+            color: #00796B;
+        }
+        .card {
+            background-color: white;
+            border: 2px solid #00CECB;
+            box-shadow: 8px 8px 0px #00CECB;
+        }
+        .stat-card {
+            background-color: #00796B;
+            color: #FFFFEA;
+            border: 2px solid #FFED66;
+            box-shadow: 8px 8px 0px #FFED66;
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            height: 100%;
+            min-height: 250px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+
+        <header class="text-center mb-20 md:mb-32">
+            <h1 class="text-4xl md:text-6xl font-extrabold section-title mb-4">Decoding Static Load Design</h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">A visual guide for mechanical engineering students on why things don't break under constant force.</p>
+        </header>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">1. The Building Blocks: Loads & Stresses</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Types of External Loads</h3>
+                    <p class="mb-8 text-gray-600">A <strong>load</strong> is an external force. In static design, we analyze five main types, each causing a unique internal reaction, or <strong>stress</strong>.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">↔️</div>
+                            <h4 class="font-bold">Tension</h4>
+                            <p class="text-xs text-gray-500">Pulling apart</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">➡️⬅️</div>
+                            <h4 class="font-bold">Compression</h4>
+                            <p class="text-xs text-gray-500">Squeezing</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">🔄</div>
+                            <h4 class="font-bold">Torsion</h4>
+                            <p class="text-xs text-gray-500">Twisting</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                            <div class="text-4xl mb-2">↕️</div>
+                            <h4 class="font-bold">Shear</h4>
+                            <p class="text-xs text-gray-500">Sliding</p>
+                        </div>
+                        <div class="p-4 rounded-lg border-2 border-dashed border-gray-300 text-center col-span-2 sm:col-span-1">
+                            <div class="text-4xl mb-2">⤴️</div>
+                            <h4 class="font-bold">Bending</h4>
+                            <p class="text-xs text-gray-500">Curving</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Material Strength Comparison</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Different materials have different strengths. The choice of material is critical for handling stress.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="materialStrengthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">2. The Safety Net: Factor of Safety (FoS)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                <div class="stat-card p-8 rounded-lg text-center md:col-span-1">
+                    <p class="text-lg font-medium text-yellow-300">Typical FoS</p>
+                    <p class="text-7xl font-extrabold">1.5-3.0</p>
+                    <p class="text-sm opacity-80 mt-2">A crucial buffer against the unknown.</p>
+                </div>
+                <div class="md:col-span-2 card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">What Does FoS Account For?</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">FoS is a multiplier that accounts for real-world uncertainties that calculations can't predict.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="fosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">3. Predicting the Breaking Point: Theories of Failure</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">How do we predict failure under complex, multi-axial stress? We use failure theories, which define a "safe zone" for a material's stress state. The choice depends on whether the material is ductile or brittle.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-bold mb-2">Rankine's Theory</h3>
+                    <p class="text-sm font-semibold text-red-500 mb-4">Best for BRITTLE Materials</p>
+                    <p class="text-xs text-gray-500 mb-4">Failure occurs if the max principal stress exceeds the material's ultimate strength.</p>
+                    <div class="chart-container h-56">
+                        <canvas id="rankineChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-bold mb-2">Tresca's Theory</h3>
+                    <p class="text-sm font-semibold text-teal-500 mb-4">Best for DUCTILE Materials (Conservative)</p>
+                    <p class="text-xs text-gray-500 mb-4">Yielding occurs if the max shear stress exceeds the material's shear yield strength.</p>
+                    <div class="chart-container h-56">
+                        <canvas id="trescaChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-bold mb-2">Von Mises' Theory</h3>
+                    <p class="text-sm font-semibold text-teal-500 mb-4">Best for DUCTILE Materials (Accurate)</p>
+                    <p class="text-xs text-gray-500 mb-4">Yielding occurs if the distortion energy in the material reaches a critical value.</p>
+                    <div class="chart-container h-56">
+                        <canvas id="vonMisesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">4. Real-World Design: The Knuckle Joint</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Failure Mode Analysis</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Design isn't about one calculation. For a knuckle joint, engineers must check multiple potential failure modes. The pin is often the most critical component.</p>
+                    <div class="chart-container h-96">
+                        <canvas id="failureModesChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Exploded View</h3>
+                    <p class="mb-8 text-gray-600">A knuckle joint connects two rods under tension while allowing for angular movement. It has three main parts, each with unique failure modes to consider.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-teal-100 text-2xl font-bold text-teal-600">PIN</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600">Fails in <strong>Double Shear</strong> and <strong>Bending</strong>. Often the most critical part.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-red-100 text-2xl font-bold text-red-600">FORK</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600">Fails in <strong>Tension</strong> across the pin hole, <strong>Shear-out</strong>, or <strong>Crushing</strong>.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-yellow-100 text-2xl font-bold text-yellow-600">EYE</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600">Fails in <strong>Tension</strong> across the pin hole, <strong>Shear-out</strong>, or <strong>Crushing</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center">
+            <h2 class="text-3xl md:text-4xl font-bold section-title mb-8">Key Takeaways for Aspiring Engineers</h2>
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">1. FBD is Non-Negotiable</h3>
+                    <p class="text-sm text-gray-600">Always start with a Free Body Diagram. It's the only way to ensure you've identified all forces correctly.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">2. Know Your Material</h3>
+                    <p class="text-sm text-gray-600">Ductile or Brittle? This single question dictates your choice of failure theory and safety factor approach.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">3. Check All Failure Modes</h3>
+                    <p class="text-sm text-gray-600">A design is only as strong as its weakest link. Systematically check every component for every possible way it can fail.</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+
+            const processLabels = (labels) => {
+                return labels.map(label => {
+                    if (label.length > 16) {
+                        const words = label.split(' ');
+                        const lines = [];
+                        let currentLine = '';
+                        words.forEach(word => {
+                            if ((currentLine + word).length > 16) {
+                                lines.push(currentLine.trim());
+                                currentLine = '';
+                            }
+                            currentLine += word + ' ';
+                        });
+                        lines.push(currentLine.trim());
+                        return lines;
+                    }
+                    return label;
+                });
+            };
+            
+            const energeticPalette = {
+                red: '#FF5E5B',
+                cream: '#FFFFEA',
+                teal: '#00CECB',
+                yellow: '#FFED66',
+                darkTeal: '#00796B'
+            };
+
+            const materialStrengthCtx = document.getElementById('materialStrengthChart').getContext('2d');
+            new Chart(materialStrengthCtx, {
+                type: 'bar',
+                data: {
+                    labels: processLabels(['Structural Steel', 'Aluminum Alloy', 'Cast Iron (Brittle)', 'Titanium Alloy']),
+                    datasets: [{
+                        label: 'Yield Strength (MPa)',
+                        data: [250, 276, 0, 830],
+                        backgroundColor: energeticPalette.teal,
+                    }, {
+                        label: 'Ultimate Tensile Strength (MPa)',
+                        data: [400, 310, 150, 900],
+                        backgroundColor: energeticPalette.red,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Strength (MPa)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            const fosCtx = document.getElementById('fosChart').getContext('2d');
+            new Chart(fosCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Load Uncertainty', 'Material Variation', 'Manufacturing Defects', 'Analysis Simplification'],
+                    datasets: [{
+                        data: [35, 30, 20, 15],
+                        backgroundColor: [energeticPalette.red, energeticPalette.teal, energeticPalette.yellow, energeticPalette.darkTeal],
+                        borderColor: energeticPalette.cream,
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+            
+            const failureChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { min: -1.5, max: 1.5, title: { display: true, text: 'σ₁ / σᵧ' } },
+                    y: { min: -1.5, max: 1.5, title: { display: true, text: 'σ₂ / σᵧ' } }
+                },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            };
+
+            const rankineCtx = document.getElementById('rankineChart').getContext('2d');
+            new Chart(rankineCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        data: [{x:1,y:1},{x:-1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:1,y:1}],
+                        borderColor: energeticPalette.red,
+                        backgroundColor: 'rgba(255, 94, 91, 0.2)',
+                        showLine: true,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: failureChartOptions
+            });
+
+            const trescaCtx = document.getElementById('trescaChart').getContext('2d');
+            new Chart(trescaCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        data: [{x:1,y:0},{x:1,y:1},{x:0,y:1},{x:-1,y:0},{x:-1,y:-1},{x:0,y:-1},{x:1,y:0}],
+                        borderColor: energeticPalette.teal,
+                        backgroundColor: 'rgba(0, 206, 203, 0.2)',
+                        showLine: true,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: failureChartOptions
+            });
+
+            const vonMisesCtx = document.getElementById('vonMisesChart').getContext('2d');
+            const ellipsePoints = [];
+            for (let i = 0; i <= 360; i++) {
+                const a = i * Math.PI / 180;
+                const r = 1 / Math.sqrt(Math.pow(Math.cos(a), 2) - Math.cos(a) * Math.sin(a) + Math.pow(Math.sin(a), 2));
+                ellipsePoints.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
+            }
+            new Chart(vonMisesCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        data: ellipsePoints,
+                        borderColor: energeticPalette.darkTeal,
+                        backgroundColor: 'rgba(0, 121, 107, 0.2)',
+                        showLine: true,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: failureChartOptions
+            });
+            
+            const failureModesCtx = document.getElementById('failureModesChart').getContext('2d');
+            new Chart(failureModesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Knuckle Pin', 'Single Eye', 'Fork End'],
+                    datasets: [{
+                        label: 'Shear Failure',
+                        data: [40, 25, 30],
+                        backgroundColor: energeticPalette.red,
+                    }, {
+                        label: 'Bending Failure',
+                        data: [50, 5, 5],
+                        backgroundColor: energeticPalette.teal,
+                    }, {
+                        label: 'Tensile Failure',
+                        data: [0, 40, 35],
+                        backgroundColor: energeticPalette.yellow,
+                    }, {
+                        label: 'Crushing Failure',
+                        data: [10, 30, 30],
+                        backgroundColor: energeticPalette.darkTeal,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, title: { display: true, text: 'Relative Design Consideration (%)' } }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
