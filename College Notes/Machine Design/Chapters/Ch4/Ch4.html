@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Torsion Theory Explorer</title>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a fixed sidebar for navigation and a main content area. This structure allows users to easily jump between topics without losing context, promoting non-linear exploration. The core idea is to transform the static report into an interactive learning tool. Key interactions include live calculators for formulas (J, Zp, Power), a dynamic chart visualizing stress distribution, and an interactive concept map to synthesize knowledge. This dashboard-like, tool-based approach is chosen for its high usability in an educational context, turning passive reading into active problem-solving and concept visualization. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Shear stress distribution. Goal: Visualize relationship. Viz: Bar Chart (Chart.js). Interaction: Slider to change radius, updating chart live. Justification: Visually demonstrates the core concept that stress is proportional to radius.
+        - Report Info: Formulas for J, Zp, Power, Stress. Goal: Allow practical application/calculation. Method: Interactive HTML forms. Interaction: Users input values (diameter, torque, etc.) and see results instantly. Justification: Reinforces formula understanding through active use.
+        - Report Info: Concept relationships. Goal: Synthesize knowledge. Method: Interactive Concept Map (HTML/CSS Flexbox). Interaction: Hovering over nodes reveals tooltips with key info. Justification: Provides a high-level overview and reinforces connections between topics.
+        - Report Info: Derivation steps. Goal: Explain a process. Method: Accordion/Collapsible sections. Interaction: User clicks to reveal each step. Justification: Breaks down a complex derivation into manageable chunks, allowing users to control the learning pace.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MathJax Configuration -->
+    <script>
+        MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+          },
+          svg: {
+            fontCache: 'global'
+          }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fdfcfb; color: #4a4a4a; }
+        .katex { font-size: 1.1em; } /* Kept for general styling, though MathJax is used */
+        .nav-link { transition: all 0.2s ease-in-out; }
+        .nav-link.active, .nav-link:hover { background-color: #eaddd7; color: #6d4c41; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .concept-map-node { transition: all 0.3s ease; }
+        .concept-map-node:hover { transform: scale(1.05); background-color: #eaddd7; }
+        .concept-map-node .tooltip { visibility: hidden; opacity: 0; transition: opacity 0.3s; }
+        .concept-map-node:hover .tooltip { visibility: visible; opacity: 1; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <aside class="w-full md:w-64 bg-[#f5f1ee] p-4 md:p-6 border-r border-gray-200 md:fixed md:h-full">
+            <h1 class="text-2xl font-bold text-[#6d4c41] mb-6">Torsion Explorer</h1>
+            <nav id="navigation" class="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-4 md:pb-0">
+                <a href="#intro" class="nav-link active whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="intro">Introduction</a>
+                <a href="#assumptions" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="assumptions">Assumptions</a>
+                <a href="#derivation" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="derivation">Derivation</a>
+                <a href="#stress" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="stress">Shear Stress</a>
+                <a href="#inertia" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="inertia">Polar Moment & Modulus</a>
+                <a href="#power" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="power">Power Transmission</a>
+                <a href="#non-circular" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="non-circular">Non-Circular Shafts</a>
+                <a href="#stress-concentration" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="stress-concentration">Stress Concentrations</a>
+                <a href="#combined-loading" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="combined-loading">Combined Loading</a>
+                <a href="#thin-walled" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg mb-0 md:mb-2" data-target="thin-walled">Thin-Walled Tubes</a>
+                <a href="#summary" class="nav-link whitespace-nowrap text-left text-lg font-medium p-3 rounded-lg" data-target="summary">Summary & Tools</a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 md:ml-64 p-6 md:p-10">
+            
+            <section id="intro" class="content-section active">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Introduction to Torsion</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    This section introduces the core concept of torsion. In mechanics, torsion is the twisting of an object due to an applied torque. Understanding this is fundamental to designing everything from the powerful driveshafts in cars to the delicate components in a watch. It's not just about rotation; it's about how materials internally resist that twisting force.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">What is Torsion?</h3>
+                        <p class="mb-4">Torsion is the twisting deformation of an object caused by a <strong>torque</strong> (a rotational force). When you apply a torque to an object that can't freely rotate, it creates internal shear stresses, causing the object to twist.</p>
+                        <p class="font-semibold">Key Distinction:</p>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li><strong class="text-[#6d4c41]">Torque (T):</strong> The cause. The applied twisting moment.</li>
+                            <li><strong class="text-[#6d4c41]">Torsion:</strong> The effect. The resulting internal stresses and angular deformation.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Real-World Analogy: The Screwdriver</h3>
+                        <div class="flex items-center">
+                            <span class="text-5xl mr-4">🔧</span>
+                            <p>When you twist a screwdriver, you apply torque to the handle. This torque travels down the shaft, causing it to twist—that's torsion. If the screw is stuck, the shaft twists more, building up torsional stress until the screw either turns or the screwdriver fails.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="assumptions" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Core Assumptions in Torsion Theory</h2>
+                 <p class="text-lg leading-relaxed mb-6">
+                    The elegant formulas for torsion are built on a foundation of simplifying assumptions. These assumptions define the ideal conditions for the theory and are crucial for understanding its limitations. This section breaks down each assumption and its practical implication, helping you understand when and why these formulas apply.
+                </p>
+                <div id="assumptions-container" class="space-y-4"></div>
+            </section>
+
+            <section id="derivation" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Derivation of the Torsion Equation</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    The torsion equation, $\frac{T}{J} = \frac{\tau}{r} = \frac{G\theta}{L}$, is a cornerstone of mechanics. Instead of just memorizing it, this section walks you through its derivation step-by-step. Understanding how it's derived reveals the interplay between geometry, material properties, and equilibrium that governs how shafts behave under twist.
+                </p>
+                <div id="derivation-accordion" class="space-y-3"></div>
+            </section>
+
+            <section id="stress" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Torsional Shear Stress</h2>
+                 <p class="text-lg leading-relaxed mb-6">
+                    When a shaft is twisted, it develops internal shear stress. This section explores how to calculate this stress and, more importantly, how it's distributed across the shaft's cross-section. Use the interactive tools below to visualize this fundamental concept and calculate stress for different scenarios.
+                </p>
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="2xl font-semibold text-[#8d6e63] mb-3">Visualize Stress Distribution</h3>
+                        <p class="mb-4">Shear stress ($\tau$) is not uniform. It's zero at the center and increases linearly to a maximum at the outer surface. Use the slider to see how stress changes with the radial position.</p>
+                        <div class="chart-container">
+                            <canvas id="stressChart"></canvas>
+                        </div>
+                        <div class="mt-4">
+                            <label for="radiusSlider" class="block mb-2 font-medium">Radius Position (r): <span id="radiusValue">50</span>%</label>
+                            <input type="range" id="radiusSlider" min="0" max="100" value="50" class="w-full">
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Shear Stress Calculator</h3>
+                        <p class="mb-4">Calculate shear stress at any point using the formula $\tau = \frac{Tr}{J}$.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="stressTorque" class="block font-medium">Torque (T) in N·m</label>
+                                <input type="number" id="stressTorque" value="1500" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                            </div>
+                            <div>
+                                <label for="stressJ" class="block font-medium">Polar Moment of Inertia (J) in m⁴</label>
+                                <input type="number" id="stressJ" value="0.000001" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                            </div>
+                            <div>
+                                <label for="stressR" class="block font-medium">Radial Distance (r) in mm</label>
+                                <input type="number" id="stressR" value="25" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                            </div>
+                            <button id="calculateStressBtn" class="w-full bg-[#6d4c41] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#5d4037] transition-colors">Calculate</button>
+                            <div id="stressResult" class="mt-4 text-center text-xl font-bold text-[#6d4c41]"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="inertia" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Polar Moment of Inertia & Polar Modulus</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    The <strong>Polar Moment of Inertia (J)</strong> measures a shaft's resistance to twisting, while the <strong>Polar Modulus (Zp)</strong> relates directly to its torsional strength. These are purely geometric properties, crucial for design. Use the calculators to see how changing a shaft's dimensions dramatically affects these values.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Solid Shaft Calculator</h3>
+                        <p class="mb-4">For a solid circular shaft.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="solidDiameter" class="block font-medium">Diameter (D) in mm</label>
+                                <input type="number" id="solidDiameter" value="50" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                            </div>
+                            <button id="calculateSolidBtn" class="w-full bg-[#6d4c41] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#5d4037] transition-colors">Calculate</button>
+                            <div id="solidResult" class="mt-4 space-y-2"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Hollow Shaft Calculator</h3>
+                        <p class="mb-4">For a hollow circular shaft.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="hollowOuterD" class="block font-medium">Outer Diameter (Do) in mm</label>
+                                <input type="number" id="hollowOuterD" value="50" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                            </div>
+                            <div>
+                                <label for="hollowInnerD" class="block font-medium">Inner Diameter (Di) in mm</label>
+                                <input type="number" id="hollowInnerD" value="40" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                            </div>
+                            <button id="calculateHollowBtn" class="w-full bg-[#6d4c41] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#5d4037] transition-colors">Calculate</button>
+                            <div id="hollowResult" class="mt-4 space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="power" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Power Transmission by Shafts</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    A primary role of shafts is to transmit power. This section explores the fundamental relationship between power, torque, and rotational speed. The interactive calculator allows you to explore this trade-off: for a given power, you can have high torque at low speed, or low torque at high speed.
+                </p>
+                <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-2xl font-semibold text-center text-[#8d6e63] mb-4">Power, Torque, and Speed Calculator</h3>
+                    <p class="text-center mb-6">Enter any two values to calculate the third. Clear a field to calculate for it.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="powerInput" class="block font-medium">Power (P) in kW</label>
+                            <input type="number" id="powerInput" placeholder="e.g., 10" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                        </div>
+                        <div>
+                            <label for="torqueInput" class="block font-medium">Torque (T) in N·m</label>
+                            <input type="number" id="torqueInput" placeholder="e.g., 95.5" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                        </div>
+                        <div>
+                            <label for="speedInput" class="block font-medium">Rotational Speed (N) in RPM</label>
+                            <input type="number" id="speedInput" placeholder="e.g., 1000" class="w-full p-2 border border-gray-300 rounded-md mt-1">
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="calculatePowerBtn" class="flex-1 bg-[#6d4c41] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#5d4037] transition-colors">Calculate</button>
+                            <button id="clearPowerBtn" class="flex-1 bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors">Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="non-circular" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Torsion of Non-Circular Shafts</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    While the fundamental torsion theory is elegantly simple for circular shafts, real-world components often have non-circular cross-sections. This section explains why the previous formulas don't apply and how these shapes behave differently under twist.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Why Circular is Special</h3>
+                        <p class="mb-4">The core assumption that "plane sections remain plane" is only true for circular shafts. For any other cross-section (e.g., square, rectangular, elliptical), the cross-sections will <strong>warp</strong> (distort out of plane) when subjected to torsion.</p>
+                        <p class="mb-4">This warping means that radial lines do not remain radial, and the linear stress distribution ($\tau = Tr/J$) is no longer valid. The analysis becomes significantly more complex, often requiring advanced mathematical methods or numerical techniques like Finite Element Analysis (FEA).</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Behavior & Stress Distribution</h3>
+                        <p class="mb-4">For non-circular shafts:</p>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li><strong>Warping:</strong> Cross-sections do not remain flat.</li>
+                            <li><strong>Stress Distribution:</strong> Shear stress is no longer linearly distributed from the center. Maximum shear stress typically occurs at points on the boundary closest to the center of the cross-section, and it's zero at the corners (where the boundary is sharpest).</li>
+                            <li><strong>Analogy:</strong> Try twisting a long rectangular rubber eraser. You'll clearly see its ends warp and distort, unlike a circular rod.</li>
+                        </ul>
+                        <p class="mt-4">Exact solutions for stress and angle of twist in non-circular sections are derived using theories like Prandtl's stress function and St. Venant's theory. For practical purposes, empirical formulas and tables (often involving shape factors) are used for common non-circular shapes.</p>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3 mt-8">Common Non-Circular Formulas (Example: Rectangular Shaft)</h3>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <p class="mb-4">For a rectangular shaft with longer side 'b' and shorter side 'a':</p>
+                    <p class="mb-2">Maximum Shear Stress: $\tau_{max} = \frac{T}{k_1 a b^2}$</p>
+                    <p class="mb-2">Angle of Twist: $\theta = \frac{T L}{k_2 a b^3 G}$</p>
+                    <p class="text-sm text-gray-600 mt-2">Where $k_1$ and $k_2$ are coefficients that depend on the ratio $b/a$ (found in tables).</p>
+                </div>
+                <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3 mt-8">Common Misconceptions & Mistakes</h3>
+                <ul class="list-disc list-inside ml-4 mt-2">
+                    <li><strong>Misconception:</strong> Assuming $\tau = Tr/J$ applies to all shapes. <strong>Clarification:</strong> This formula is strictly for circular shafts.</li>
+                    <li><strong>Mistake:</strong> Trying to calculate $J$ for a non-circular section using the circular shaft formulas.</li>
+                </ul>
+            </section>
+
+            <section id="stress-concentration" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Stress Concentrations in Torsion</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    Our basic torsion theory assumes perfectly smooth, uniform shafts. However, real-world components often have geometric discontinuities like holes, keyways, or sudden changes in diameter. These features cause localized increases in stress, known as stress concentrations, which are critical for preventing failure.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">What are Stress Concentrations?</h3>
+                        <p class="mb-4">A <strong>stress concentration</strong> occurs at points where the geometry of a component changes abruptly. These discontinuities disrupt the smooth flow of stress lines, causing them to crowd together and leading to a localized increase in stress magnitude.</p>
+                        <p class="mb-4">Common examples in shafts include:</p>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li>Keyways (for attaching gears or pulleys)</li>
+                            <li>Holes (e.g., for pins or bolts)</li>
+                            <li>Shoulders or fillets (where diameter changes)</li>
+                            <li>Grooves or threads</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Stress Concentration Factor (K<sub>t</sub>)</h3>
+                        <p class="mb-4">The effect of a stress concentration is quantified by the <strong>stress concentration factor ($K_t$)</strong>. It's defined as the ratio of the maximum localized stress ($\tau_{max,local}$) to the nominal (or average) stress ($\tau_{nom}$) calculated using basic formulas without considering the discontinuity:</p>
+                        <p class="text-center text-xl font-bold my-4">$$K_t = \frac{\tau_{max,local}}{\tau_{nom}}$$</p>
+                        <p class="mb-4">Therefore, the actual maximum stress at the discontinuity is: $$\tau_{max,local} = K_t \cdot \tau_{nom} = K_t \frac{TR}{J}$$</p>
+                        <p class="text-sm text-gray-600 mt-2">Values for $K_t$ are typically obtained from experimental data, design handbooks, or FEA results, often presented in graphical form based on geometric ratios (e.g., fillet radius to shaft diameter).</p>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3 mt-8">Practical Implications & Mistakes</h3>
+                <ul class="list-disc list-inside ml-4 mt-2">
+                    <li><strong>Importance:</strong> Stress concentrations are critical because they can cause failure at loads much lower than predicted by nominal stress calculations, especially under fatigue loading.</li>
+                    <li><strong>Design Strategy:</strong> Engineers often use generous fillets, avoid sharp corners, and locate keyways in low-stress regions to minimize stress concentrations.</li>
+                    <li><strong>Misconception:</strong> Stress concentrations only matter for static loads. <strong>Clarification:</strong> They are even more critical for fatigue (cyclic) loading, where they can initiate cracks.</li>
+                    <li><strong>Mistake:</strong> Forgetting to apply $K_t$ when designing components with discontinuities, leading to underestimation of actual stresses.</li>
+                </ul>
+            </section>
+
+            <section id="combined-loading" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Combined Loading on Shafts</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    In most real-world applications, shafts are not subjected to pure torsion alone. They often experience a combination of torsional, bending, and sometimes axial loads simultaneously. Understanding how these stresses combine and affect the shaft's overall strength is crucial for accurate and safe design.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Types of Combined Loads</h3>
+                        <p class="mb-4">A common scenario is a shaft transmitting power (torsion) while also supporting gears or pulleys (bending) and possibly experiencing thrust from bearings (axial load).</p>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li><strong>Torsion (T):</strong> Twisting moment (causes shear stress).</li>
+                            <li><strong>Bending Moment (M):</strong> Causes normal (tensile/compressive) stress, varying linearly from zero at the neutral axis to max at outer fibers.</li>
+                            <li><strong>Axial Load (P):</strong> Causes uniform normal (tensile/compressive) stress across the cross-section.</li>
+                        </ul>
+                        <p class="mt-4">When these loads act together, the stresses they induce combine at various points on the shaft's cross-section, creating a complex state of stress.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Theories of Failure</h3>
+                        <p class="mb-4">To analyze combined stresses, engineers use <strong>theories of failure</strong>, which predict when a material will yield or fracture under complex loading based on its behavior under simple tensile or shear tests. For ductile materials, the two most common theories are:</p>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li><strong>Maximum Shear Stress Theory (Tresca Criterion):</strong> Predicts failure when the maximum shear stress in the combined state equals the shear yield strength of the material. This is a conservative theory.</li>
+                            <li><strong>Maximum Distortion Energy Theory (Von Mises Criterion):</strong> Predicts failure when the distortion energy per unit volume in the combined state equals that at yielding in a simple tension test. This theory is generally more accurate for ductile materials.</li>
+                        </ul>
+                        <p class="mt-4">Both theories lead to the calculation of an "equivalent stress" or "equivalent torque/moment" that can be compared to the material's simple tensile or shear yield strength.</p>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3 mt-8">Example: Torsion + Bending</h3>
+                <p class="mb-4">For a shaft subjected to both torque ($T$) and bending moment ($M$), the principal stresses and maximum shear stress can be found using Mohr's Circle or stress transformation equations. The equivalent torque ($T_e$) or equivalent bending moment ($M_e$) can then be used with the basic torsion/bending formulas:</p>
+                <p class="text-center text-xl font-bold my-4">Equivalent Torque (Tresca): $$T_e = \sqrt{M^2 + T^2}$$</p>
+                <p class="text-center text-xl font-bold my-4">Equivalent Bending Moment (Von Mises): $$M_e = \sqrt{M^2 + \frac{3}{4}T^2}$$</p>
+                <p class="text-sm text-gray-600 mt-2">These equivalent values are then used with the standard $\tau = T_e R/J$ or $\sigma = M_e R/I$ to find the critical stress.</p>
+                <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3 mt-8">Common Misconceptions & Mistakes</h3>
+                <ul class="list-disc list-inside ml-4 mt-2">
+                    <li><strong>Misconception:</strong> Simply adding stresses from different loads. <strong>Clarification:</strong> Stresses combine in a tensorial way, not just arithmetically. Failure theories are needed.</li>
+                    <li><strong>Mistake:</strong> Only checking for pure torsion or pure bending failure, ignoring the interaction between loads.</li>
+                </ul>
+            </section>
+
+            <section id="thin-walled" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Torsion in Thin-Walled Tubes</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    Thin-walled tubes are widely used in aerospace, automotive, and structural applications due to their high strength-to-weight ratio. Their torsional analysis is simplified compared to general non-circular sections, relying on the concept of shear flow.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Key Assumptions & Concepts</h3>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li><strong>Thin Wall:</strong> The wall thickness ($t$) is very small compared to the overall dimensions of the cross-section.</li>
+                            <li><strong>Constant Shear Stress:</strong> Shear stress is assumed to be uniform across the wall thickness.</li>
+                            <li><strong>Shear Flow (q):</strong> The product of shear stress and wall thickness ($q = \tau \cdot t$). Shear flow is constant around the perimeter of the tube.</li>
+                            <li><strong>No Warping:</strong> For closed thin-walled sections, warping is often negligible, simplifying the analysis.</li>
+                        </ul>
+                        <p class="mt-4">This approach is particularly useful for non-circular thin-walled sections where the general torsion theory for non-circular shafts would be too complex.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3">Bredt's Formula</h3>
+                        <p class="mb-4">For a thin-walled closed tube subjected to torque ($T$), the average shear stress ($\tau_{avg}$) in the wall is given by Bredt's Formula:</p>
+                        <p class="text-center text-xl font-bold my-4">$$\tau_{avg} = \frac{T}{2 A_m t}$$</p>
+                        <p class="mb-2">Where:</p>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li>$T$ = Applied Torque</li>
+                            <li>$A_m$ = Mean enclosed area of the cross-section (area enclosed by the centerline of the tube wall)</li>
+                            <li>$t$ = Wall thickness</li>
+                        </ul>
+                        <p class="mt-4">The angle of twist for a thin-walled tube is given by:</p>
+                        <p class="text-center text-xl font-bold my-4">$$\theta = \frac{T L}{4 A_m^2 G} \oint \frac{ds}{t}$$</p>
+                        <p class="text-sm text-gray-600 mt-2">For a constant thickness tube, the integral simplifies to $\frac{L_m}{t}$, where $L_m$ is the mean perimeter.</p>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-semibold text-[#8d6e63] mb-3 mt-8">Advantages & Mistakes</h3>
+                <ul class="list-disc list-inside ml-4 mt-2">
+                    <li><strong>Advantage:</strong> Thin-walled tubes are very efficient in carrying torsional loads due to their large $A_m$ relative to their material volume, leading to high torsional stiffness and strength-to-weight ratios.</li>
+                    <li><strong>Misconception:</strong> Applying Bredt's formula to open sections (e.g., a C-channel). <strong>Clarification:</strong> Bredt's formula is only for *closed* sections. Open thin sections are much weaker in torsion and experience significant warping.</li>
+                    <li><strong>Mistake:</strong> Incorrectly calculating $A_m$ (e.g., using outer area instead of mean enclosed area).</li>
+                </ul>
+            </section>
+
+            <section id="summary" class="content-section">
+                <h2 class="text-4xl font-bold text-[#6d4c41] mb-4">Summary & Concept Map</h2>
+                <p class="text-lg leading-relaxed mb-6">
+                    This final section brings everything together. The interactive concept map helps you visualize the connections between all the topics we've covered. Hover over each node to review key information. Below the map, you'll find a quick-reference table of the most important formulas.
+                </p>
+                
+                <h3 class="text-3xl font-semibold text-[#8d6e63] mb-4 mt-8">Interactive Concept Map</h3>
+                <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex flex-col items-center space-y-4">
+                        <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                            <h4 class="font-bold text-lg text-[#6d4c41]">Torque (T)</h4>
+                            <div class="tooltip absolute bottom-full mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">The applied twisting force. The "cause".</div>
+                        </div>
+                        <div class="w-1 h-8 bg-gray-300"></div>
+                        <div class="concept-map-node relative bg-[#eaddd7] p-6 rounded-xl shadow-lg w-72 text-center">
+                            <h4 class="font-bold text-xl text-[#6d4c41]">Torsion Theory</h4>
+                            <div class="tooltip absolute bottom-full mb-2 w-72 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">Connects applied torque to internal stress and deformation.</div>
+                        </div>
+                        <div class="w-1 h-8 bg-gray-300"></div>
+                        <div class="flex flex-wrap justify-center gap-8">
+                            <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                                <h4 class="font-bold text-lg text-[#6d4c41]">Shear Stress ($\tau$)</h4>
+                                <p class="text-sm">$\tau = Tr/J$</p>
+                                <div class="tooltip absolute top-full mt-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">Internal stress resisting the twist. Max at outer surface.</div>
+                            </div>
+                            <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                                <h4 class="font-bold text-lg text-[#6d4c41]">Angle of Twist ($\theta$)</h4>
+                                <p class="text-sm">$\theta = TL/GJ$</p>
+                                <div class="tooltip absolute top-full mt-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">The amount of rotational deformation.</div>
+                            </div>
+                            <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                                <h4 class="font-bold text-lg text-[#6d4c41]">Power (P)</h4>
+                                <p class="text-sm">$P = T\omega$</p>
+                                <div class="tooltip absolute top-full mt-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">The rate of energy transfer by the rotating shaft.</div>
+                            </div>
+                        </div>
+                        <div class="w-1 h-8 bg-gray-300"></div>
+                        <div class="flex flex-wrap justify-center gap-8">
+                            <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                                <h4 class="font-bold text-lg text-[#6d4c41]">Non-Circular Shafts</h4>
+                                <div class="tooltip absolute top-full mt-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">Experience warping; $\tau \neq Tr/J$.</div>
+                            </div>
+                            <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                                <h4 class="font-bold text-lg text-[#6d4c41]">Stress Concentrations</h4>
+                                <p class="text-sm">$\tau_{max,local} = K_t \tau_{nom}$</p>
+                                <div class="tooltip absolute top-full mt-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">Localized stress increase at discontinuities.</div>
+                            </div>
+                            <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                                <h4 class="font-bold text-lg text-[#6d4c41]">Combined Loading</h4>
+                                <div class="tooltip absolute top-full mt-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">Torsion + Bending/Axial; use failure theories (Tresca, Von Mises).</div>
+                            </div>
+                            <div class="concept-map-node relative bg-[#f5f1ee] p-4 rounded-lg shadow-md w-64 text-center">
+                                <h4 class="font-bold text-lg text-[#6d4c41]">Thin-Walled Tubes</h4>
+                                <p class="text-sm">$\tau_{avg} = T / (2 A_m t)$</p>
+                                <div class="tooltip absolute top-full mt-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 text-center z-10">High strength-to-weight; use Bredt's formula for closed sections.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-3xl font-semibold text-[#8d6e63] mb-4 mt-10">Key Formula Table</h3>
+                <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
+                    <table id="formula-table" class="w-full text-left">
+                    </table>
+                </div>
+
+                <h3 class="text-3xl font-semibold text-[#8d6e63] mb-4 mt-10">Tackling Numerical Problems & Common Mistakes</h3>
+                <p class="text-lg leading-relaxed mb-6">
+                    Solving numerical problems in mechanics of materials, especially for torsion, requires a systematic approach and an awareness of common pitfalls. Here's a guide to help you ace your exams.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h4 class="text-2xl font-semibold text-[#8d6e63] mb-3">Systematic Approach to Problem Solving</h4>
+                        <ol class="list-decimal list-inside space-y-3">
+                            <li><strong>Understand the Problem:</strong> Read the problem statement carefully. Identify what is given (knowns) and what needs to be found (unknowns). Draw a clear free-body diagram if applicable, showing all forces, torques, and dimensions.</li>
+                            <li><strong>Identify Assumptions & Constraints:</strong> Determine if the problem involves a circular shaft, if it's operating within the elastic limit, and if any stress concentrations or combined loadings are present. This dictates which formulas are applicable.</li>
+                            <li><strong>List Knowns and Unknowns with Units:</strong> Create two lists. For all known values, write them down with their units. For unknowns, list them with the units you expect to find.</li>
+                            <li><strong>Choose the Right Formulas:</strong> Based on the knowns, unknowns, and assumptions, select the appropriate formulas from the "Key Formula Table" or your knowledge base. You might need to combine multiple formulas.</li>
+                            <li><strong>Ensure Unit Consistency:</strong> This is CRITICAL. Convert all given values to a consistent system (e.g., SI units: meters, Newtons, Pascals, radians). For example, convert mm to m, kN·m to N·m, RPM to rad/s.</li>
+                            <li><strong>Perform Calculations:</strong> Substitute the numerical values into the chosen formulas. Show your steps clearly.</li>
+                            <li><strong>Check Your Answer:</strong>
+                                <ul class="list-disc list-inside ml-4 mt-1">
+                                    <li>Does the magnitude make physical sense? (e.g., Is the stress value reasonable for the material?)</li>
+                                    <li>Are the units correct for the calculated quantity?</li>
+                                    <li>Did you answer all parts of the question?</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h4 class="text-2xl font-semibold text-[#8d6e63] mb-3">Common Mistakes & How to Avoid Them</h4>
+                        <ul class="list-disc list-inside space-y-3">
+                            <li><strong>Unit Conversion Errors:</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Forgetting to convert RPM to rad/s, mm to m, or kN·m to N·m. <br><strong>Tip:</strong> Always write units with every number and cancel them out during calculations to ensure consistency.</p>
+                            </li>
+                            <li><strong>Incorrect Formula for Shaft Type:</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Using solid shaft formulas for hollow shafts, or circular shaft formulas for non-circular sections. <br><strong>Tip:</strong> Double-check the geometry. Remember $\tau = Tr/J$ is ONLY for circular shafts.</p>
+                            </li>
+                            <li><strong>Radius vs. Diameter:</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Confusing diameter ($D$) with radius ($R$) in formulas, or vice-versa. <br><strong>Tip:</strong> Pay close attention to the formula's variable ($R$ or $D$) and the given dimension. Remember $R = D/2$.</p>
+                            </li>
+                            <li><strong>Confusing J and I:</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Using the area moment of inertia ($I$) instead of the polar moment of inertia ($J$) for torsion problems, or vice-versa for bending. <br><strong>Tip:</strong> $J$ is for **T**orsion, $I$ is for **B**ending. They are distinct properties.</p>
+                            </li>
+                            <li><strong>Ignoring Stress Concentrations ($K_t$):</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Calculating nominal stress without applying the stress concentration factor at discontinuities like keyways or fillets. <br><strong>Tip:</strong> If the problem mentions a geometric discontinuity, always look for or consider a $K_t$ value.</p>
+                            </li>
+                            <li><strong>Neglecting Combined Loading:</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Analyzing torsion and bending separately when a shaft is subjected to both. <br><strong>Tip:</strong> Use equivalent torque ($T_e$) or equivalent bending moment ($M_e$) with appropriate failure theories (Tresca or Von Mises) for combined loads.</p>
+                            </li>
+                            <li><strong>Algebraic Errors:</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Simple arithmetic or algebraic manipulation errors. <br><strong>Tip:</strong> Use a calculator carefully, double-check your calculations, and write down intermediate steps.</p>
+                            </li>
+                            <li><strong>Not Stating Assumptions:</strong>
+                                <p class="text-sm mt-1"><strong>Mistake:</strong> Not explicitly stating the assumptions (e.g., elastic behavior, circular cross-section) under which your calculations are valid. <br><strong>Tip:</strong> Always begin your solution by stating the relevant assumptions.</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const navigationLinks = document.querySelectorAll('#navigation a');
+    const contentSections = document.querySelectorAll('.content-section');
+    const stressChartCanvas = document.getElementById('stressChart');
+    let stressChart;
+
+    const assumptionsData = [
+        { title: "Material is Homogeneous and Isotropic", content: "The material has uniform properties throughout and in all directions. This allows using a single value for the shear modulus (G)." },
+        { title: "Shaft is Straight and Uniformly Circular", content: "The theory applies to straight shafts with a constant circular cross-section. It does not apply to tapered or non-circular shafts." },
+        { title: "Plane Sections Remain Plane", content: "Cross-sections remain flat and perpendicular to the shaft axis after twisting. This is true for circular shafts but not for other shapes, which warp." },
+        { title: "Radial Lines Remain Radial", content: "Lines from the center to the edge of the cross-section remain straight. This leads to the linear variation of shear strain and stress." },
+        { title: "Obeys Hooke's Law (Elastic Limit)", content: "Stress is proportional to strain ($\\tau = G\\gamma$). The theory is valid only for elastic deformation; the material must not permanently deform." },
+        { title: "Angle of Twist is Small", content: "The deformation is small enough that we can use small-angle approximations, keeping the calculations linear and simple." }
+    ];
+
+    const derivationData = [
+        { title: "Step 1: Relate Shear Strain ($\\gamma$) to Angle of Twist ($\\theta$)", content: "From the geometry of a twisted shaft, we find that the shear strain at any radius 'r' is proportional to the angle of twist. The formula is: $$\\gamma = \\frac{r\\theta}{L}$$ This shows that strain is zero at the center and maximum at the outer surface." },
+        { title: "Step 2: Apply Hooke's Law for Shear Stress ($\\tau$)", content: "Within the elastic limit, stress is proportional to strain via the Shear Modulus (G): $$\\tau = G\\gamma$$ Substituting the expression for strain from Step 1 gives: $$\\tau = G \\left( \\frac{r\\theta}{L} \\right)$$ This shows that stress also varies linearly with the radial position." },
+        { title: "Step 3: Relate Internal Torque to Stress", content: "The total internal torque (T) is the sum of the small torques produced by the shear stress acting on infinitesimal rings of the cross-section. The torque on a small element is $dT = r(\\tau dA)$. Substituting $\\tau$ gives: $$dT = r \\left( G \\frac{r\\theta}{L} \\right) dA = \\frac{G\\theta}{L} r^2 dA$$" },
+        { title: "Step 4: Integrate to Find Total Torque (T)", content: "To get the total torque, we integrate over the entire cross-sectional area: $$T = \\int_A \\frac{G\\theta}{L} r^2 dA = \\frac{G\\theta}{L} \\int_A r^2 dA$$" },
+        { title: "Step 5: Introduce Polar Moment of Inertia (J)", content: "The integral $\\int_A r^2 dA$ is a purely geometric property called the Polar Moment of Inertia (J). It represents the cross-section's resistance to twisting. So, the equation becomes: $$T = \\frac{G\\theta}{L} J$$" },
+        { title: "Step 6: Formulate the Complete Torsion Equation", content: "By rearranging the equations from the previous steps, we can establish the relationships between all variables, yielding the final Torsion Equation: $$\\frac{T}{J} = \\frac{\\tau}{r} = \\frac{G\\theta}{L}$$" }
+    ];
+
+    const formulaData = [
+        { concept: "Torsion Equation", formula: "$$\\frac{T}{J} = \\frac{\\tau}{r} = \\frac{G\\theta}{L}$$", notes: "The fundamental relationship in torsion." },
+        { concept: "Shear Stress", formula: "$$\\tau = \\frac{Tr}{J}$$", notes: "Calculates stress at radius r. Max at outer surface." },
+        { concept: "Angle of Twist", formula: "$$\\theta = \\frac{TL}{GJ}$$", notes: "Calculates total twist in radians over length L." },
+        { concept: "J (Solid Shaft)", formula: "$$J = \\frac{\\pi D^4}{32}$$", notes: "Polar Moment of Inertia for a solid circular shaft." },
+        { concept: "J (Hollow Shaft)", formula: "$$J = \\frac{\\pi (D_o^4 - D_i^4)}{32}$$", notes: "Polar Moment of Inertia for a hollow circular shaft." },
+        { concept: "Zp (Solid Shaft)", formula: "$$Z_p = \\frac{\\pi D^3}{16}$$", notes: "Polar Modulus, a measure of torsional strength." },
+        { concept: "Zp (Hollow Shaft)", formula: "$$Z_p = \\frac{\\pi (D_o^4 - D_i^4)}{16 D_o}$$", notes: "Polar Modulus for a hollow shaft." },
+        { concept: "Power", formula: "$$P = T\\omega$$", notes: "Power in Watts, with Torque in N·m and $\\omega$ in rad/s." },
+        { concept: "Angular Velocity", formula: "$$\\omega = \\frac{2\\pi N}{60}$$", notes: "Converts rotational speed N (in RPM) to $\\omega$ (in rad/s)." },
+        { concept: "Stress Conc. Factor", formula: "$$K_t = \\frac{\\tau_{max,local}}{\\tau_{nom}}$$", notes: "Ratio of local max stress to nominal stress." },
+        { concept: "Thin-Walled Shear Stress", formula: "$$\\tau_{avg} = \\frac{T}{2 A_m t}$$", notes: "Bredt's Formula for closed thin-walled tubes." },
+        { concept: "Thin-Walled Angle of Twist", formula: "$$\\theta = \\frac{T L}{4 A_m^2 G} \\oint \\frac{ds}{t}$$", notes: "Angle of twist for thin-walled tubes." },
+        { concept: "Equivalent Torque (Tresca)", formula: "$$T_e = \\sqrt{M^2 + T^2}$$", notes: "For combined bending (M) and torsion (T)." },
+        { concept: "Equivalent Bending Moment (Von Mises)", formula: "$$M_e = \\sqrt{M^2 + \\frac{3}{4}T^2}$$", notes: "For combined bending (M) and torsion (T)." }
+    ];
+
+    function populateAssumptions() {
+        const container = document.getElementById('assumptions-container');
+        container.innerHTML = assumptionsData.map((item, index) => `
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <button class="w-full text-left p-5 flex justify-between items-center accordion-toggle">
+                    <h3 class="text-xl font-semibold text-[#8d6e63]">${index + 1}. ${item.title}</h3>
+                    <span class="text-2xl text-[#6d4c41] transition-transform duration-300 transform">+</span>
+                </button>
+                <div class="accordion-content px-5 pb-5">
+                    <p class="text-gray-700">${item.content}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function populateDerivation() {
+        const container = document.getElementById('derivation-accordion');
+        container.innerHTML = derivationData.map((item, index) => `
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <button class="w-full text-left p-5 flex justify-between items-center accordion-toggle">
+                    <h3 class="text-xl font-semibold text-[#8d6e63]">${item.title}</h3>
+                    <span class="text-2xl text-[#6d4c41] transition-transform duration-300 transform">+</span>
+                </button>
+                <div class="accordion-content px-5 pb-5">
+                    <p class="text-gray-700 leading-relaxed">${item.content}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function populateFormulas() {
+        const table = document.getElementById('formula-table');
+        let html = `
+            <thead>
+                <tr class="bg-[#f5f1ee]">
+                    <th class="p-4 text-lg font-semibold text-[#6d4c41]">Concept</th>
+                    <th class="p-4 text-lg font-semibold text-[#6d4c41]">Formula</th>
+                    <th class="p-4 text-lg font-semibold text-[#6d4c41]">Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        html += formulaData.map(row => `
+            <tr class="border-b border-gray-200">
+                <td class="p-4 font-medium">${row.concept}</td>
+                <td class="p-4">${row.formula}</td>
+                <td class="p-4 text-gray-600">${row.notes}</td>
+            </tr>
+        `).join('');
+        html += `</tbody>`;
+        table.innerHTML = html;
+    }
+
+    function handleNavigation(e) {
+        e.preventDefault();
+        const targetId = e.currentTarget.getAttribute('data-target');
+        
+        navigationLinks.forEach(link => link.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+
+        contentSections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === targetId) {
+                section.classList.add('active');
+            }
+        });
+
+        if (targetId === 'stress' && !stressChart) {
+            initStressChart();
+        }
+        
+        window.scrollTo(0, 0);
+        // Re-render math for the newly active section using MathJax
+        if (typeof MathJax !== 'undefined') {
+            MathJax.typesetPromise([document.getElementById(targetId)]);
+        }
+    }
+
+    function initStressChart() {
+        const ctx = stressChartCanvas.getContext('2d');
+        const labels = Array.from({ length: 11 }, (_, i) => `${i * 10}% Radius`);
+        const data = Array.from({ length: 11 }, (_, i) => i * 10);
+
+        stressChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Shear Stress Magnitude',
+                    data: data,
+                    backgroundColor: (context) => {
+                        const index = context.dataIndex;
+                        const value = context.dataset.data[index];
+                        const alpha = 0.4 + (value / 100) * 0.6;
+                        return `rgba(109, 76, 65, ${alpha})`;
+                    },
+                    borderColor: 'rgba(109, 76, 65, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Relative Stress: ${context.raw}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Relative Shear Stress' },
+                        max: 100
+                    },
+                    y: {
+                        title: { display: true, text: 'Position on Radius' }
+                    }
+                }
+            }
+        });
+        updateStressChartHighlight(5);
+    }
+
+    function updateStressChartHighlight(sliderValue) {
+        const index = Math.round(sliderValue / 10);
+        stressChart.data.datasets[0].backgroundColor = stressChart.data.labels.map((_, i) => {
+            const alpha = 0.4 + (stressChart.data.datasets[0].data[i] / 100) * 0.6;
+            return i === index ? 'rgba(218, 68, 83, 0.8)' : `rgba(109, 76, 65, ${alpha})`;
+        });
+        stressChart.update();
+    }
+    
+    document.getElementById('radiusSlider').addEventListener('input', (e) => {
+        const value = e.target.value;
+        document.getElementById('radiusValue').textContent = value;
+        updateStressChartHighlight(value);
+    });
+
+    document.getElementById('calculateStressBtn').addEventListener('click', () => {
+        const T = parseFloat(document.getElementById('stressTorque').value);
+        const J = parseFloat(document.getElementById('stressJ').value);
+        const r_mm = parseFloat(document.getElementById('stressR').value);
+        const r_m = r_mm / 1000;
+
+        if (isNaN(T) || isNaN(J) || isNaN(r_m) || J === 0) {
+            document.getElementById('stressResult').textContent = 'Invalid input';
+            return;
+        }
+        const tau = (T * r_m) / J;
+        const tau_MPa = tau / 1e6;
+        document.getElementById('stressResult').innerHTML = `Stress ($\\tau$): ${tau_MPa.toFixed(2)} MPa`;
+        // Render math in result using MathJax
+        if (typeof MathJax !== 'undefined') {
+            MathJax.typesetPromise([document.getElementById('stressResult')]);
+        }
+    });
+
+    document.getElementById('calculateSolidBtn').addEventListener('click', () => {
+        const D_mm = parseFloat(document.getElementById('solidDiameter').value);
+        const D_m = D_mm / 1000;
+        const R_m = D_m / 2;
+        
+        if (isNaN(D_m) || D_m <= 0) {
+            document.getElementById('solidResult').textContent = 'Invalid input';
+            return;
+        }
+        const J = (Math.PI * Math.pow(D_m, 4)) / 32;
+        const Zp = J / R_m;
+
+        document.getElementById('solidResult').innerHTML = `
+            <p><strong>J:</strong> ${J.toExponential(4)} m⁴</p>
+            <p><strong>Zp:</strong> ${Zp.toExponential(4)} m³</p>
+        `;
+    });
+
+    document.getElementById('calculateHollowBtn').addEventListener('click', () => {
+        const Do_mm = parseFloat(document.getElementById('hollowOuterD').value);
+        const Di_mm = parseFloat(document.getElementById('hollowInnerD').value);
+        const Do_m = Do_mm / 1000;
+        const Di_m = Di_mm / 1000;
+        const Ro_m = Do_m / 2;
+
+        if (isNaN(Do_m) || isNaN(Di_m) || Do_m <= Di_m || Di_m < 0) {
+            document.getElementById('hollowResult').textContent = 'Invalid input (Do > Di >= 0)';
+            return;
+        }
+
+        const J = (Math.PI * (Math.pow(Do_m, 4) - Math.pow(Di_m, 4))) / 32;
+        const Zp = J / Ro_m;
+        
+        document.getElementById('hollowResult').innerHTML = `
+            <p><strong>J:</strong> ${J.toExponential(4)} m⁴</p>
+            <p><strong>Zp:</strong> ${Zp.toExponential(4)} m³</p>
+        `;
+    });
+
+    const powerInput = document.getElementById('powerInput');
+    const torqueInput = document.getElementById('torqueInput');
+    const speedInput = document.getElementById('speedInput');
+
+    document.getElementById('calculatePowerBtn').addEventListener('click', () => {
+        const P_kW = parseFloat(powerInput.value);
+        const T_Nm = parseFloat(torqueInput.value);
+        const N_rpm = parseFloat(speedInput.value);
+
+        if (!isNaN(T_Nm) && !isNaN(N_rpm)) {
+            const P_W = T_Nm * (2 * Math.PI * N_rpm) / 60;
+            powerInput.value = (P_W / 1000).toFixed(2);
+        } else if (!isNaN(P_kW) && !isNaN(N_rpm)) {
+            const P_W = P_kW * 1000;
+            const T_Nm_calc = (P_W * 60) / (2 * Math.PI * N_rpm);
+            torqueInput.value = T_Nm_calc.toFixed(2);
+        } else if (!isNaN(P_kW) && !isNaN(T_Nm)) {
+            const P_W = P_kW * 1000;
+            const N_rpm_calc = (P_W * 60) / (2 * Math.PI * T_Nm);
+            speedInput.value = N_rpm_calc.toFixed(2);
+        } else {
+            // Using a simple alert for brevity, but in a real app, use a custom modal
+            alert("Please provide at least two values to calculate the third.");
+        }
+    });
+
+    document.getElementById('clearPowerBtn').addEventListener('click', () => {
+        powerInput.value = '';
+        torqueInput.value = '';
+        speedInput.value = '';
+    });
+
+    document.body.addEventListener('click', function(e) {
+        if (e.target.closest('.accordion-toggle')) {
+            const button = e.target.closest('.accordion-toggle');
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('span');
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.style.transform = 'rotate(45deg)';
+                // Render math inside the expanded accordion content using MathJax
+                if (typeof MathJax !== 'undefined') {
+                    MathJax.typesetPromise([content]);
+                }
+            }
+        }
+    });
+
+    navigationLinks.forEach(link => link.addEventListener('click', handleNavigation));
+    
+    populateAssumptions();
+    populateDerivation();
+    populateFormulas();
+    // Initial render for all static math on the page using MathJax
+    if (typeof MathJax !== 'undefined') {
+        MathJax.typesetPromise();
+    }
+    initStressChart();
+});
+</script>
+
+</body>
+</html>
