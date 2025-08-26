@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: The Engineering of Power Transmission Components</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="text/javascript">
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFEA; /* Light Cream from inspiration */
+            color: #00796B; /* Dark Teal from inspiration */
+        }
+        .section-title {
+            color: #00796B; /* Dark Teal from inspiration */
+        }
+        .card {
+            background-color: white;
+            border: 2px solid #00CECB; /* Teal from inspiration */
+            box-shadow: 8px 8px 0px #00CECB; /* Teal from inspiration */
+        }
+        .stat-card {
+            background-color: #00796B; /* Dark Teal from inspiration */
+            color: #FFFFEA; /* Light Cream from inspiration */
+            border: 2px solid #FFED66; /* Yellow from inspiration */
+            box-shadow: 8px 8px 0px #FFED66; /* Yellow from inspiration */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 100%; /* Adjust height as needed for specific charts */
+            min-height: 250px; /* Ensures a minimum height for charts */
+            max-width: 500px; /* Added max-width for better chart scaling */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #00796B 0%, #00CECB 100%); /* Dark Teal to Teal gradient */
+        }
+        .accent-color {
+            color: #FF5E5B; /* Energetic Red from inspiration */
+        }
+        .accent-bg {
+            background-color: #FF5E5B; /* Energetic Red from inspiration */
+        }
+        .secondary-accent-color {
+            color: #FFED66; /* Yellow from inspiration */
+        }
+        .gear-tooth {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid #1F2937;
+            position: absolute;
+        }
+        .gear-body {
+            background-color: #6B7280;
+            border-radius: 50%;
+            position: relative;
+        }
+        .gear-center {
+            background-color: #F3F4F6;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+
+        <header class="text-center mb-20 md:mb-32">
+            <h1 class="text-4xl md:text-6xl font-extrabold section-title mb-4">The Engineering of Power Transmission</h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">A visual guide to shafts, keys, couplings, bearings, and gears – the essential components that drive motion.</p>
+        </header>
+
+        <section id="introduction" class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">1. The Power Train: Components in Motion</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Every machine with rotating parts relies on a chain of critical components to transmit power efficiently and reliably. Understanding their individual roles and how they interact is fundamental to mechanical design.</p>
+            <div class="card p-6 rounded-lg">
+                <h3 class="text-2xl font-semibold mb-4 text-center">The Essential Elements</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 text-center">
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300">
+                        <div class="text-4xl mb-2 accent-color">&#9881;</div>
+                        <h4 class="font-bold">Shaft</h4>
+                        <p class="text-xs text-gray-500">Transmits torque & rotation.</p>
+                    </div>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300">
+                        <div class="text-4xl mb-2 accent-color">&#128273;</div>
+                        <h4 class="font-bold">Key</h4>
+                        <p class="text-xs text-gray-500">Locks components to shaft.</p>
+                    </div>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300">
+                        <div class="text-4xl mb-2 accent-color">&#128279;</div>
+                        <h4 class="font-bold">Coupling</h4>
+                        <p class="text-xs text-gray-500">Connects two shafts.</p>
+                    </div>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300">
+                        <div class="text-4xl mb-2 accent-color">&#9878;</div>
+                        <h4 class="font-bold">Bearing</h4>
+                        <p class="text-xs text-gray-500">Supports & reduces friction.</p>
+                    </div>
+                    <div class="p-4 rounded-lg border-2 border-dashed border-gray-300">
+                        <div class="text-4xl mb-2 accent-color">&#9880;</div>
+                        <h4 class="font-bold">Gear</h4>
+                        <p class="text-xs text-gray-500">Changes speed & torque.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="shafts" class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">2. The Shaft: Optimizing Strength & Weight</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Shafts are designed to handle torsional stress. The choice between a solid and hollow shaft is a fundamental trade-off, impacting material efficiency, cost, and overall system weight.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Solid Shaft Efficiency</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">The core of a solid shaft contributes minimally to torque transmission, making it less efficient per unit of material.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="solidShaftChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Hollow Shaft Efficiency</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Removing the low-stress core results in a superior strength-to-weight ratio, ideal for high-performance applications.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="hollowShaftChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="keys" class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">3. The Key: Understanding Failure Modes</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Keys are crucial for locking components to shafts. Their design must account for two primary failure mechanisms: shear and crushing, ensuring the connection remains robust under load.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Key Failure Analysis</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Both shear and crushing stresses must be considered to prevent key failure, which would lead to component slip.</p>
+                    <div class="chart-container h-96">
+                        <canvas id="keyFailureChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Failure Mechanisms</h3>
+                    <p class="mb-8 text-gray-600">A key transmits force from the shaft to the hub. This force can cause the key to fail in two distinct ways, each resisted by a specific area.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-red-100 text-2xl font-bold text-red-600">&#9986;</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600"><strong>Shear Failure:</strong> The key is sliced across its cross-section.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-600">&#8616;&#8614;</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600"><strong>Crushing Failure:</strong> The key's contact surfaces are crushed.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="couplings" class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">4. The Coupling: Rigid vs. Flexible Connections</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Couplings connect two shafts. The choice between rigid and flexible types depends on alignment precision, shock absorption needs, and maintenance considerations.</p>
+            <div class="card p-6 rounded-lg">
+                <h3 class="text-2xl font-semibold mb-4 text-center">Coupling Selection Guide</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-max text-left">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="p-4 text-lg font-bold">Feature</th>
+                                <th class="p-4 text-lg font-bold bg-teal-600 text-white rounded-t-lg">Flange Coupling (Rigid)</th>
+                                <th class="p-4 text-lg font-bold bg-gray-700 text-white rounded-t-lg">Bushed Pin Coupling (Flexible)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100">
+                                <td class="p-4 font-semibold">Alignment Requirement</td>
+                                <td class="p-4 font-bold text-red-600">Perfect Alignment ONLY</td>
+                                <td class="p-4 text-green-600">Tolerates Minor Misalignment</td>
+                            </tr>
+                            <tr class="border-b border-gray-100">
+                                <td class="p-4 font-semibold">Shock & Vibration</td>
+                                <td class="p-4">Transmits all shocks</td>
+                                <td class="p-4 font-bold text-green-600">Dampens shocks & vibrations</td>
+                            </tr>
+                            <tr class="border-b border-gray-100">
+                                <td class="p-4 font-semibold">Torque Capacity</td>
+                                <td class="p-4 font-bold">Very High</td>
+                                <td class="p-4">Moderate to High</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-semibold">Best Use Case</td>
+                                <td class="p-4">Heavy-duty systems where precision is guaranteed.</td>
+                                <td class="p-4">General machinery where thermal expansion or foundation settling is possible.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="bearings" class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">5. Bearings: Reducing Friction & Supporting Loads</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Bearings are essential for enabling smooth rotation of shafts while supporting radial and axial loads. The choice between plain and rolling element bearings impacts friction, precision, and cost.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Bearing Performance Factors</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">Different bearing types offer varied performance characteristics crucial for specific applications.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="bearingPerformanceChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Bearing Types</h3>
+                    <p class="mb-8 text-gray-600">Two main categories of bearings address different operational needs by managing friction and load distribution.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-yellow-100 text-2xl font-bold text-yellow-600">&#9679;</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600"><strong>Plain Bearings:</strong> Simple, compact, high load capacity at lower speeds.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-teal-100 text-2xl font-bold text-teal-600">&#10022;</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600"><strong>Rolling Element Bearings:</strong> Low friction, high speed, precision.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gears" class="mb-20 md:mb-32">
+            <h2 class="text-3xl md:text-4xl font-bold text-center section-title mb-12">6. Gears & Gear Trains: Manipulating Speed & Torque</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Gears are fundamental for precise power transfer, allowing engineers to control rotational speed and torque output in a wide range of mechanical systems.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Gear Ratio Impact</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4">The gear ratio directly dictates the trade-off between output speed and torque in a gear train.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="gearRatioChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Understanding Gear Ratios</h3>
+                    <p class="mb-8 text-gray-600">Gears transmit power by meshing their teeth. The ratio of teeth between meshing gears determines the change in rotational speed and torque.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-600">&#8635;</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600"><strong>Speed Reduction:</strong> Driven gear has more teeth, output speed decreases, torque increases.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-green-100 text-2xl font-bold text-green-600">&#8634;</div>
+                            <div class="ml-4 border-t-2 border-dashed border-gray-400 flex-1"></div>
+                            <div class="ml-4 text-sm text-gray-600"><strong>Speed Increase:</strong> Driven gear has fewer teeth, output speed increases, torque decreases.</div>
+                        </div>
+                    </div>
+                    <p class="font-bold text-xl accent-color mt-8 text-center">Gear Ratio = $\frac{\text{Number of Teeth on Driven Gear}}{\text{Number of Teeth on Driver Gear}}$</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center">
+            <h2 class="text-3xl md:text-4xl font-bold section-title mb-8">Key Takeaways for Aspiring Engineers</h2>
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">1. Integrated Design</h3>
+                    <p class="text-sm text-gray-600">Components don't exist in isolation. Design decisions for one impact the entire power transmission system.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">2. Trade-offs are Key</h3>
+                    <p class="text-sm text-gray-600">Every design choice (e.g., solid vs. hollow, rigid vs. flexible) involves balancing performance, cost, and maintenance.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">3. Real-World Factors Matter</h3>
+                    <p class="text-sm text-gray-600">Misalignment, vibration, and material properties are not just theoretical; they dictate practical design and component longevity.</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+
+            const processLabels = (labels) => {
+                return labels.map(label => {
+                    if (label.length > 16) {
+                        const words = label.split(' ');
+                        const lines = [];
+                        let currentLine = '';
+                        words.forEach(word => {
+                            if ((currentLine + word).length > 16) {
+                                lines.push(currentLine.trim());
+                                currentLine = '';
+                            }
+                            currentLine += word + ' ';
+                        });
+                        lines.push(currentLine.trim());
+                        return lines;
+                    }
+                    return label;
+                });
+            };
+            
+            const energeticPalette = {
+                red: '#FF5E5B',
+                cream: '#FFFFEA',
+                teal: '#00CECB',
+                yellow: '#FFED66',
+                darkTeal: '#00796B',
+                blue: '#4A90E2', /* Added for consistency */
+                gray: '#6B7280' /* Added for consistency */
+            };
+
+            // Shaft Charts (Doughnut)
+            const solidShaftData = {
+                labels: ['Stressed Material', 'Low-Stress Core'],
+                datasets: [{
+                    data: [40, 60],
+                    backgroundColor: [energeticPalette.darkTeal, '#E5E7EB'],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 4,
+                }]
+            };
+
+            const hollowShaftData = {
+                labels: ['Stressed Material', 'Removed Core'],
+                datasets: [{
+                    data: [90, 10],
+                    backgroundColor: [energeticPalette.teal, '#FFFFFF'],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 4,
+                }]
+            };
+
+            const doughnutChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: energeticPalette.darkTeal
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: tooltipTitleCallback
+                        }
+                    }
+                }
+            };
+
+            new Chart(document.getElementById('solidShaftChart'), {
+                type: 'doughnut',
+                data: solidShaftData,
+                options: doughnutChartOptions
+            });
+
+            new Chart(document.getElementById('hollowShaftChart'), {
+                type: 'doughnut',
+                data: hollowShaftData,
+                options: doughnutChartOptions
+            });
+
+            // Key Failure Chart (Stacked Bar)
+            const keyFailureCtx = document.getElementById('keyFailureChart').getContext('2d');
+            new Chart(keyFailureCtx, {
+                type: 'bar',
+                data: {
+                    labels: processLabels(['Shear Stress', 'Crushing Stress']),
+                    datasets: [{
+                        label: 'Key Design Consideration (%)',
+                        data: [70, 85], /* Example data */
+                        backgroundColor: [energeticPalette.red, energeticPalette.blue],
+                        borderColor: [energeticPalette.red, energeticPalette.blue],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: { display: true, text: 'Failure Mode' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            stacked: true,
+                            title: { display: true, text: 'Relative Importance (%)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            // Bearing Performance Chart (Bar Chart)
+            const bearingPerformanceCtx = document.getElementById('bearingPerformanceChart').getContext('2d');
+            new Chart(bearingPerformanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: processLabels(['Friction', 'Load Capacity', 'Speed Capability', 'Cost']),
+                    datasets: [{
+                        label: 'Plain Bearings',
+                        data: [80, 90, 40, 95], /* Relative values: Higher is better for capacity, lower for friction/cost */
+                        backgroundColor: energeticPalette.yellow,
+                    }, {
+                        label: 'Rolling Element Bearings',
+                        data: [20, 70, 90, 50],
+                        backgroundColor: energeticPalette.teal,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Relative Performance (%)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            // Gear Ratio Chart (Bar Chart)
+            const gearRatioCtx = document.getElementById('gearRatioChart').getContext('2d');
+            new Chart(gearRatioCtx, {
+                type: 'bar',
+                data: {
+                    labels: processLabels(['Speed Reduction (High Ratio)', 'Speed Increase (Low Ratio)']),
+                    datasets: [{
+                        label: 'Output Torque (Relative)',
+                        data: [90, 30],
+                        backgroundColor: energeticPalette.darkTeal,
+                    }, {
+                        label: 'Output Speed (Relative)',
+                        data: [30, 90],
+                        backgroundColor: energeticPalette.red,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Relative Value (%)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typesetPromise();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: The Engineering of Power Transmission Components</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="text/javascript">
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 300px;
+        }
+        .stat-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #4A90E2 0%, #50E3C2 100%);
+        }
+        .section-title {
+            color: #1F2937;
+        }
+        .accent-color {
+            color: #4A90E2;
+        }
+        .accent-bg {
+            background-color: #4A90E2;
+        }
+        .secondary-accent-color {
+            color: #50E3C2;
+        }
+        .gear-tooth {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid #1F2937;
+            position: absolute;
+        }
+        .gear-body {
+            background-color: #6B7280;
+            border-radius: 50%;
+            position: relative;
+        }
+        .gear-center {
+            background-color: #F3F4F6;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+
+        <header class="header-bg text-white text-center p-8 md:p-12 rounded-2xl shadow-lg mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-2">The Backbone of Motion</h1>
+            <p class="text-xl md:text-2xl font-light">An Engineer's Guide to Shafts, Keys, Couplings, Bearings & Gears</p>
+        </header>
+
+        <section id="introduction" class="mb-12">
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold section-title mb-4 text-center">How Power Travels Through Machines</h2>
+                <p class="text-gray-600 text-lg text-center mb-8">In any machine with rotating parts, power flows through a chain of critical components. This infographic breaks down the essential elements: the shaft that carries the load, the key that locks it in place, the coupling that joins it, the bearings that support it, and the gears that change its speed.</p>
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                    <div class="p-4 rounded-lg bg-gray-100 flex-1">
+                        <div class="text-4xl mb-2 accent-color">&#9881;</div>
+                        <h3 class="font-bold text-lg">SHAFT</h3>
+                        <p class="text-sm text-gray-600">Transmits torque & rotation.</p>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-400">&rarr;</div>
+                    <div class="p-4 rounded-lg bg-gray-100 flex-1">
+                        <div class="text-4xl mb-2 accent-color">&#128273;</div>
+                        <h3 class="font-bold text-lg">KEY</h3>
+                        <p class="text-sm text-gray-600">Locks components to shaft.</p>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-400">&rarr;</div>
+                    <div class="p-4 rounded-lg bg-gray-100 flex-1">
+                         <div class="text-4xl mb-2 accent-color">&#128279;</div>
+                        <h3 class="font-bold text-lg">COUPLING</h3>
+                        <p class="text-sm text-gray-600">Connects two shafts.</p>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-400">&rarr;</div>
+                    <div class="p-4 rounded-lg bg-gray-100 flex-1">
+                         <div class="text-4xl mb-2 accent-color">&#9878;</div>
+                        <h3 class="font-bold text-lg">BEARING</h3>
+                        <p class="text-sm text-gray-600">Supports & reduces friction.</p>
+                    </div>
+                     <div class="text-2xl font-bold text-gray-400">&rarr;</div>
+                    <div class="p-4 rounded-lg bg-gray-100 flex-1">
+                         <div class="text-4xl mb-2 accent-color">&#9880;</div>
+                        <h3 class="font-bold text-lg">GEAR</h3>
+                        <p class="text-sm text-gray-600">Changes speed & torque.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="shafts" class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold section-title">1. The Shaft: Strength vs. Weight</h2>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto">A shaft's primary job is to handle torsional stress. The choice between a solid or hollow shaft is a critical design trade-off between material efficiency and manufacturing cost.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="stat-card">
+                    <h3 class="text-xl font-bold mb-4">Solid Shaft</h3>
+                    <div class="chart-container">
+                        <canvas id="solidShaftChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-gray-600">In a solid shaft, the material at the very center experiences almost zero stress, making it structurally inefficient. It's heavy but cheaper to produce.</p>
+                </div>
+                <div class="stat-card">
+                    <h3 class="text-xl font-bold mb-4">Hollow Shaft</h3>
+                    <div class="chart-container">
+                        <canvas id="hollowShaftChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-gray-600">By removing the low-stress core, a hollow shaft provides a much higher strength-to-weight ratio. It's lighter and more efficient but more expensive.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="keys" class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold section-title">2. The Key: Resisting Failure</h2>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto">This small component is the linchpin of the connection. It must be designed to withstand two primary forces that try to destroy it: shear and crushing.</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="text-center p-6 bg-red-50 rounded-lg">
+                        <div class="text-5xl mb-4">&#9986;</div>
+                        <h3 class="text-2xl font-bold text-red-800">Shear Failure</h3>
+                        <p class="text-red-700 mt-2">The key is sliced in half. This happens when the force from the torque is greater than the key's material strength across its width.</p>
+                        <p class="mt-4 text-sm font-mono bg-red-100 p-2 rounded text-red-900">Stress Area = Width x Length</p>
+                    </div>
+                    <div class="text-center p-6 bg-blue-50 rounded-lg">
+                        <div class="text-5xl mb-4">&#8616;&#8614;</div>
+                        <h3 class="text-2xl font-bold text-blue-800">Crushing Failure</h3>
+                        <p class="text-blue-700 mt-2">The sides of the key or the keyway in the shaft/hub are crushed. This occurs when the bearing pressure is too high for the material.</p>
+                        <p class="mt-4 text-sm font-mono bg-blue-100 p-2 rounded text-blue-900">Stress Area = Height/2 x Length</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="couplings" class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold section-title">3. The Coupling: Choosing the Right Connection</h2>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Couplings join shafts. The choice depends on one critical question: Is the alignment between the shafts perfect, or could there be minor deviations?</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="p-4 text-lg font-bold">Feature</th>
+                                <th class="p-4 text-lg font-bold accent-bg text-white rounded-t-lg">Flange Coupling (Rigid)</th>
+                                <th class="p-4 text-lg font-bold bg-gray-700 text-white rounded-t-lg">Bushed Pin Coupling (Flexible)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100">
+                                <td class="p-4 font-semibold">Alignment Requirement</td>
+                                <td class="p-4 font-bold text-red-600">Perfect Alignment ONLY</td>
+                                <td class="p-4 text-green-600">Tolerates Minor Misalignment</td>
+                            </tr>
+                            <tr class="border-b border-gray-100">
+                                <td class="p-4 font-semibold">Shock & Vibration</td>
+                                <td class="p-4">Transmits all shocks</td>
+                                <td class="p-4 font-bold text-green-600">Dampens shocks & vibrations</td>
+                            </tr>
+                            <tr class="border-b border-gray-100">
+                                <td class="p-4 font-semibold">Torque Capacity</td>
+                                <td class="p-4 font-bold">Very High</td>
+                                <td class="p-4">Moderate to High</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-semibold">Best Use Case</td>
+                                <td class="p-4">Heavy-duty systems where precision is guaranteed.</td>
+                                <td class="p-4">General machinery where thermal expansion or foundation settling is possible.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="bearings" class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold section-title">4. Bearings: Supporting Rotation</h2>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Bearings are crucial for supporting shafts, reducing friction, and ensuring smooth, efficient rotation. They come in various types, each suited for different load conditions and applications.</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="text-center p-6 bg-yellow-50 rounded-lg">
+                        <div class="text-5xl mb-4">&#9679;</div>
+                        <h3 class="text-2xl font-bold text-yellow-800">Plain Bearings</h3>
+                        <p class="text-yellow-700 mt-2">These use a sliding surface, often with lubrication, to support a shaft. Simple, compact, and good for high loads at lower speeds.</p>
+                        <p class="mt-4 text-sm font-mono bg-yellow-100 p-2 rounded text-yellow-900">Low Cost, High Friction (initially)</p>
+                    </div>
+                    <div class="text-center p-6 bg-teal-50 rounded-lg">
+                        <div class="text-5xl mb-4">&#10022;</div>
+                        <h3 class="text-2xl font-bold text-teal-800">Rolling Element Bearings</h3>
+                        <p class="text-teal-700 mt-2">Utilize balls or rollers to reduce friction significantly. Ideal for higher speeds and precision, but more complex and costly.</p>
+                        <p class="mt-4 text-sm font-mono bg-teal-100 p-2 rounded text-teal-900">Higher Cost, Low Friction</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gears" class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold section-title">5. Gears & Gear Trains: Precision Power Transfer</h2>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Gears are toothed mechanical components that mesh together to transmit rotation and torque, often changing speed and direction in the process. They are fundamental to almost every mechanical system.</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-8 md:space-y-0 md:space-x-12">
+                    <div class="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
+                        <div class="gear-body w-full h-full"></div>
+                        <div class="gear-center w-1/3 h-1/3"></div>
+                        <div class="gear-tooth" style="top: -15px; left: 50%; transform: translateX(-50%);"></div>
+                        <div class="gear-tooth" style="bottom: -15px; left: 50%; transform: translateX(-50%) rotate(180deg);"></div>
+                        <div class="gear-tooth" style="left: -15px; top: 50%; transform: translateY(-50%) rotate(-90deg);"></div>
+                        <div class="gear-tooth" style="right: -15px; top: 50%; transform: translateY(-50%) rotate(90deg);"></div>
+                        <div class="gear-tooth" style="top: 10%; right: 10%; transform: translate(50%, -50%) rotate(45deg);"></div>
+                        <div class="gear-tooth" style="bottom: 10%; left: 10%; transform: translate(-50%, 50%) rotate(225deg);"></div>
+                        <div class="gear-tooth" style="top: 10%; left: 10%; transform: translate(-50%, -50%) rotate(-45deg);"></div>
+                        <div class="gear-tooth" style="bottom: 10%; right: 10%; transform: translate(50%, 50%) rotate(135deg);"></div>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h3 class="text-2xl font-bold mb-2">Gear Ratio: Speed & Torque Control</h3>
+                        <p class="text-gray-600 mb-4">The relationship between the number of teeth on meshing gears determines the change in speed and torque. This is known as the gear ratio.</p>
+                        <p class="font-bold text-xl accent-color">Gear Ratio = $\frac{\text{Number of Teeth on Driven Gear}}{\text{Number of Teeth on Driver Gear}}$</p>
+                        <p class="text-gray-600 mt-4">A higher gear ratio means the driven gear spins slower but provides more torque, useful for heavy lifting. A lower ratio means higher speed, less torque.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const solidShaftData = {
+                labels: ['Stressed Material', 'Low-Stress Core'],
+                datasets: [{
+                    data: [40, 60],
+                    backgroundColor: ['#4A90E2', '#E5E7EB'],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 4,
+                }]
+            };
+
+            const hollowShaftData = {
+                labels: ['Stressed Material', 'Removed Core'],
+                datasets: [{
+                    data: [90, 10],
+                    backgroundColor: ['#50E3C2', '#FFFFFF'],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 4,
+                }]
+            };
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                if (Array.isArray(label)) {
+                                    return label.join(' ');
+                                } else {
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            new Chart(document.getElementById('solidShaftChart'), {
+                type: 'doughnut',
+                data: solidShaftData,
+                options: chartOptions
+            });
+
+            new Chart(document.getElementById('hollowShaftChart'), {
+                type: 'doughnut',
+                data: hollowShaftData,
+                options: chartOptions
+            });
+            
+            // Ensure MathJax typesets any content that might have been missed or dynamically added
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typesetPromise();
+            }
+        });
+    </script>
+</body>
+</html>
