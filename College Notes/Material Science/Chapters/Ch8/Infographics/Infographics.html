@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An Infographic Guide to Non-Destructive Testing (NDT)</title>
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: The infographic follows a top-to-bottom narrative flow designed for easy scrolling and comprehension. It starts with a high-level introduction (What is NDT & Why it Matters), moves into a detailed analysis of the five core methods, presents a direct visual comparison with a radar chart, showcases real-world industry applications, and concludes with the future outlook. This linear storytelling structure guides the user from general concepts to specific details and applications, making the complex information from the report highly digestible. -->
+    <!-- Visualization & Content Choices: Data Point: Comparison of NDT methods across cost, speed, safety, etc. -> Goal: Compare -> Chosen Visualization: Radar Chart -> Justification/Library/Method: A radar chart is ideal for comparing multiple items across multiple variables simultaneously, offering a quick visual summary of strengths. Implemented with Chart.js (Canvas). CONFIRMING NO SVG. Data Point: Principles of each of the 5 NDT methods. -> Goal: Organize/Inform -> Chosen Visualization: Simplified Process Diagram -> Justification/Library/Method: Custom diagrams built with structured HTML and styled with Tailwind CSS (divs, borders, flexbox) provide a clear, lightweight way to illustrate core concepts without relying on images or complex libraries. CONFIRMING NO SVG/Mermaid. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F7FFF7;
+            color: #1A535C;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+
+        <header class="text-center my-12">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-[#1A535C] mb-4">The Inspector's Edge</h1>
+            <p class="text-lg md:text-xl text-[#1A535C]/80 max-w-3xl mx-auto">An essential guide to Non-Destructive Testing (NDT): The science of evaluating critical components without causing damage, ensuring safety and reliability across industries.</p>
+        </header>
+
+        <section id="introduction" class="my-16">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <h2 class="text-3xl font-bold text-[#45B7D1] mb-4">What is NDT?</h2>
+                    <p class="text-base leading-relaxed text-[#1A535C]">
+                        NDT is a set of advanced analytical techniques used to evaluate the properties and integrity of materials or systems. Its core principle is to perform detailed inspections for flaws like cracks or voids <strong class="text-[#FF6B6B]">without damaging the part being tested</strong>. This allows 100% of components to be verified for safety and quality.
+                    </p>
+                </div>
+                <div class="bg-[#1A535C] text-white p-8 rounded-xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-[#4ECDC4] mb-4">vs. Destructive Testing</h2>
+                    <p class="text-base leading-relaxed">
+                        In contrast, Destructive Testing (DT) determines a material's ultimate properties by testing it to failure. While providing vital data, the tested sample is destroyed. NDT complements DT by ensuring every single product meets the design standards established through destructive tests.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="imperative" class="my-20 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-2">The Strategic Imperative of NDT</h2>
+            <p class="text-lg text-[#1A535C]/80 max-w-3xl mx-auto mb-12">NDT is more than just testing; it's a cornerstone of modern industry, delivering critical benefits.</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <div class="text-5xl mb-4">🛡️</div>
+                    <h3 class="text-2xl font-bold text-[#1A535C] mb-2">Ensures Safety</h3>
+                    <p class="text-[#1A535C]/90">Prevents catastrophic failures in critical industries like aerospace and energy by detecting flaws before they become disasters.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <div class="text-5xl mb-4">💰</div>
+                    <h3 class="text-2xl font-bold text-[#1A535C] mb-2">Drives Economy</h3>
+                    <p class="text-[#1A535C]/90">Reduces costs by enabling proactive maintenance, preventing expensive downtime, and improving manufacturing processes.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <div class="text-5xl mb-4">✅</div>
+                    <h3 class="text-2xl font-bold text-[#1A535C] mb-2">Enhances Quality</h3>
+                    <p class="text-[#1A535C]/90">Guarantees product reliability and fitness-for-service, ensuring components meet strict design and quality standards.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="methods" class="my-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">The NDT Toolkit: 5 Key Methods</h2>
+            <div class="space-y-8">
+                <div class="card grid md:grid-cols-2 gap-8 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#45B7D1] mb-2">1. Visual Testing (VT)</h3>
+                        <p class="mb-4">The most fundamental method, relying on visual observation to find surface flaws like cracks, corrosion, or misalignment. It's fast, low-cost, and highly portable.</p>
+                        <p><strong class="text-[#FF6B6B]">Limitation:</strong> Only detects visible, surface-level flaws and is highly dependent on inspector skill.</p>
+                    </div>
+                    <div class="flex items-center justify-center bg-[#F7FFF7] p-4 rounded-lg border">
+                         <div class="flex flex-col items-center justify-center h-full text-center">
+                            <div class="text-6xl mb-4">👁️</div>
+                            <p class="font-semibold">Surface Observation</p>
+                            <div class="w-48 h-1 bg-gray-300 my-2"></div>
+                            <p class="text-sm text-gray-500">Inspector visually checks for defects.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card grid md:grid-cols-2 gap-8 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#4ECDC4] mb-2">2. Liquid Penetrant Testing (PT)</h3>
+                        <p class="mb-4">A liquid dye is applied to a non-porous surface, seeping into surface-breaking flaws via capillary action. A developer then draws the dye out, making tiny cracks visible.</p>
+                        <p><strong class="text-[#FF6B6B]">Limitation:</strong> Requires extensive surface cleaning and only works on non-porous materials for surface-breaking flaws.</p>
+                    </div>
+                    <div class="flex items-center justify-center bg-[#F7FFF7] p-4 rounded-lg border">
+                        <div class="flex items-center justify-around h-full text-center w-full text-xs sm:text-sm">
+                            <div class="flex flex-col items-center"><p class="font-semibold mb-2">1. Apply Dye</p><div class="w-16 h-10 bg-gray-200 relative"><div class="absolute top-0 left-1/2 w-0.5 h-3 bg-[#FF6B6B]"></div><div class="w-full h-full bg-[#FF6B6B]/30"></div></div></div>
+                            <div class="text-gray-400 text-xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center"><p class="font-semibold mb-2">2. Clean</p><div class="w-16 h-10 bg-gray-200 relative"><div class="absolute top-0 left-1/2 w-0.5 h-3 bg-[#FF6B6B]"></div></div></div>
+                            <div class="text-gray-400 text-xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center"><p class="font-semibold mb-2">3. Develop</p><div class="w-16 h-10 bg-gray-200 relative"><div class="absolute -top-1 left-1/2 w-3 h-3 bg-[#FF6B6B] -ml-1.5 rounded-full"></div></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card grid md:grid-cols-2 gap-8 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#FF6B6B] mb-2">3. Magnetic Particle Testing (MT)</h3>
+                        <p class="mb-4">Used on ferromagnetic materials. The part is magnetized, and iron particles are applied. Flaws disrupt the magnetic field, attracting the particles and creating a visible indication.</p>
+                        <p><strong class="text-[#FF6B6B]">Limitation:</strong> Only works on materials that can be magnetized and is mainly for surface or near-surface flaws.</p>
+                    </div>
+                    <div class="flex items-center justify-center bg-[#F7FFF7] p-4 rounded-lg border">
+                        <div class="flex flex-col items-center justify-center h-full text-center">
+                            <p class="font-semibold">Magnetic Flux Leakage</p>
+                            <div class="w-48 h-10 bg-gray-200 border-2 border-gray-400 flex items-center justify-between px-2 my-2 relative"><span class="font-bold text-[#45B7D1]">N</span><div class="absolute top-1/2 left-1/2 w-0.5 h-3 bg-red-500 -ml-px -mt-7"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl text-[#4ECDC4]">🧲</div><span class="font-bold text-[#FF6B6B]">S</span></div>
+                            <p class="text-sm text-gray-500">Particles gather at the flaw.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card grid md:grid-cols-2 gap-8 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#1A535C] mb-2">4. Radiographic Testing (RT)</h3>
+                        <p class="mb-4">Similar to a medical X-ray, radiation is passed through an object onto a detector. Internal flaws like voids or porosity show up as darker areas because more radiation passes through.</p>
+                        <p><strong class="text-[#FF6B6B]">Limitation:</strong> Involves significant radiation safety hazards, is expensive, and requires access to both sides of the component.</p>
+                    </div>
+                    <div class="flex items-center justify-center bg-[#F7FFF7] p-4 rounded-lg border">
+                        <div class="flex items-center justify-around h-full text-center w-full">
+                            <div class="flex flex-col items-center"><p class="font-semibold mb-2 text-xs sm:text-sm">Source</p><div class="text-4xl">☢️</div></div>
+                            <div class="text-gray-400 text-xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center"><p class="font-semibold mb-2 text-xs sm:text-sm">Object</p><div class="w-16 h-10 bg-gray-300 flex items-center justify-center"><div class="w-3 h-3 bg-gray-600 rounded-full"></div></div></div>
+                            <div class="text-gray-400 text-xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center"><p class="font-semibold mb-2 text-xs sm:text-sm">Film</p><div class="w-16 h-10 bg-gray-800 flex items-center justify-center"><div class="w-3 h-3 bg-black rounded-full"></div></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card grid md:grid-cols-2 gap-8 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div>
+                        <h3 class="text-2xl font-bold text-[#4ECDC4] mb-2">5. Ultrasonic Testing (UT)</h3>
+                        <p class="mb-4">High-frequency sound waves are sent into a material. Echoes are created when the waves hit a flaw. By analyzing these echoes, inspectors can determine the size and location of internal defects.</p>
+                        <p><strong class="text-[#FF6B6B]">Limitation:</strong> Requires a highly skilled operator to interpret the complex data, and the part's surface must be smooth.</p>
+                    </div>
+                    <div class="flex items-center justify-center bg-[#F7FFF7] p-4 rounded-lg border">
+                         <div class="flex flex-col items-center justify-center h-full text-center">
+                            <p class="font-semibold">Pulse-Echo</p>
+                            <div class="w-40 h-16 bg-gray-200 my-2 relative flex flex-col justify-end items-center p-2">
+                                <div class="absolute -top-3 w-10 h-5 bg-[#45B7D1] rounded-t-md"></div>
+                                <div class="w-0.5 h-6 bg-[#45B7D1] animate-pulse"></div>
+                                <div class="absolute bottom-3 w-3 h-3 bg-[#FF6B6B] rounded-full"></div>
+                            </div>
+                            <p class="text-sm text-gray-500">Sound reflects off an internal flaw.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="my-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Method Comparison</h2>
+            <p class="text-lg text-[#1A535C]/80 max-w-3xl mx-auto text-center mb-12">No single NDT method is perfect for every job. This chart compares the key techniques across critical operational factors. A higher score indicates a better performance in that category.</p>
+            <div class="bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-gray-200">
+                <div class="chart-container">
+                    <canvas id="ndtComparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="applications" class="my-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">NDT in Action: Across Industries</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-[#1A535C] text-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-[#4ECDC4] mb-2">✈️ Aerospace</h3>
+                    <p>UT and RT inspect engine components and composite fuselage panels for internal cracks and delamination to ensure flight safety.</p>
+                </div>
+                <div class="bg-[#1A535C] text-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-[#4ECDC4] mb-2">⚡ Energy</h3>
+                    <p>UT is critical for monitoring pipelines and pressure vessels for corrosion, while MT checks wind turbine towers for fatigue cracks.</p>
+                </div>
+                <div class="bg-[#1A535C] text-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-[#4ECDC4] mb-2">🚗 Automotive</h3>
+                    <p>MT and UT inspect critical engine parts like crankshafts and suspension components to ensure manufacturing quality and reliability.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center my-12">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">The Future is Integrated</h2>
+            <p class="text-lg text-[#1A535C]/80 max-w-3xl mx-auto">The NDT field is rapidly evolving. The future lies in <strong class="text-[#45B7D1]">multimodal systems</strong> that combine multiple techniques, integrated with <strong class="text-[#FF6B6B]">robotics and AI</strong> for automated, data-driven inspections. This transforms NDT from a series of manual checks into a core component of modern, intelligent manufacturing and maintenance.</p>
+        </footer>
+    </div>
+
+    <script>
+        const wrapLabel = (label, maxWidth) => {
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                const testLine = currentLine.length > 0 ? `${currentLine} ${word}` : word;
+                if (testLine.length > maxWidth) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            lines.push(currentLine);
+            return lines;
+        };
+
+        const ctx = document.getElementById('ndtComparisonChart').getContext('2d');
+        const chartData = {
+            labels: [
+                'Cost-Effectiveness',
+                'Speed',
+                'Safety',
+                wrapLabel('Surface Flaw Sensitivity', 16),
+                wrapLabel('Internal Flaw Sensitivity', 16),
+                'Portability'
+            ],
+            datasets: [{
+                label: 'Visual (VT)',
+                data: [5, 5, 5, 2, 1, 5],
+                borderColor: '#4ECDC4',
+                backgroundColor: 'rgba(78, 205, 196, 0.2)',
+                pointBackgroundColor: '#4ECDC4',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#4ECDC4'
+            }, {
+                label: 'Liquid Penetrant (PT)',
+                data: [4, 3, 4, 5, 1, 4],
+                borderColor: '#45B7D1',
+                backgroundColor: 'rgba(69, 183, 209, 0.2)',
+                pointBackgroundColor: '#45B7D1',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#45B7D1'
+            }, {
+                label: 'Magnetic Particle (MT)',
+                data: [4, 4, 5, 5, 2, 4],
+                borderColor: '#FF6B6B',
+                backgroundColor: 'rgba(255, 107, 107, 0.2)',
+                pointBackgroundColor: '#FF6B6B',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#FF6B6B'
+            }, {
+                label: 'Radiographic (RT)',
+                data: [1, 1, 1, 4, 5, 2],
+                borderColor: '#1A535C',
+                backgroundColor: 'rgba(26, 83, 92, 0.2)',
+                pointBackgroundColor: '#1A535C',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#1A535C'
+            }, {
+                label: 'Ultrasonic (UT)',
+                data: [2, 4, 5, 3, 5, 3],
+                borderColor: '#F9A828',
+                backgroundColor: 'rgba(249, 168, 40, 0.2)',
+                pointBackgroundColor: '#F9A828',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#F9A828'
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(26, 83, 92, 0.1)' },
+                        grid: { color: 'rgba(26, 83, 92, 0.1)' },
+                        pointLabels: {
+                            font: { size: 12, weight: '600' },
+                            color: '#1A535C'
+                        },
+                        ticks: {
+                            backdropColor: 'rgba(247, 255, 247, 0.75)',
+                            color: '#1A535C',
+                            stepSize: 1,
+                            max: 5,
+                            min: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#1A535C',
+                            font: { size: 14 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                if (Array.isArray(label)) {
+                                    return label.join(' ');
+                                } else {
+                                    return label;
+                                }
+                            },
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.formattedValue + ' / 5';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
