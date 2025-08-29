@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Non-Destructive Testing (NDT)</title>
+    <!-- Chosen Palette: Calm Neutrals with Tech Blue Accents -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard with a fixed top navigation, allowing users to seamlessly jump between thematic sections. The structure includes: 1) A 'Home/Introduction' section for a high-level overview. 2) A 'Methods Explorer' section with interactive cards for a deep dive into each of the 5 main NDT techniques. 3) A 'Comparative Analysis' section featuring an interactive radar chart for direct comparison of method characteristics. 4) An 'Industrial Applications' section to provide real-world context. This non-linear, thematic structure was chosen over the report's linear format to empower users to explore content based on their interests and needs, facilitating better understanding and information retention through interactive discovery rather than passive reading. -->
+    <!-- Visualization & Content Choices: Report Info: Comparison of NDT methods (cost, speed, safety, etc.). -> Goal: Compare. -> Viz/Presentation Method: Interactive Radar Chart. -> Interaction: Hovering over a method's line highlights it, tooltips show specific ratings. -> Justification: A radar chart is highly effective for comparing multiple quantitative/qualitative variables across different items, providing an instant visual summary of strengths and weaknesses. -> Library/Method: Chart.js (Canvas). Report Info: Principles of each NDT method. -> Goal: Inform/Organize. -> Viz/Presentation Method: Simplified diagrams using HTML/CSS (divs, borders, flexbox). -> Interaction: Static visual aid within an interactive card system. -> Justification: Custom HTML/CSS diagrams are lightweight, fully compliant with the NO SVG rule, and can effectively illustrate core concepts like magnetic flux leakage or ultrasonic wave reflection without external libraries. -> Library/Method: HTML/CSS with Tailwind. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .method-card {
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .method-card.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+        }
+        .diagram-container {
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            min-height: 200px;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 60vh;
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-gray-800">NDT Explorer</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700" data-target="home">Introduction</a>
+                        <a class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700" data-target="methods">Methods Explorer</a>
+                        <a class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700" data-target="comparison">Comparative Analysis</a>
+                        <a class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700" data-target="applications">Industrial Applications</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div id="home" class="section p-8 max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">An Interactive Guide to Non-Destructive Testing</h1>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Explore the essential techniques used to evaluate materials and components without causing damage, ensuring safety and reliability across major industries.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-3">What is NDT?</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        Non-Destructive Testing (NDT) is the process of inspecting, testing, or evaluating materials, components, or assemblies for discontinuities, or differences in characteristics without destroying the serviceability of the part or system. In other words, when the inspection or test is completed, the part can still be used. This contrasts with destructive testing, where the part is damaged or destroyed during the inspection process.
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-3">Why is it Important?</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        NDT is a crucial element of quality control and safety assurance. It is used to:
+                    </p>
+                    <ul class="list-disc list-inside mt-2 text-gray-700 space-y-1">
+                        <li>Ensure product integrity and reliability.</li>
+                        <li>Prevent accidents and save lives.</li>
+                        <li>Reduce costs and improve manufacturing processes.</li>
+                        <li>Verify that structures are safe for public use.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="methods" class="section p-8 max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Methods Explorer</h1>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Click on a method below to explore its principles, applications, advantages, and limitations. This section allows for a detailed examination of the five primary NDT techniques discussed in the report.</p>
+            </div>
+            <div id="method-selector" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            </div>
+            <div id="method-details" class="bg-white p-6 rounded-lg shadow-lg min-h-[400px]">
+                <p class="text-center text-gray-500 text-lg h-full flex items-center justify-center">Select a method above to see the details.</p>
+            </div>
+        </div>
+
+        <div id="comparison" class="section p-8 max-w-7xl mx-auto">
+             <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Comparative Analysis</h1>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">This interactive chart provides a visual comparison of the key NDT methods across several critical parameters. Hover over data points to see specific ratings and compare the strengths and weaknesses of each technique to understand their ideal use cases.</p>
+            </div>
+            <div class="chart-container bg-white p-4 rounded-lg shadow-lg">
+                <canvas id="ndtComparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div id="applications" class="section p-8 max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Industrial Applications</h1>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">NDT is indispensable across a wide range of industries where safety and reliability are paramount. This section highlights how these testing methods are applied in real-world scenarios to maintain standards and prevent failure.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">✈️ Airline & Aerospace</h3>
+                    <p class="text-gray-700">Inspecting aircraft structures, engine components, and landing gear for fatigue cracks and structural integrity to ensure flight safety.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">🚗 Automotive & Railroad</h3>
+                    <p class="text-gray-700">Quality control of engine parts, welds, and axles. Inspecting railway tracks for cracks to prevent derailments.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">🏗️ Construction</h3>
+                    <p class="text-gray-700">Evaluating the integrity of welds in steel structures, bridges, and buildings. Inspecting concrete for internal voids.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">⚡ Power Generation</h3>
+                    <p class="text-gray-700">Inspecting pipelines, pressure vessels, and turbine blades in nuclear, fossil fuel, and hydroelectric plants.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">🏭 Manufacturing</h3>
+                    <p class="text-gray-700">Monitoring manufacturing processes, sorting incoming materials, and ensuring final product quality before shipping.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">🧪 Chemical & Petrochemical</h3>
+                    <p class="text-gray-700">Detecting corrosion, erosion, and cracks in storage tanks, pipelines, and reactors to prevent leaks and environmental hazards.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ndtData = {
+                vt: {
+                    name: 'Visual Testing (VT)',
+                    icon: '👁️',
+                    description: 'The oldest and most common NDT method. It involves the visual observation of a surface to evaluate for the presence of surface discontinuities such as corrosion, misalignment of parts, and physical damage.',
+                    principle: 'Relies on the inspector\'s vision, sometimes aided by optical instruments like magnifying glasses or borescopes, to detect surface flaws.',
+                    applications: 'Weld inspection, checking for surface cracks, corrosion assessment, verifying component alignment.',
+                    advantages: ['Low cost', 'Fast and simple', 'Highly portable', 'Requires minimal training'],
+                    limitations: ['Only detects surface flaws', 'Effectiveness depends heavily on inspector skill', 'Can miss small defects'],
+                    diagram: `
+                        <div class="flex flex-col items-center justify-center h-full text-center">
+                            <div class="text-6xl mb-4">👁️</div>
+                            <p class="font-semibold text-gray-700">Surface Observation</p>
+                            <div class="w-48 h-1 bg-gray-300 my-2"></div>
+                            <p class="text-sm text-gray-500">Inspector visually checks for cracks, corrosion, etc.</p>
+                        </div>
+                    `
+                },
+                pt: {
+                    name: 'Liquid Penetrant (PT)',
+                    icon: '💧',
+                    description: 'A method used to reveal surface-breaking discontinuities by bleedout of a colored or fluorescent dye from the flaw.',
+                    principle: 'A liquid penetrant is applied to the surface and drawn into defects by capillary action. After removing excess liquid, a developer pulls the trapped penetrant out, making the flaw visible.',
+                    applications: 'Detecting surface cracks, porosity, and leaks in non-porous materials like metals, plastics, and ceramics.',
+                    advantages: ['High sensitivity to small flaws', 'Applicable to a wide range of materials', 'Portable and relatively inexpensive'],
+                    limitations: ['Only detects surface-breaking flaws', 'Requires careful surface preparation', 'Not suitable for porous materials'],
+                    diagram: `
+                        <div class="flex items-center justify-around h-full text-center">
+                            <div class="flex flex-col items-center">
+                                <p class="font-semibold mb-2">1. Apply Penetrant</p>
+                                <div class="w-24 h-12 bg-gray-200 relative"><div class="absolute top-0 left-1/2 w-1 h-4 bg-red-500 -ml-0.5"></div><div class="w-full h-full bg-red-500/30"></div></div>
+                                <p class="text-xs mt-1">Penetrant seeps into crack.</p>
+                            </div>
+                            <div class="text-gray-400 text-2xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center">
+                                <p class="font-semibold mb-2">2. Apply Developer</p>
+                                <div class="w-24 h-12 bg-gray-200 relative"><div class="absolute top-0 left-1/2 w-1 h-4 bg-red-500 -ml-0.5"></div><div class="w-full h-full bg-white"></div></div>
+                                <p class="text-xs mt-1">Excess removed.</p>
+                            </div>
+                            <div class="text-gray-400 text-2xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center">
+                                <p class="font-semibold mb-2">3. Indication</p>
+                                <div class="w-24 h-12 bg-gray-200 relative"><div class="absolute -top-2 left-1/2 w-4 h-4 bg-red-500 -ml-2 rounded-full"></div></div>
+                                <p class="text-xs mt-1">Developer draws out penetrant.</p>
+                            </div>
+                        </div>
+                    `
+                },
+                mt: {
+                    name: 'Magnetic Particle (MT)',
+                    icon: '🧲',
+                    description: 'A method for detecting surface and slightly subsurface discontinuities in ferromagnetic materials.',
+                    principle: 'The part is magnetized, causing magnetic field disruptions (flux leakage) at flaws. Iron particles applied to the surface are attracted to these leakage fields, forming a visible indication.',
+                    applications: 'Inspecting welds, castings, and forgings made of iron, nickel, cobalt and their alloys for cracks and other flaws.',
+                    advantages: ['Fast and relatively simple', 'High sensitivity to fine surface cracks', 'Can detect some near-surface flaws', 'Portable equipment'],
+                    limitations: ['Only for ferromagnetic materials', 'Magnetic field alignment is critical', 'Requires demagnetization after testing'],
+                    diagram: `
+                        <div class="flex flex-col items-center justify-center h-full text-center">
+                            <p class="font-semibold text-gray-700">Magnetic Flux Leakage</p>
+                            <div class="w-56 h-12 bg-gray-200 border-2 border-gray-400 flex items-center justify-between px-2 my-2 relative">
+                                <span class="font-bold text-blue-600">N</span>
+                                <div class="absolute top-1/2 left-1/2 w-1 h-4 bg-red-500 -ml-0.5 -mt-5"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl text-green-600">🧲</div>
+                                <span class="font-bold text-red-600">S</span>
+                            </div>
+                            <p class="text-sm text-gray-500">Iron particles are attracted to the flux leakage field created by a crack.</p>
+                        </div>
+                    `
+                },
+                rt: {
+                    name: 'Radiographic Testing (RT)',
+                    icon: '☢️',
+                    description: 'Uses X-rays or gamma rays to see inside a component, similar to a medical X-ray.',
+                    principle: 'Radiation is passed through an object and recorded on film or a digital detector. Thicker areas or materials absorb more radiation, while flaws like voids or cracks allow more to pass through, creating a darker image.',
+                    applications: 'Inspecting welds for internal porosity or cracks, detecting internal flaws in castings, verifying assembly.',
+                    advantages: ['Detects internal and surface flaws', 'Provides a permanent visual record (film)', 'Can be used on a wide variety of materials'],
+                    limitations: ['Radiation safety hazard', 'High cost of equipment', 'Requires access to both sides of the object', 'Slow process'],
+                    diagram: `
+                        <div class="flex items-center justify-around h-full text-center">
+                            <div class="flex flex-col items-center">
+                                <p class="font-semibold mb-2">Radiation Source</p>
+                                <div class="text-4xl">☢️</div>
+                            </div>
+                             <div class="text-gray-400 text-2xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center">
+                                <p class="font-semibold mb-2">Test Object</p>
+                                <div class="w-24 h-12 bg-gray-300 flex items-center justify-center"><div class="w-4 h-4 bg-gray-500 rounded-full"></div></div>
+                                <p class="text-xs mt-1">(Internal Flaw)</p>
+                            </div>
+                             <div class="text-gray-400 text-2xl font-bold">&rarr;</div>
+                            <div class="flex flex-col items-center">
+                                <p class="font-semibold mb-2">Film/Detector</p>
+                                <div class="w-24 h-12 bg-gray-800 flex items-center justify-center"><div class="w-4 h-4 bg-black rounded-full"></div></div>
+                                <p class="text-xs mt-1">Darker spot indicates flaw.</p>
+                            </div>
+                        </div>
+                    `
+                },
+                ut: {
+                    name: 'Ultrasonic Testing (UT)',
+                    icon: '🔊',
+                    description: 'Uses high-frequency sound waves to detect flaws and for dimensional measurements.',
+                    principle: 'A transducer sends sound waves into a material. If the waves hit a flaw, they reflect back to the transducer. The time it takes for the echo to return is measured and displayed, indicating the flaw\'s location and size.',
+                    applications: 'Flaw detection deep within parts, thickness measurement for corrosion monitoring, weld inspection.',
+                    advantages: ['High sensitivity to small internal flaws', 'Great depth of penetration', 'Only one-sided access needed', 'Instant results and high accuracy'],
+                    limitations: ['Requires a skilled operator', 'Surface must be smooth and clean', 'Difficult on small or complex parts', 'Couplant liquid is needed'],
+                    diagram: `
+                        <div class="flex flex-col items-center justify-center h-full text-center">
+                            <p class="font-semibold text-gray-700">Pulse-Echo Principle</p>
+                            <div class="w-48 h-20 bg-gray-200 my-2 relative flex flex-col justify-end items-center p-2">
+                                <div class="absolute -top-4 w-12 h-6 bg-blue-500 rounded-t-md text-white text-xs flex items-center justify-center">Probe</div>
+                                <div class="w-1 h-8 bg-blue-500 animate-pulse"></div>
+                                <div class="absolute bottom-4 w-4 h-4 bg-red-500 rounded-full"></div>
+                            </div>
+                            <p class="text-sm text-gray-500">Sound wave travels, reflects off a flaw, and returns to the probe.</p>
+                        </div>
+                    `
+                },
+            };
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.section');
+
+            function showSection(targetId) {
+                sections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.target === targetId);
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection(link.dataset.target);
+                });
+            });
+
+            showSection('home');
+
+            const methodSelector = document.getElementById('method-selector');
+            const methodDetails = document.getElementById('method-details');
+            
+            Object.keys(ndtData).forEach(key => {
+                const method = ndtData[key];
+                const card = document.createElement('div');
+                card.className = 'method-card p-4 bg-white rounded-lg shadow-md text-center border-2 border-transparent hover:shadow-xl transition-all duration-300';
+                card.dataset.method = key;
+                card.innerHTML = `
+                    <div class="text-4xl mb-2">${method.icon}</div>
+                    <h3 class="font-semibold text-gray-800">${method.name}</h3>
+                `;
+                methodSelector.appendChild(card);
+            });
+
+            const methodCards = document.querySelectorAll('.method-card');
+            methodCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const selectedMethodKey = card.dataset.method;
+                    const method = ndtData[selectedMethodKey];
+
+                    methodCards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+
+                    methodDetails.innerHTML = `
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h2 class="text-3xl font-bold text-gray-900 mb-4">${method.name} ${method.icon}</h2>
+                                <p class="text-gray-700 mb-4">${method.description}</p>
+                                <h4 class="font-semibold text-lg text-gray-800 mb-2">Principle:</h4>
+                                <p class="text-gray-600 mb-4">${method.principle}</p>
+                                <h4 class="font-semibold text-lg text-gray-800 mb-2">Common Applications:</h4>
+                                <p class="text-gray-600">${method.applications}</p>
+                            </div>
+                            <div>
+                                <div class="mb-4">
+                                    <h4 class="font-semibold text-lg text-green-600 mb-2">Advantages:</h4>
+                                    <ul class="list-disc list-inside text-gray-600 space-y-1">${method.advantages.map(adv => `<li>${adv}</li>`).join('')}</ul>
+                                </div>
+                                <div class="mb-4">
+                                    <h4 class="font-semibold text-lg text-red-600 mb-2">Limitations:</h4>
+                                    <ul class="list-disc list-inside text-gray-600 space-y-1">${method.limitations.map(lim => `<li>${lim}</li>`).join('')}</ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <h4 class="font-semibold text-lg text-gray-800 mb-2 text-center">Simplified Principle Diagram</h4>
+                            <div class="diagram-container">${method.diagram}</div>
+                        </div>
+                    `;
+                });
+            });
+
+            const ctx = document.getElementById('ndtComparisonChart').getContext('2d');
+            const chartData = {
+                labels: ['Cost-Effectiveness', 'Speed', 'Safety', 'Surface Flaw Sensitivity', 'Internal Flaw Sensitivity', 'Portability'],
+                datasets: [
+                    {
+                        label: 'Visual (VT)',
+                        data: [5, 5, 5, 2, 1, 5],
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    },
+                    {
+                        label: 'Penetrant (PT)',
+                        data: [4, 3, 4, 5, 1, 4],
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    },
+                    {
+                        label: 'Magnetic (MT)',
+                        data: [4, 4, 5, 5, 2, 4],
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    },
+                    {
+                        label: 'Radiographic (RT)',
+                        data: [1, 1, 1, 4, 5, 2],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    },
+                    {
+                        label: 'Ultrasonic (UT)',
+                        data: [2, 4, 5, 3, 5, 3],
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    }
+                ]
+            };
+            new Chart(ctx, {
+                type: 'radar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#333'
+                            },
+                            ticks: {
+                                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                                stepSize: 1,
+                                max: 5,
+                                min: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.formattedValue + ' / 5';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
