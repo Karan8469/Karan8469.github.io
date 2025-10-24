@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Constitution Quiz</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+        /* Apply Inter font and a dark theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+        }
+        
+        /* Custom styles for quiz answer feedback */
+        .correct {
+            background-color: #059669 !important; /* bg-green-600 */
+            color: white !important;
+            border-color: #059669 !important;
+        }
+
+        .incorrect {
+            background-color: #DC2626 !important; /* bg-red-600 */
+            color: white !important;
+            border-color: #DC2626 !important;
+        }
+        
+        /* Ensure disabled buttons have a consistent look */
+        .disabled-option {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Custom scrollbar for a polished look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151; /* bg-gray-700 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563; /* bg-gray-600 */
+        }
+
+        /* --- REMOVED DEBUGGING BORDER --- */
+        /*
+        #chapter-list {
+            border: 2px dashed red; 
+            min-height: 50px; 
+        }
+        */
+        /* --- END OF REMOVED CODE --- */
+    </style>
+</head>
+<body class="text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-gray-800 p-6 sm:p-10 rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-700">
+
+        <!-- Chapter Menu Screen -->
+        <div id="menu-screen">
+            <h1 class="text-3xl sm:text-4xl font-bold text-cyan-400 mb-6 text-center">Indian Constitution Quiz</h1>
+            <p class="text-lg text-gray-300 mb-8 text-center">Please select a chapter to begin.</p>
+            <div id="chapter-list" class="flex flex-col space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Chapter buttons will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="hidden">
+            <div class="mb-6 flex justify-between items-center gap-4">
+                <div>
+                    <!-- --- TYPO FIX HERE --- -->
+                    <button id="back-to-menu-btn" class="text-sm text-cyan-400 hover:text-cyan-300 transition-all">&larr; Back to Menu</button>
+                    <h2 id="quiz-title" class="text-2xl font-semibold text-cyan-400"></h2>
+                </div>
+                <div class="text-lg font-bold text-right">
+                    <div class="whitespace-nowrap">Score: <span id="score">0</span></div>
+                    <div class="text-sm font-medium text-gray-400">
+                        Question <span id="question-number"></span>/<span id="total-questions"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 id="question-text" class="text-2xl sm:text-3xl font-semibold mb-8 min-h-[100px]"></h3>
+            
+            <div id="options-container" class="space-y-4">
+                <!-- Options will be dynamically inserted here -->
+            </div>
+            
+            <!-- Explanation Box -->
+            <div id="explanation-container" class="hidden mt-6 p-4 border-l-4 border-cyan-500 bg-gray-700 rounded-r-lg">
+                <h4 id="explanation-title" class="text-lg font-bold mb-2"></h4>
+                <p id="explanation-text" class="text-gray-300"></p>
+            </div>
+            
+            <button id="next-btn" class="hidden w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg mt-8 text-lg transition-all duration-300">
+                Next Question
+            </button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-container" class="hidden text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-cyan-400 mb-6">Chapter Complete!</h1>
+            <div id="results-text" class="text-2xl text-gray-200 mb-8"></div>
+            <div id="results-percentage" class="text-5xl font-extrabold mb-10"></div>
+            <button id="back-to-menu-btn-results" class="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-all duration-300 shadow-lg transform hover:scale-105">
+                Back to Menu
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. ALL QUIZ QUESTIONS, ORGANIZED BY CHAPTER ---
+        const allQuestions = {
+            "Chapter 1: Constitution & Constitutionalism": [
+                {
+                    question: "What is the primary difference between a 'Constitution' and 'Constitutionalism'?",
+                    options: [
+                        "Constitution is written, Constitutionalism is unwritten.",
+                        "Constitution is the document, Constitutionalism is the principle of limited government power.",
+                        "Constitution is for democracies, Constitutionalism is for monarchies.",
+                        "They mean the same thing."
+                    ],
+                    correctAnswer: "Constitution is the document, Constitutionalism is the principle of limited government power.",
+                    explanation: "The Constitution is the document containing the fundamental law. Constitutionalism is the *system* of governance where the government's power is limited by the rule of law to protect rights."
+                },
+                {
+                    question: "What is the 'living constitution' phenomenon?",
+                    options: [
+                        "A constitution that is brand new.",
+                        "A constitution that has never been amended.",
+                        "The idea that laws and regulations change as society changes.",
+                        "A constitution that must be read aloud every day."
+                    ],
+                    correctAnswer: "The idea that laws and regulations change as society changes.",
+                    explanation: "The document states: 'As society change, so do laws and regulations... we continue to see the phenomenon of 'living constitution' in many parts of the world.'"
+                },
+                {
+                    question: "What is the opposite of a system based on constitutionalism?",
+                    options: [
+                        "A system where the government uses its powers in an arbitrary fashion.",
+                        "A system with a written constitution.",
+                        "A system with a president instead of a king.",
+                        "A system based on democracy."
+                    ],
+                    correctAnswer: "A system where the government uses its powers in an arbitrary fashion.",
+                    explanation: "The text defines non-constitutionalism as 'a system in which the government uses its powers in an arbitrary fashion, without respecting the citizen's rights.'"
+                },
+                {
+                    question: "According to the text, a constitution can be defined as...",
+                    options: [
+                        "Only the organization of the government.",
+                        "Only the basic norm (or law) of the state.",
+                        "A system of integration and organization of norms and laws.",
+                        "All of the above."
+                    ],
+                    correctAnswer: "All of the above.",
+                    explanation: "The document lists three definitions: Basic norm (or law) of the state; System of integration and organization of norms; and Organization of the government."
+                },
+                {
+                    question: "The idea of the constitution has changed significantly from the first examples seen in...",
+                    options: [
+                        "Ancient Rome",
+                        "Ancient Greece",
+                        "Medieval England",
+                        "The French Revolution"
+                    ],
+                    correctAnswer: "Ancient Greece",
+                    explanation: "The text states, 'The idea of the constitution has changed significantly compare, to the first examples seen in ancient Greece...'"
+                }
+            ],
+            "Chapter 2: History of Indian Constitution": [
+                {
+                    question: "Which act designated the Governor of Bengal as the 'Governor-General of Bengal'?",
+                    options: ["Regulating Act of 1773", "Pitt's India Act of 1784", "Charter Act of 1833", "Government of India Act of 1858"],
+                    correctAnswer: "Regulating Act of 1773",
+                    explanation: "The Regulating Act of 1773 was the first step by the British Parliament to control the East India Company's affairs. Warren Hastings became the first Governor-General of Bengal."
+                },
+                {
+                    question: "What 'Diwani' rights did the East India Company obtain in 1765?",
+                    options: [
+                        "Rights over military and defense",
+                        "Rights over revenue and civil justice",
+                        "Rights over foreign policy",
+                        "Rights to appoint governors"
+                    ],
+                    correctAnswer: "Rights over revenue and civil justice",
+                    explanation: "In 1765, the East India Company obtained the 'Diwani' (Rights over revenue and civil justice) of Bengal, Bihar, and Orissa."
+                },
+                {
+                    question: "When did the British Crown assume direct responsibility for the governance of India, ending Company rule?",
+                    options: [
+                        "1773",
+                        "1858",
+                        "1919",
+                        "1935"
+                    ],
+                    correctAnswer: "1858",
+                    explanation: "After the Sepoy Mutiny, the British Crown assumed direct responsibility in 1858 through the Government of India Act, abolishing the East India Company's rule."
+                },
+                {
+                    question: "What were the two main entities India was divided into before 1947?",
+                    options: [
+                        "North India and South India",
+                        "British India and the Princely States",
+                        "The Mughal Empire and the Maratha Empire",
+                        "Provinces and Union Territories"
+                    ],
+                    correctAnswer: "British India and the Princely States",
+                    explanation: "Before 1947, India was divided into 'British India' (11 provinces) and 'The Princely states' ruled by Indian princes under subsidiary alliance."
+                },
+                {
+                    question: "What court was established by the Regulating Act of 1773?",
+                    options: [
+                        "The Federal Court",
+                        "The High Court of Bengal",
+                        "The Supreme Court at Fort William (Calcutta)",
+                        "The Privy Council"
+                    ],
+                    correctAnswer: "The Supreme Court at Fort William (Calcutta)",
+                    explanation: "The Regulating Act of 1773 led to the establishment of the Supreme Court at Fort William (Calcutta) as the Apex Court in 1774."
+                },
+                {
+                    question: "Which act separated the commercial and political functions of the East India Company?",
+                    options: ["Regulating Act of 1773", "Pitt's India Act of 1784", "Charter Act of 1813", "Government of India Act of 1858"],
+                    correctAnswer: "Pitt's India Act of 1784",
+                    explanation: "Pitt's India Act of 1784 established a Board of Control to manage political affairs, while the Court of Directors (the company's governing body) was allowed to manage commercial activities."
+                },
+                {
+                    question: "Which act first called the East India Company's territories 'the British possession in India'?",
+                    options: [
+                        "Regulating Act of 1773",
+                        "Pitt's India Act of 1784",
+                        "Charter Act of 1813",
+                        "Charter Act of 1833"
+                    ],
+                    correctAnswer: "Pitt's India Act of 1784",
+                    explanation: "Pitt's India Act of 1784 was significant as it placed Indian affairs under the direct control of the British Government, and 'The company's territories in India were called 'the British possession in India'.'"
+                },
+                {
+                    question: "Which act terminated the East India Company's monopoly over Indian trade?",
+                    options: [
+                        "Charter Act of 1813",
+                        "Charter Act of 1833",
+                        "Pitt's India Act of 1784",
+                        "Regulating Act of 1773"
+                    ],
+                    correctAnswer: "Charter Act of 1813",
+                    explanation: "The Charter Act of 1813 (also known as the East India Company Act 1813) renewed the company's charter but terminated its monopoly over Indian trade."
+                },
+                {
+                    question: "Which act made the Governor-General of Bengal the 'Governor-General of India'?",
+                    options: ["Charter Act of 1833", "Charter Act of 1853", "Regulating Act of 1773", "Pitt's India Act of 1784"],
+                    correctAnswer: "Charter Act of 1833",
+                    explanation: "The Charter Act of 1833 was the 'final step towards centralization.' It made the Governor-General of Bengal the Governor-General of India, and Lord William Bentick was the first."
+                },
+                {
+                    question: "Which act ended the activities of the East India Company as a commercial body, making it purely administrative?",
+                    options: [
+                        "Charter Act of 1813",
+                        "Charter Act of 1833",
+                        "Charter Act of 1853",
+                        "Government of India Act of 1858"
+                    ],
+                    correctAnswer: "Charter Act of 1833",
+                    explanation: "The Charter Act of 1833 'ended the activities of the East India Company as a commercial body and it became a purely administrative body.'"
+                },
+                {
+                    question: "Which act separated the legislative and executive functions of the Governor-General's Council for the first time?",
+                    options: ["Charter Act of 1813", "Charter Act of 1833", "Charter Act of 1853", "Government of India Act of 1858"],
+                    correctAnswer: "Charter Act of 1853",
+                    explanation: "The Charter Act of 1853 'separated, for the first time, the legislative and executive functions of the Governor-General's Council.'"
+                },
+                {
+                    question: "Which act introduced a system of open competition for the recruitment of civil servants?",
+                    options: ["Charter Act of 1813", "Charter Act of 1833", "Charter Act of 1853", "Government of India Act of 1858"],
+                    correctAnswer: "Charter Act of 1853",
+                    explanation: "The Charter Act of 1853 'introduced a system of open competition as the basis for the recruitment of civil servants of the Company (Indian Civil Service opened for all).'"
+                },
+                {
+                    question: "The rule of the Company was replaced by the rule of the Crown, and the Governor-General was made the Viceroy, by which act?",
+                    options: ["Government of India Act of 1858", "Indian Councils Act of 1861", "Indian Independence Act of 1947", "Government of India Act of 1935"],
+                    correctAnswer: "Government of India Act of 1858",
+                    explanation: "Following the Sepoy Mutiny, the Government of India Act of 1858 abolished the East India Company's rule. Lord Canning became the first Viceroy of India."
+                },
+                {
+                    question: "The 'Morley-Minto Reforms' are associated with which act?",
+                    options: ["Indian Council Act of 1909", "Government of India Act of 1919", "India Councils Act of 1892", "Government of India Act of 1935"],
+                    correctAnswer: "Indian Council Act of 1909",
+                    explanation: "The Indian Council Act of 1909 is also known as the Morley-Minto Reforms. It famously 'introduced a system of communal representation for Muslims by accepting the concept of separate electorate.'"
+                },
+                {
+                    question: "Who was the first Indian to be given a place in the Viceroy's Executive Council (as Law Member)?",
+                    options: [
+                        "M. N. Roy",
+                        "Satyendra Prasad Sinha",
+                        "Jawaharlal Nehru",
+                        "Lord Canning"
+                    ],
+                    correctAnswer: "Satyendra Prasad Sinha",
+                    explanation: "The Indian Council Act of 1909 gave Indians a place in the Viceroy's Executive Council for the first time. 'Satyendra Prasad Sinha, as the law member' was the first."
+                },
+                {
+                    question: "The system of 'Dyarchy' (dual governance) in the provinces was introduced by which act?",
+                    options: ["Government of India Act of 1935", "Indian Council Act of 1909", "Government of India Act of 1919", "Indian Independence Act of 1947"],
+                    correctAnswer: "Government of India Act of 1919",
+                    explanation: "Also known as the Montague-Chelmsford Reforms, the 1919 Act introduced 'Dyarchy' by dividing provincial subjects into 'transferred' and 'reserved' lists."
+                },
+                {
+                    question: "Which act introduced bicameralism (a two-house legislature) at the Centre for the first time?",
+                    options: [
+                        "Government of India Act of 1919",
+                        "Government of India Act of 1935",
+                        "Indian Council Act of 1909",
+                        "Indian Independence Act of 1947"
+                    ],
+                    correctAnswer: "Government of India Act of 1919",
+                    explanation: "The Government of India Act of 1919 'introduced, for the first time, bicameralism at the center' (a Legislative Assembly and a Legislative Council)."
+                },
+                {
+                    question: "Which act provided for the establishment of an All-India Federation, three legislative lists, and the Reserve Bank of India?",
+                    options: ["Government of India Act of 1935", "Government of India Act of 1919", "Charter Act of 1853", "Indian Independence Act of 1947"],
+                    correctAnswer: "Government of India Act of 1935",
+                    explanation: "The Government of India Act of 1935 was a comprehensive act that provided for an All-India Federation, the division of powers into three lists (Federal, Provincial, Concurrent), and the establishment of the RBI."
+                },
+                {
+                    question: "What percentage of the total population acquired voting rights under the Government of India Act, 1935?",
+                    options: [
+                        "About 10%",
+                        "About 25%",
+                        "About 50%",
+                        "100% (Universal Suffrage)"
+                    ],
+                    correctAnswer: "About 10%",
+                    explanation: "The 1935 Act introduced direct elections, but franchise was very limited. 'About 10% of the whole population acquired voting rights.'"
+                },
+                {
+                    question: "The idea for a Constituent Assembly of India was first proposed in 1934 by:",
+                    options: ["Mahatma Gandhi", "Jawaharlal Nehru", "M. N. Roy", "Satyendra Prasad Sinha"],
+                    correctAnswer: "M. N. Roy",
+                    explanation: "The document states: 'An idea for a Constituent Assembly of India was proposed in 1934 by M. N. Roy, a pioneer of the Communist movement in India...'"
+                }
+            ],
+            "Chapter 3: Salient Features of the Constitution": [
+                {
+                    question: "How long did it take the Constituent Assembly to write and enact the Constitution?",
+                    options: ["2 years, 11 months and 18 days", "3 years, 1 month and 10 days", "1 year, 10 months and 5 days", "4 years exactly"],
+                    correctAnswer: "2 years, 11 months and 18 days",
+                    explanation: "The text states: 'It took the Assembly 2 years, 11 months and 18 days to write and enact the Constitution.'"
+                },
+                {
+                    question: "When did the Constituent Assembly hold its first session?",
+                    options: [
+                        "26th January 1950",
+                        "15th August 1947",
+                        "9th December 1946",
+                        "26th November 1949"
+                    ],
+                    correctAnswer: "9th December 1946",
+                    explanation: "The Constituent Assembly 'was organized in December 1946. Its first session was held on 9th December 1946.'"
+                },
+                {
+                    question: "The Constituent Assembly adopted the Constitution on 26th November 1949. When did it become fully operational?",
+                    options: ["15th August 1947", "26th January 1950", "9th December 1946", "22nd January 1947"],
+                    correctAnswer: "26th January 1950",
+                    explanation: "The Constitution 'was in a position to finally pass and adopt the constitution on 26th November 1949. The constitution became fully operational with effect from 26th January 1950.'"
+                },
+                {
+                    question: "According to the document, the Indian Constitution consists of:",
+                    options: [
+                        "7 Articles and 1 Schedule",
+                        "89 Articles and 8 Schedules",
+                        "448 Articles, 25 Parts, and 12 Schedules",
+                        "100 Articles, 10 Parts, and 10 Schedules"
+                    ],
+                    correctAnswer: "448 Articles, 25 Parts, and 12 Schedules",
+                    explanation: "The text states: 'It consists of 448 Articles divided into 25 Parts with 12 Schedules.' (Note: This number reflects amendments)."
+                },
+                {
+                    question: "Which document is described as the 'key to the Constitution' and states its philosophy?",
+                    options: [
+                        "Article 1",
+                        "The Preamble",
+                        "Part III (Fundamental Rights)",
+                        "Article 368 (Amendment)"
+                    ],
+                    correctAnswer: "The Preamble",
+                    explanation: "The text says: 'The Preamble to the Constitution of India is a well-drafted document which states the philosophy of the Constitution... The Preamble is the key to the Constitution.'"
+                },
+                {
+                    question: "Which two words were added to the Preamble by the 42nd Amendment Act, 1976?",
+                    options: ["Sovereign and Democratic", "Republic and Justice", "Socialist and Secular", "Liberty and Equality"],
+                    correctAnswer: "Socialist and Secular",
+                    explanation: "The 42nd Amendment (1976) added 'Socialist' and 'Secular' to the Preamble, declaring India's commitment to social and economic equality and confirming it has no official state religion."
+                },
+                {
+                    question: "What does it mean that 'India is a Republic'?",
+                    options: [
+                        "India is a democracy.",
+                        "India has an elected head of State (the President).",
+                        "India is a union of states.",
+                        "India has a written constitution."
+                    ],
+                    correctAnswer: "India has an elected head of State (the President).",
+                    explanation: "A republic means the head of state is not a monarch or nominated person. 'India has an elected head of State (President of India) who wields power for a fixed term of 5 years.'"
+                },
+                {
+                    question: "What is the meaning of 'Secular State' in the Indian context?",
+                    options: [
+                        "The state is anti-religion.",
+                        "The state gives special status to no religion.",
+                        "Only one religion is allowed.",
+                        "The state has no power over religious institutions."
+                    ],
+                    correctAnswer: "The state gives special status to no religion.",
+                    explanation: "The text states: 'India gives special status to no religion... Further, Indian secularism guarantees equal freedom to all religions.'"
+                },
+                {
+                    question: "Article I of the Constitution declares India as a 'Union of States'. What does this imply?",
+                    options: [
+                        "States can voluntarily leave the union.",
+                        "States have the right to secede from the Union.",
+                        "The Union is a result of an agreement among sovereign states.",
+                        "States do not have the right to secede from the Union."
+                    ],
+                    correctAnswer: "States do not have the right to secede from the Union.",
+                    explanation: "The term 'Union of State' shows two important facts: the union is not a result of a voluntary agreement, and 'states of India do not enjoy the right to secede from the Union.'"
+                },
+                {
+                    question: "The Indian constitution is described as a 'mixture of rigidity and flexibility'. How can *most* provisions be amended?",
+                    options: [
+                        "By a simple law in Parliament.",
+                        "By a 2/3rd majority in Parliament.",
+                        "By a 2/3rd majority + ratification by half the states.",
+                        "It cannot be amended."
+                    ],
+                    correctAnswer: "By a 2/3rd majority in Parliament.",
+                    explanation: "Article 368 provides two special methods. 'Most of the provisions of the Constitution can be amended by the Union Parliament by passing an Amendment Bill by a majority of total membership and 2/3rd majority of members present and voting...'"
+                },
+                {
+                    question: "What is the 'Indian Bill of Rights'?",
+                    options: [
+                        "The Preamble",
+                        "Part III (Fundamental Rights)",
+                        "Part IV (Directive Principles)",
+                        "Part IV-A (Fundamental Duties)"
+                    ],
+                    correctAnswer: "Part III (Fundamental Rights)",
+                    explanation: "The text states: 'Under its Part III (Articles 12 to 35), the Constitution of India grants and guarantees Fundamental Rights to its citizens. It is called the Indian Bill of Rights.'"
+                },
+                {
+                    question: "The Right to Property was deleted from the list of Fundamental Rights by which amendment?",
+                    options: ["42nd Amendment (1976)", "44th Amendment (1979)", "61st Amendment (1989)", "86th Amendment (2002)"],
+                    correctAnswer: "44th Amendment (1979)",
+                    explanation: "Initially, there were 7 Fundamental Rights. The Right to Property was deleted by the 44th Amendment Act 1979, bringing the number down to six."
+                },
+                {
+                    question: "How many Fundamental Freedoms are incorporated under the Right to Freedom (Art 19)?",
+                    options: [
+                        "Four",
+                        "Five",
+                        "Six",
+                        "Seven"
+                    ],
+                    correctAnswer: "Six",
+                    explanation: "The text, under 'Right to Freedom - Articles 19-22', lists 'six fundamental freedoms' including freedom of speech, assembly, association, movement, residence, and profession."
+                },
+                {
+                    question: "Which right was granted by Article 21A?",
+                    options: [
+                        "Right to Privacy",
+                        "Right to Education",
+                        "Right to Information",
+                        "Right to Livelihood"
+                    ],
+                    correctAnswer: "Right to Education",
+                    explanation: "The text states: 'Now, under article 21A Right to Education for the children between the ages of 6-14 years has been granted.'"
+                },
+                {
+                    question: "Which articles prohibit the sale of human beings and forced labor (beggar)?",
+                    options: [
+                        "Articles 19 & 20",
+                        "Articles 21 & 22",
+                        "Articles 23 & 24",
+                        "Articles 25 & 26"
+                    ],
+                    correctAnswer: "Articles 23 & 24",
+                    explanation: "The 'Right against Exploitation - Articles 23 & 24' 'prohibits the sale and purchase of human beings, forced labor (beggar) and the employment of children in hazardous jobs and factories.'"
+                },
+                {
+                    question: "What are the three types of Emergency Provisions mentioned in the Constitution?",
+                    options: [
+                        "National, State, and Local",
+                        "National, State, and Financial",
+                        "Military, Political, and Economic",
+                        "War, Rebellion, and Financial"
+                    ],
+                    correctAnswer: "National, State, and Financial",
+                    explanation: "The text lists the three emergency provisions: Article 352 (National emergency), Article 356 (State emergency/President's Rule), and Article 360 (Financial crisis)."
+                },
+                {
+                    question: "From which country's constitution were the 'Fundamental Rights' borrowed?",
+                    options: ["US Constitution", "Irish Constitution", "Soviet Constitution (USSR)", "French Constitution"],
+                    correctAnswer: "US Constitution",
+                    explanation: "The feature table shows that Fundamental Rights, independence of the judiciary, and judicial review were borrowed from the US Constitution."
+                },
+                {
+                    question: "From which country's constitution were the 'Directive Principles of State Policy' borrowed?",
+                    options: ["US Constitution", "Irish Constitution", "Soviet Constitution (USSR)", "French Constitution"],
+                    correctAnswer: "Irish Constitution",
+                    explanation: "The feature table indicates that the Directive Principles of State Policy were borrowed from the Irish Constitution."
+                },
+                {
+                    question: "From which country's constitution were the 'Fundamental Duties' borrowed?",
+                    options: ["US Constitution", "Irish Constitution", "Soviet Constitution (USSR)", "French Constitution"],
+                    correctAnswer: "Soviet Constitution (USSR)",
+                    explanation: "The feature table shows that the Fundamental Duties and the ideal of justice (social, economic, political) in the Preamble were borrowed from the Soviet Constitution."
+                },
+                {
+                    question: "The 'Procedure established by Law' was borrowed from which constitution?",
+                    options: [
+                        "Japanese Constitution",
+                        "South African Constitution",
+                        "Weimar Constitution of Germany",
+                        "Australian Constitution"
+                    ],
+                    correctAnswer: "Japanese Constitution",
+                    explanation: "The feature table lists 'Procedure established by Law' as being borrowed from the Japanese Constitution."
+                }
+            ],
+            "Chapter 4: Fundamental Rights (General)": [
+                {
+                    question: "In which Part of the Constitution are the Fundamental Rights defined?",
+                    options: ["Part I", "Part II", "Part III", "Part IV"],
+                    correctAnswer: "Part III",
+                    explanation: "The text states: 'These rights, defined in part III of the Constitution (from Article 12 to 35), applied irrespective of race, place of birth, religion, caste, creed, or gender.'"
+                },
+                {
+                    question: "How many Fundamental Rights were originally provided in the constitution?",
+                    options: ["Five", "Six", "Seven", "Ten"],
+                    correctAnswer: "Seven",
+                    explanation: "Originally, the constitution provided for seven Fundamental Rights. The 'Right to Property' (Article 31) was removed by the 44th Amendment, leaving six."
+                },
+                {
+                    question: "Which article provides the 'Right to Constitutional Remedies'?",
+                    options: ["Article 14", "Article 21", "Article 31", "Article 32"],
+                    correctAnswer: "Article 32",
+                    explanation: "Article 32 provides the Right to Constitutional Remedies, which allows citizens to approach the Supreme Court or High Court to protect their fundamental rights."
+                },
+                {
+                    question: "Which writ, meaning 'to have a body', is issued when a person is detained without proper justification?",
+                    options: ["Mandamus", "Certiorari", "Habeas Corpus", "Quo Warranto"],
+                    correctAnswer: "Habeas Corpus",
+                    explanation: "Habeas Corpus means 'to have a body'. This writ is made when a person is detained or arrested without proper justification."
+                },
+                {
+                    question: "Which writ, meaning 'command or order', is issued to a public authority that fails to perform a statutory duty?",
+                    options: ["Mandamus", "Prohibition", "Habeas Corpus", "Quo Warranto"],
+                    correctAnswer: "Mandamus",
+                    explanation: "Mandamus means 'command or order'. It is issued by the Supreme or High Court to any person or authority who has to perform a statutory duty but fails to do so."
+                },
+                {
+                    question: "Which writ is 'based on the principle that prevention is better than cure' and is issued to an inferior court to stop proceedings?",
+                    options: [
+                        "Mandamus",
+                        "Prohibition",
+                        "Habeas Corpus",
+                        "Certiorari"
+                    ],
+                    correctAnswer: "Prohibition",
+                    explanation: "The 'Writ of Prohibition' is issued by a higher court to an inferior court 'to refrain from doing something which it is about to do.' It is based on 'prevention is better than cure.'"
+                },
+                {
+                    question: "Which writ, meaning 'to be certified', is issued by a higher court to an inferior court to transfer a case or quash an order?",
+                    options: [
+                        "Mandamus",
+                        "Certiorari",
+                        "Habeas Corpus",
+                        "Quo Warranto"
+                    ],
+                    correctAnswer: "Certiorari",
+                    explanation: "Certiorari means 'to be certified' or 'to be more fully informed of'. It is issued by the Supreme Court or High Court to an inferior court or authority."
+                },
+                {
+                    question: "Which writ, meaning 'what is your authority?', prevents a person from wrongfully holding a public office?",
+                    options: ["Mandamus", "Certiorari", "Habeas Corpus", "Quo Warranto"],
+                    correctAnswer: "Quo Warranto",
+                    explanation: "Quo Warranto means 'what is your authority?'. This writ prevents a person from continuing in a public office they have wrongfully usurped."
+                },
+                {
+                    question: "Fundamental Rights are 'justiciable'. What does this mean?",
+                    options: [
+                        "They are just and fair.",
+                        "They allow persons to move the Courts for their enforcement.",
+                        "They are not permanent.",
+                        "They are negative in character."
+                    ],
+                    correctAnswer: "They allow persons to move the Courts for their enforcement.",
+                    explanation: "The text states: 'They are justiciable, allowing persons to move the Courts for their enforcement on the violation.'"
+                },
+                {
+                    question: "Are Fundamental Rights 'absolute' or 'qualified'?",
+                    options: [
+                        "Absolute (cannot be restricted)",
+                        "Qualified (State can impose reasonable restrictions)",
+                        "Only absolute for citizens",
+                        "Only absolute during an emergency"
+                    ],
+                    correctAnswer: "Qualified (State can impose reasonable restrictions)",
+                    explanation: "The text states: 'They are not absolute but qualified. The State can impose reasonable restrictions on them (balance between individual liberty and social control).'"
+                },
+                {
+                    question: "During a National Emergency, which two articles *cannot* be suspended?",
+                    options: ["Article 14 and 15", "Article 19 and 21", "Article 20 and 21", "Article 32 and 226"],
+                    correctAnswer: "Article 20 and 21",
+                    explanation: "The text states: 'They can be suspended during the operation of a National Emergency except the rights guaranteed by Articles 20 and 21.'"
+                },
+                {
+                    question: "Which article allows the application of Fundamental Rights to be restricted for members of the armed forces?",
+                    options: [
+                        "Article 31A",
+                        "Article 31B",
+                        "Article 33",
+                        "Article 34"
+                    ],
+                    correctAnswer: "Article 33",
+                    explanation: "The text states: 'Their application to the members of armed forces, para-military forces, police forces... can be restricted or abrogated by the Parliament -Article 33.'"
+                }
+            ],
+            "Chapter 5: Right to Equality (Art 14-18)": [
+                {
+                    question: "Which article guarantees 'Equality before the law'?",
+                    options: ["Article 14", "Article 15", "Article 16", "Article 17"],
+                    correctAnswer: "Article 14",
+                    explanation: "Article 14 guarantees that all people shall be equally protected by the laws of the country, meaning 'the State will treat people in the same circumstances alike.'"
+                },
+                {
+                    question: "The expression 'equality before the law' (in Art 14) has its origin in which country's law?",
+                    options: [
+                        "US Constitution",
+                        "English Common Law",
+                        "French Constitution",
+                        "Irish Constitution"
+                    ],
+                    correctAnswer: "English Common Law",
+                    explanation: "The text states: 'The expression 'equality before the law' has its origin in the English Common Law.'"
+                },
+                {
+                    question: "The expression 'equal protection of the laws' (in Art 14) has its source in which country's constitution?",
+                    options: [
+                        "US Constitution",
+                        "English Common Law",
+                        "French Constitution",
+                        "Irish Constitution"
+                    ],
+                    correctAnswer: "US Constitution",
+                    explanation: "The text states: 'The expression equal protection of laws has its source in the U.S. Constitution.'"
+                },
+                {
+                    question: "Which article in the Constitution provides an exception to Article 14, giving immunity to the President and Governors?",
+                    options: [
+                        "Article 352",
+                        "Article 360",
+                        "Article 361",
+                        "Article 368"
+                    ],
+                    correctAnswer: "Article 361",
+                    explanation: "The text notes: 'For example, Article 361 is an exception to the rule of law. It provides that the president of the Governors... shall not be answerable to any court...'"
+                },
+                {
+                    question: "For a 'reasonable classification' under Article 14 to be valid, it must be based on an 'intelligible differentia' and what other condition?",
+                    options: [
+                        "It must be approved by the President.",
+                        "It must apply to all citizens.",
+                        "It must have a rational relation with the object sought to be achieved.",
+                        "It must be temporary."
+                    ],
+                    correctAnswer: "It must have a rational relation with the object sought to be achieved.",
+                    explanation: "The two conditions are: 1) The classification must be based on an intelligible differentia, and 2) 'The differentia must have a rational relation with the object sought to be achieved by the act.'"
+                },
+                {
+                    question: "Which article prohibits discrimination on the basis of religion, race, caste, sex or place of birth?",
+                    options: ["Article 14", "Article 15", "Article 16", "Article 17"],
+                    correctAnswer: "Article 15",
+                    explanation: "Article 15 states that no person shall be discriminated against on these grounds and that every person shall have equal access to public places."
+                },
+                {
+                    question: "Which article provides for 'Equality of opportunity in matters of public employment'?",
+                    options: ["Article 14", "Article 15", "Article 16", "Article 17"],
+                    correctAnswer: "Article 16",
+                    explanation: "Article 16 lays down that the State cannot discriminate against anyone in matters of public employment, and all citizens can apply for government jobs."
+                },
+                {
+                    question: "The 'Mandal Commission Case' (Indra Sawhney v Union of India) dealt with the complex issue of reservation under which article?",
+                    options: ["Article 15", "Article 16", "Article 14", "Article 17"],
+                    correctAnswer: "Article 16",
+                    explanation: "The Mandal Commission Case was a landmark judgment that dealt with reservations for backward classes in public employment, which falls under Article 16(4)."
+                },
+                {
+                    question: "The abolition of 'Untouchability' is guaranteed by which article?",
+                    options: ["Article 15", "Article 16", "Article 17", "Article 18"],
+                    correctAnswer: "Article 17",
+                    explanation: "Article 17 of the constitution abolishes the practice of untouchability, making it a punishable offense by law."
+                },
+                {
+                    question: "Which article prohibits the State from conferring any titles (except military or academic distinctions)?",
+                    options: ["Article 15", "Article 16", "Article 17", "Article 18"],
+                    correctAnswer: "Article 18",
+                    explanation: "Article 18 abolishes titles. The British-created aristocratic class (Rai Bahadurs, etc.) was abolished. National Awards like 'Bharat Ratna' are not considered titles."
+                }
+            ],
+            "Chapter 6: Right to Freedom (Art 19, 22)": [
+                {
+                    question: "How many freedoms are guaranteed under Article 19?",
+                    options: ["Five", "Six", "Seven", "Eight"],
+                    correctAnswer: "Six",
+                    explanation: "Originally, Article 19 contained seven rights, but the 'right to acquire, hold and dispose of property' was deleted by the 44th Amendment. This leaves six freedoms."
+                },
+                {
+                    question: "Are the six freedoms in Article 19 protected against state action or private individuals?",
+                    options: [
+                        "State action only",
+                        "Private individuals only",
+                        "Both state action and private individuals",
+                        "Neither"
+                    ],
+                    correctAnswer: "State action only",
+                    explanation: "The text states: 'These six rights are protected against only state action and not private individuals.'"
+                },
+                {
+                    question: "Are the rights in Article 19 available to foreigners?",
+                    options: [
+                        "Yes, to all persons",
+                        "No, only to citizens",
+                        "Only the freedom of speech",
+                        "Yes, if they are from a friendly country"
+                    ],
+                    correctAnswer: "No, only to citizens",
+                    explanation: "The text clarifies: '...these rights are available only to the citizens and to shareholders of a company but not to foreigners or legal persons...'"
+                },
+                {
+                    question: "Which of the following is *NOT* one of the six freedoms guaranteed by Article 19?",
+                    options: [
+                        "Freedom of speech and expression",
+                        "Right to strike",
+                        "Freedom to form associations or unions",
+                        "Freedom to move freely throughout the territory of India"
+                    ],
+                    correctAnswer: "Right to strike",
+                    explanation: "The text clarifies that the freedom to 'assemble peaceably and without arms' does *not* include the 'right to strike'."
+                },
+                {
+                    question: "The Right to Information (RTI) was given fundamental status in 2005, derived from which article?",
+                    options: ["Article 19(1)", "Article 21", "Article 22", "Article 14"],
+                    correctAnswer: "Article 19(1)",
+                    explanation: "Article 19(1) of the Constitution (freedom of speech and expression) has been interpreted to include the Right to Information, as every citizen 'has the right to know how the government works...'"
+                },
+                {
+                    question: "Article 22 provides protection against what?",
+                    options: [
+                        "Arbitrary arrest and detention",
+                        "Discrimination",
+                        "Untouchability",
+                        "Suspension of rights during an emergency"
+                    ],
+                    correctAnswer: "Arbitrary arrest and detention",
+                    explanation: "Article 22 gives protection against arrest and detention in certain cases and provides safeguards, such as the right to be informed of the grounds of arrest."
+                },
+                {
+                    question: "According to Article 22, a person arrested must be presented before a Magistrate within...",
+                    options: ["12 hours", "24 hours", "48 hours", "72 hours"],
+                    correctAnswer: "24 hours",
+                    explanation: "A key safeguard in Article 22 is that a person 'should be made to present before Magistrate within 24 hours of arrest' and not be detained beyond that without the Magistrate's authority."
+                },
+                {
+                    question: "What is 'preventive detention'?",
+                    options: [
+                        "Detaining a person for a crime they just committed.",
+                        "Detaining a person to prevent them from committing a crime.",
+                        "The 24-hour period before seeing a magistrate.",
+                        "Detention by a private citizen."
+                    ],
+                    correctAnswer: "Detaining a person to prevent them from committing a crime.",
+                    explanation: "The text defines preventive detention as 'the detention of a person without trial.' The safeguards in Article 22 (like the 24-hour rule) are not available to those detained under this law."
+                }
+            ],
+            "Chapter 7: Liberty under Article 21": [
+                {
+                    question: "Article 21 provides 'Protection of Life and Personal Liberty'. This right is available to:",
+                    options: [
+                        "Citizens only",
+                        "Every person, citizen or alien (foreigner)",
+                        "Citizens and corporations",
+                        "Elected officials only"
+                    ],
+                    correctAnswer: "Every person, citizen or alien (foreigner)",
+                    explanation: "The text states: 'The right is available to every person, citizen or alien. Thus, even a foreigner can claim this right.'"
+                },
+                {
+                    question: "According to the text, Article 21 can only be claimed when...",
+                    options: [
+                        "A person is deprived of life/liberty by the State.",
+                        "A person is deprived of life/liberty by a private individual.",
+                        "A person's property is taken.",
+                        "A person is criticized."
+                    ],
+                    correctAnswer: "A person is deprived of life/liberty by the State.",
+                    explanation: "The text clarifies: 'Article 21 can only be claimed when a person is deprived of his 'life' or personal liberty by the State as defined in Article 12 Violation of the right by private individuals is not within the preview of Article 21.'"
+                },
+                {
+                    question: "The Supreme Court has interpreted 'Life' in Article 21 to mean:",
+                    options: [
+                        "Mere animal existence or the physical act of breathing.",
+                        "The right to live with human dignity.",
+                        "The right to not be imprisoned.",
+                        "The right to vote."
+                    ],
+                    correctAnswer: "The right to live with human dignity.",
+                    explanation: "The text states: 'Life... is not merely the physical act of breathing... It has a much wider meaning which includes the right to live with human dignity...'"
+                },
+                {
+                    question: "Which of the following rights has been derived from Article 21?",
+                    options: [
+                        "Right to livelihood",
+                        "Right to health",
+                        "Right to privacy",
+                        "All of the above"
+                    ],
+                    correctAnswer: "All of the above",
+                    explanation: "The document lists many rights found within Article 21, including the 'Right to live with human dignity; Right to livelihood; Right to health; Right to pollution-free air... Right to privacy...'"
+                },
+                {
+                    question: "Article 21 states that no person shall be deprived of life or personal liberty except by:",
+                    options: [
+                        "Order of the Prime Minister",
+                        "A public vote",
+                        "Procedure established by law",
+                        "A military commander"
+                    ],
+                    correctAnswer: "Procedure established by law",
+                    explanation: "The full text of the article is: 'No person shall be deprived of his life or personal liberty except according to procedure established by law.'"
+                }
+            ],
+            "Chapter 8: Fundamental Duties": [
+                {
+                    question: "In which Part of the Constitution are the Fundamental Duties contained?",
+                    options: ["Part III", "Part IV", "Part IV-A", "Part V"],
+                    correctAnswer: "Part IV-A",
+                    explanation: "Fundamental Duties were added by the 42nd Amendment and are located in Part IV-A, which consists of the single Article 51A."
+                },
+                {
+                    question: "The Fundamental Duties were added by which Constitutional Amendment Act?",
+                    options: ["1st Amendment", "42nd Amendment", "44th Amendment", "86th Amendment"],
+                    correctAnswer: "42nd Amendment",
+                    explanation: "The original Constitution did not contain these duties. They were 'added by 42nd and 86th Constitutional Amendment Acts.' The 42nd added the first ten."
+                },
+                {
+                    question: "The concept of Fundamental Duties was borrowed from the Constitution of which country?",
+                    options: ["USA", "Ireland", "USSR", "Germany"],
+                    correctAnswer: "USSR",
+                    explanation: "The text states: 'India has borrowed the concept of Fundamental Duties from the USSR.'"
+                },
+                {
+                    question: "Are the Fundamental Duties 'justiciable' (enforceable by courts)?",
+                    options: [
+                        "Yes, just like Fundamental Rights.",
+                        "No, they are non-justiciable, like Directive Principles.",
+                        "Only some of them are.",
+                        "Only if the President agrees."
+                    ],
+                    correctAnswer: "No, they are non-justiciable, like Directive Principles.",
+                    explanation: "The text notes: '...like the Directive Principles, these are unjustifiable, without any legal sanction in case of their violation or non-compliance.'"
+                },
+                {
+                    question: "Which amendment added the 11th Fundamental Duty (to provide education to children 6-14 years old)?",
+                    options: ["42nd Amendment", "44th Amendment", "61st Amendment", "86th Amendment"],
+                    correctAnswer: "86th Amendment",
+                    explanation: "The 11th duty ('to provide opportunities for education to his child... between the age of six and fourteen years') was 'added by the 86th Constitutional Amendment Act, 2002.'"
+                },
+                {
+                    question: "One of the Fundamental Duties listed in Article 51A is:",
+                    options: [
+                        "To pay taxes on time.",
+                        "To vote in every election.",
+                        "To develop the scientific temper, humanism and the spirit of inquiry and reform.",
+                        "To run for public office."
+                    ],
+                    correctAnswer: "To develop the scientific temper, humanism and the spirit of inquiry and reform.",
+                    explanation: "This is listed as the 8th duty in the document. The other options, while good civic habits, are not listed as Fundamental Duties in Article 51A."
+                },
+                {
+                    question: "In M.C. Mehta v. Union of India, the Supreme Court mandated what, based on Article 51-A (g)?",
+                    options: [
+                        "Compulsory voting",
+                        "Compulsory teaching of lessons on environmental protection",
+                        "A ban on all strikes",
+                        "A uniform civil code"
+                    ],
+                    correctAnswer: "Compulsory teaching of lessons on environmental protection",
+                    explanation: "Based on Art 51-A (g) (to protect the natural environment), the Supreme Court held 'it is the duty of the Central Government to introduce compulsory teaching of lessons... on protection and improvement of the natural environment...'"
+                }
+            ],
+            "Chapter 9: Directive Principles (DPSP)": [
+                {
+                    question: "In which Part of the Constitution are the Directive Principles of State Policy (DPSP) contained?",
+                    options: ["Part III (Art 12-35)", "Part IV (Art 36-51)", "Part IV-A (Art 51A)", "Part V (Art 52-151)"],
+                    correctAnswer: "Part IV (Art 36-51)",
+                    explanation: "The text states: 'Part IV, Articles 36-51 of the Indian Constitution constitutes the Directive Principles of State Policy.'"
+                },
+                {
+                    question: "The concept of DPSP was inspired by the Constitution of which country?",
+                    options: ["Ireland", "USA", "USSR", "Germany"],
+                    correctAnswer: "Ireland",
+                    explanation: "The document states: 'Inspired by the Constitution of Ireland, the Directive Principles contain the very basic philosophy of the Constitution of India...'"
+                },
+                {
+                    question: "What is the legal status of DPSP?",
+                    options: [
+                        "They are enforceable in a court of law, just like Fundamental Rights.",
+                        "They are *not* enforceable in a court of law.",
+                        "They are only enforceable by the Supreme Court.",
+                        "They are only enforceable during an emergency."
+                    ],
+                    correctAnswer: "They are *not* enforceable in a court of law.",
+                    explanation: "The text clearly states: '...the Directive Principles cannot be enforced in a court of law and the State cannot be sued for non-compliance of the same.'"
+                },
+                {
+                    question: "The directive to 'organize village Panchayats' falls under which category?",
+                    options: ["Socialistic Directives", "Gandhian Directives", "Liberal Intellectual Directives", "Foreign Policy Directives"],
+                    correctAnswer: "Gandhian Directives",
+                    explanation: "The text lists 'organizing village Panchayat' as a key example of a Gandhian Directive."
+                },
+                {
+                    question: "The directive for a 'uniform civil code throughout the country' falls under which category?",
+                    options: ["Socialistic Directives", "Gandhian Directives", "Liberal Intellectual Directives", "Foreign Policy Directives"],
+                    correctAnswer: "Liberal Intellectual Directives",
+                    explanation: "The text lists the 'uniform civil code' as a guideline under the Liberal Intellectual Directives."
+                },
+                {
+                    question: "The DPSP to 'promote cottage industries in rural areas' is classified as:",
+                    options: [
+                        "A Socialistic Directive",
+                        "A Gandhian Directive",
+                        "A Liberal Intellectual Directive",
+                        "A Fundamental Duty"
+                    ],
+                    correctAnswer: "A Gandhian Directive",
+                    explanation: "The text lists 'to promote cottage industries' as one of the Gandhian Directives."
+                },
+                {
+                    question: "The 86th Amendment, which created Article 21-A (Right to Education), was an implementation of a DPSP. Which one?",
+                    options: [
+                        "The DPSP for a uniform civil code.",
+                        "The DPSP to provide free and compulsory education to all children up to 14 years.",
+                        "The DPSP to organize village panchayats.",
+                        "The DPSP to promote cottage industries."
+                    ],
+                    correctAnswer: "The DPSP to provide free and compulsory education to all children up to 14 years.",
+                    explanation: "The 86th Amendment turned the DPSP (listed under Gandhian Directives) for free education for children into a legally enforceable Fundamental Right (Article 21-A)."
+                }
+            ],
+            "Chapter 10: Federal System (Centre-State Relations)": [
+                {
+                    question: "How does the Seventh Schedule of the Constitution divide legislative powers?",
+                    options: [
+                        "Into two lists: Federal and Provincial.",
+                        "Into three lists: Union, State, and Concurrent.",
+                        "It gives all power to the Centre.",
+                        "It gives all power to the States."
+                    ],
+                    correctAnswer: "Into three lists: Union, State, and Concurrent.",
+                    explanation: "The Seventh Schedule divides subjects into List I (the Union List), List II (the State List), and List III (the Concurrent List)."
+                },
+                {
+                    question: "Subjects like 'defence', 'foreign affairs', and 'banking' are on which list?",
+                    options: ["Union List", "State List", "Concurrent List", "Residuary List"],
+                    correctAnswer: "Union List",
+                    explanation: "These are subjects of national importance and are on the Union List, which currently has 100 subjects. Only Parliament can legislate on them."
+                },
+                {
+                    question: "Subjects like 'police', 'public order', and 'agriculture' are on which list?",
+                    options: ["Union List", "State List", "Concurrent List", "Residuary List"],
+                    correctAnswer: "State List",
+                    explanation: "These are subjects of local or regional importance and are on the State List. State legislatures have exclusive power over them."
+                },
+                {
+                    question: "Subjects like 'education', 'forests', and 'labour welfare' are on which list?",
+                    options: ["Union List", "State List", "Concurrent List", "Residuary List"],
+                    correctAnswer: "Concurrent List",
+                    explanation: "These are subjects where both the Centre and the States can make laws. The list currently has 52 subjects."
+                },
+                {
+                    question: "Which article gives Parliament the 'residuary power' to make laws on matters *not* in any of the three lists?",
+                    options: ["Article 245", "Article 246", "Article 248", "Article 250"],
+                    correctAnswer: "Article 248",
+                    explanation: "Article 248 states that Parliament has exclusive power to make any law with respect to any matter not included in the Concurrent List or State List."
+                },
+                {
+                    question: "Which article empowers Parliament to legislate on a State List matter 'in the national interest'?",
+                    options: [
+                        "Article 248",
+                        "Article 249",
+                        "Article 250",
+                        "Article 252"
+                    ],
+                    correctAnswer: "Article 249",
+                    explanation: "Article 249 is a key feature, empowering the Parliament 'to legislate with respect to a matter in the State List in the national interest.'"
+                },
+                {
+                    question: "Which article empowers the President to establish an Inter-State Council to resolve disputes between states?",
+                    options: ["Article 261", "Article 262", "Article 263", "Article 307"],
+                    correctAnswer: "Article 263",
+                    explanation: "Article 263 empowers the President to establish an Inter-State Council to inquire into and advise upon disputes between States."
+                }
+            ],
+            "Chapter 11: Parliamentary Form of Government": [
+                {
+                    question: "The Parliament of India is composed of:",
+                    options: [
+                        "Lok Sabha and Rajya Sabha",
+                        "The Prime Minister and the Cabinet",
+                        "The President, Lok Sabha, and Rajya Sabha",
+                        "The Supreme Court, Lok Sabha, and Rajya Sabha"
+                    ],
+                    correctAnswer: "The President, Lok Sabha, and Rajya Sabha",
+                    explanation: "The text states: 'It is a bicameral legislature composed of the President of India and the two Houses: The Rajya Sabha (Council of States); and The Lok Sabha (House of the People).'"
+                },
+                {
+                    question: "Which articles in the Constitution deal with the parliamentary system at the Centre?",
+                    options: [
+                        "Article 52 and 53",
+                        "Article 74 and 75",
+                        "Article 163 and 164",
+                        "Article 352 and 356"
+                    ],
+                    correctAnswer: "Article 74 and 75",
+                    explanation: "The text mentions: 'Article 74 and Article 75 deal with the parliamentary system the Centre and Articles 163 and 164 deals with the States.'"
+                },
+                {
+                    question: "Who has the power to summon and prorogue Parliament or dissolve the Lok Sabha?",
+                    options: [
+                        "The Prime Minister",
+                        "The President",
+                        "The Speaker of the Lok Sabha",
+                        "The Chief Justice of India"
+                    ],
+                    correctAnswer: "The President",
+                    explanation: "The text states: 'The President in his role as head of a legislature has full powers to summon and prorogue either House of Parliament or to dissolve Lok Sabha.' (He does this on the advice of the PM)."
+                },
+                {
+                    question: "How are the Members of Parliament (MPs) in the Rajya Sabha elected?",
+                    options: [
+                        "Directly by the people",
+                        "By the members of all State Legislative Assemblies",
+                        "Nominated by the President",
+                        "Chosen by the Prime Minister"
+                    ],
+                    correctAnswer: "By the members of all State Legislative Assemblies",
+                    explanation: "MPs in the Lok Sabha are directly elected by the public, but 'Member of Parliament, Rajya Sabha are elected by the members of all state Legislative Assembly by proportional representation.'"
+                },
+                {
+                    question: "According to the document, what is the sanctioned strength of the Lok Sabha?",
+                    options: [
+                        "245 members",
+                        "250 members",
+                        "545 members",
+                        "552 members"
+                    ],
+                    correctAnswer: "545 members",
+                    explanation: "The text states: 'The Parliament has a sanctioned strength of 545 members in Lok Sabha including the 2 nominees from the Anglo-Indian community...'"
+                },
+                {
+                    question: "According to the document, what is the sanctioned strength of the Rajya Sabha?",
+                    options: [
+                        "245 members",
+                        "250 members",
+                        "545 members",
+                        "552 members"
+                    ],
+                    correctAnswer: "245 members",
+                    explanation: "The text states: '...and 245 members in Rajya Sabha including the 12 nominees...'"
+                },
+                {
+                    question: "What is the maximum strength of the Lok Sabha allowed by the Constitution?",
+                    options: [
+                        "500",
+                        "545",
+                        "552",
+                        "600"
+                    ],
+                    correctAnswer: "552",
+                    explanation: "The text notes: 'The Constitution provides that the maximum strength of the house can be 552 members.'"
+                },
+                {
+                    question: "How many members are nominated to the Rajya Sabha by the President?",
+                    options: [
+                        "2",
+                        "10",
+                        "12",
+                        "20"
+                    ],
+                    correctAnswer: "12",
+                    explanation: "The Rajya Sabha has 245 members, 'including the 12 nominees from the expertise of different fields of science.,culter, art, and history.'"
+                },
+                {
+                    question: "What is the minimum age to be eligible for membership in the Lok Sabha?",
+                    options: ["18 years", "21 years", "25 years", "30 years"],
+                    correctAnswer: "25 years",
+                    explanation: "To be eligible for the Lok Sabha (House of the People), a person must be a citizen of India and at least 25 years of age."
+                },
+                {
+                    question: "What is the minimum age to be eligible for membership in the Rajya Sabha?",
+                    options: ["18 years", "21 years", "25 years", "30 years"],
+                    correctAnswer: "30 years",
+                    explanation: "The minimum age for a person to become a member of the Rajya Sabha (Council of States) is 30 years."
+                },
+                {
+                    question: "What is the system for retirement in the Rajya Sabha?",
+                    options: [
+                        "All members retire every 6 years.",
+                        "One-third of the members retire every two years.",
+                        "The entire house is dissolved every 5 years.",
+                        "Members retire at age 65."
+                    ],
+                    correctAnswer: "One-third of the members retire every two years.",
+                    explanation: "The Rajya Sabha is a permanent body not subject to dissolution. Members are elected for a six-year term, and 'One-third of the members retire every second year...'"
+                },
+                {
+                    question: "In India's parliamentary system, who is the 'Nominal Head' and who is the 'Real Head'?",
+                    options: [
+                        "Nominal: Prime Minister, Real: President",
+                        "Nominal: President, Real: Prime Minister",
+                        "Nominal: Speaker, Real: President",
+                        "Nominal: President, Real: Chief Justice"
+                    ],
+                    correctAnswer: "Nominal: President, Real: Prime Minister",
+                    explanation: "The President is the 'nominal executive' and head of state (a ceremonial position). The Prime Minister is the 'real executive' and head of government."
+                },
+                {
+                    question: "What is the maximum period a person can be appointed as a minister without being a member of parliament?",
+                    options: [
+                        "3 consecutive months",
+                        "6 consecutive months",
+                        "1 year",
+                        "There is no limit"
+                    ],
+                    correctAnswer: "6 consecutive months",
+                    explanation: "A person can be appointed minister, but 'for a period of not more than six consecutive months if he is not a member of the parliament, after which the person ceases to be a minister.'"
+                },
+                {
+                    question: "The Council of Ministers is 'collectively responsible' to whom?",
+                    options: ["The President", "The Parliament (specifically Lok Sabha)", "The Supreme Court", "The People"],
+                    correctAnswer: "The Parliament (specifically Lok Sabha)",
+                    explanation: "The Council of Ministers is collectively responsible to the Parliament. The Lok Sabha can dismiss the government by passing a 'no confidence motion'."
+                },
+                {
+                    question: "Who is the Supreme Commander of the Indian armed forces?",
+                    options: [
+                        "The Prime Minister",
+                        "The President",
+                        "The Chief of Defence Staff",
+                        "The Defence Minister"
+                    ],
+                    correctAnswer: "The President",
+                    explanation: "The President is the 'head of State and first citizen of India and the Supreme Commander of the Indian armed forces.' (Article 53 vests this power in him)."
+                },
+                {
+                    question: "How is the President of India elected?",
+                    options: [
+                        "Directly by the people",
+                        "By an electoral college (indirect election)",
+                        "By the Prime Minister",
+                        "By the Supreme Court"
+                    ],
+                    correctAnswer: "By an electoral college (indirect election)",
+                    explanation: "The President is elected by the 'method of indirect erection i.e. by an electoral college consisting of elected members of both Houses of Parliament and of the State legislative assemblies.'"
+                },
+                {
+                    question: "Which article gives the President the 'power to pardon'?",
+                    options: ["Article 53", "Article 72", "Article 123", "Article 352"],
+                    correctAnswer: "Article 72",
+                    explanation: "Article 72 lays down the cases when the President has the power to grant pardons, reprieves, or commute sentences, including death sentences."
+                },
+                {
+                    question: "Which article gives the President the 'Ordinance making power' when Parliament is not in session?",
+                    options: ["Article 53", "Article 72", "Article 123", "Article 352"],
+                    correctAnswer: "Article 123",
+                    explanation: "Article 123 confers special power on the President to promulgate ordinances (which have the force of law) when Parliament is not in session and immediate action is required."
+                },
+                {
+                    question: "A 'Money Bill' (Article 117(1)) cannot be introduced in Parliament without the recommendation of...",
+                    options: [
+                        "The President",
+                        "The Prime Minister",
+                        "The Finance Minister",
+                        "The Speaker of the Lok Sabha"
+                    ],
+                    correctAnswer: "The President",
+                    explanation: "The text states: 'A Money Bill cannot be introduced without the recommendation of the President (Article 117(1).'"
+                },
+                {
+                    question: "An ordinance promulgated by the President under Article 123 can be passed when...",
+                    options: [
+                        "Only when both Houses are in session.",
+                        "Only when the Lok Sabha is not in session.",
+                        "When both Houses are not in session, or when only one House is in session.",
+                        "Any time the President wishes."
+                    ],
+                    correctAnswer: "When both Houses are not in session, or when only one House is in session.",
+                    explanation: "An ordinance *cannot* be promulgated when both houses are in session. But it *can* be passed 'when only one House is in session the reason being that a law cannot be passed by only one House...'"
+                }
+            ],
+            "Chapter 12: Amendment in Constitution": [
+                {
+                    question: "Which article of the Constitution deals with the power of Parliament to amend the Constitution?",
+                    options: ["Article 32", "Article 123", "Article 352", "Article 368"],
+                    correctAnswer: "Article 368",
+                    explanation: "Part XX of the Constitution contains only one Article, 368, which deals with the power of the Parliament to amend the constitution and the procedure for it."
+                },
+                {
+                    question: "Which of the following requires the *most rigid* method of amendment (2/3rd majority + ratification by half of states)?",
+                    options: [
+                        "Creation of a new state.",
+                        "Changing citizenship provisions.",
+                        "Changing the provisions regarding the Supreme Court.",
+                        "Changing salaries of MPs."
+                    ],
+                    correctAnswer: "Changing the provisions regarding the Supreme Court.",
+                    explanation: "Amending 'federal features' like the Supreme Court, High Courts, or the legislative relations between Union and States requires the rigid method: a 2/3rd majority in Parliament *plus* ratification by at least half of the State Legislatures."
+                },
+                {
+                    question: "Which of these provisions can be amended by the 'rigid method' (2/3rd majority + state ratification)?",
+                    options: [
+                        "Election of the president.",
+                        "Provisions regarding High Courts.",
+                        "Legislative Relations between the Union and States.",
+                        "All of the above."
+                    ],
+                    correctAnswer: "All of the above.",
+                    explanation: "The text lists all of these (and others) as provisions that require the second, more rigid method of amendment."
+                },
+                {
+                    question: "How is an amendment for the 'admission or formation of new States' passed?",
+                    options: [
+                        "By a simple majority in Parliament.",
+                        "By a 2/3rd special majority in Parliament.",
+                        "By a 2/3rd majority + ratification by states.",
+                        "It cannot be amended."
+                    ],
+                    correctAnswer: "By a simple majority in Parliament.",
+                    explanation: "This is one of the provisions that can be changed by a simple majority. The text states these 'are not considered to be constitution Amendment Bills for the purpose of Article 368.'"
+                },
+                {
+                    question: "Who has the power to initiate bills for amending the constitution?",
+                    options: [
+                        "The Union Parliament alone",
+                        "Any State Legislature",
+                        "The President",
+                        "The Supreme Court"
+                    ],
+                    correctAnswer: "The Union Parliament alone",
+                    explanation: "The text states: 'Union Parliament alone has the power to initiate bills for amending the constitution.' State Legislatures cannot initiate amendments."
+                },
+                {
+                    question: "What major limitation did the Supreme Court place on Parliament's power to amend?",
+                    options: [
+                        "Parliament cannot amend the Preamble.",
+                        "Parliament cannot change the 'Basic Structure' of the Constitution.",
+                        "Parliament cannot amend Fundamental Rights.",
+                        "Parliament can only amend the constitution once every 10 years."
+                    ],
+                    correctAnswer: "Parliament cannot change the 'Basic Structure' of the Constitution.",
+                    explanation: "The text notes: '...the Supreme Court has ruled that the Parliament has no power to change the 'Basic Structure of the Constitution.'"
+                }
+            ],
+            "Chapter 13: History of Amendment": [
+                {
+                    question: "Which amendment abolished the existing classification of states into Part A, Part B, Part C, and Part D?",
+                    options: [
+                        "1st Amendment (1951)",
+                        "7th Amendment (1956)",
+                        "42nd Amendment (1976)",
+                        "44th Amendment (1978)"
+                    ],
+                    correctAnswer: "7th Amendment (1956)",
+                    explanation: "The 7th Amendment Act, 1956 'Abolished the existing classification of states into four categories... and reorganized them into 14 states and 6 union territories.'"
+                },
+                {
+                    question: "Which amendment is known as the 'mini-constitution' and inserted 'Socialism' and 'Secularism' into the preamble?",
+                    options: ["7th Amendment (1956)", "42nd Amendment (1976)", "44th Amendment (1978)", "61st Amendment (1989)"],
+                    correctAnswer: "42nd Amendment (1976)",
+                    explanation: "The 42nd Amendment (1976) was so extensive it is called a 'mini-constitution'. It added 'Socialism' and 'Secularism' to the Preamble and also added the Fundamental Duties."
+                },
+                {
+                    question: "Which amendment deleted the 'Right to Property' from the list of Fundamental Rights?",
+                    options: ["7th Amendment (1956)", "42nd Amendment (1976)", "44th Amendment (1978)", "61st Amendment (1989)"],
+                    correctAnswer: "44th Amendment (1978)",
+                    explanation: "The 44th Amendment (1978) removed the Right to Property from the list of Fundamental Rights to 'permit the reorganization of land and to facilitate land acquisition...'"
+                },
+                {
+                    question: "Which amendment reduced the voting age from 21 to 18?",
+                    options: ["42nd Amendment (1976)", "44th Amendment (1978)", "61st Amendment (1989)", "73rd Amendment (1992)"],
+                    correctAnswer: "61st Amendment (1989)",
+                    explanation: "The 61st Amendment (1989) lowered the voting age to 18, as Prime Minister Rajiv Gandhi expressed 'full faith in the youth of the country.'"
+                },
+                {
+                    question: "Which amendment granted constitutional status to the 'Panchayati Raj' institutions (rural local bodies)?",
+                    options: ["61st Amendment (1989)", "73rd Amendment (1992)", "74th Amendment (1992)", "86th Amendment (2002)"],
+                    correctAnswer: "73rd Amendment (1992)",
+                    explanation: "The 73rd Amendment (1992) 'granted constitutional status and protection to the Panchayati raj institutions' by adding a new Part-IX."
+                },
+                {
+                    question: "Which amendment granted constitutional status to 'Municipalities' (urban local bodies)?",
+                    options: ["61st Amendment (1989)", "73rd Amendment (1992)", "74th Amendment (1992)", "86th Amendment (2002)"],
+                    correctAnswer: "74th Amendment (1992)",
+                    explanation: "The 74th Amendment (1992) 'granted constitutional status and protection to the urban local bodies' by adding a new Part IX-A."
+                },
+                {
+                    question: "Which amendment made 'free and compulsory education to children between 6 to 14 years' a Fundamental Right?",
+                    options: ["44th Amendment (1978)", "61st Amendment (1989)", "73rd Amendment (1992)", "86th Amendment (2002)"],
+                    correctAnswer: "86th Amendment (2002)",
+                    explanation: "The 86th Amendment (2002) is one of the most important, as it provided for free and compulsory elementary education to all children (by inserting Article 21A)."
+                }
+            ],
+            "Chapter 14: Emergency Provisions": [
+                {
+                    question: "Which article allows the President to declare a 'National Emergency' on the grounds of war, external aggression, or armed rebellion?",
+                    options: ["Article 352", "Article 356", "Article 360", "Article 368"],
+                    correctAnswer: "Article 352",
+                    explanation: "Article 352 is for 'National Emergency'. The text notes: 'the President can declare a national emergency when the security of India or a part of it is threatened...'"
+                },
+                {
+                    question: "Which article deals with 'President's Rule' (failure of constitutional machinery in a State)?",
+                    options: ["Article 352", "Article 356", "Article 360", "Article 368"],
+                    correctAnswer: "Article 356",
+                    explanation: "Article 356 is popularly known as 'President's Rule' or 'State Emergency'. It can be imposed if the President is satisfied 'that the Government can not be carried in accordance with the constitutional provisions...'"
+                },
+                {
+                    question: "Which article deals with 'Financial Emergency'?",
+                    options: ["Article 352", "Article 356", "Article 360", "Article 368"],
+                    correctAnswer: "Article 360",
+                    explanation: "Article 360 gives the President the power to declare a Financial Emergency 'if he is satisfied that the financial stability or the credit of India... is threatened.' This has never been imposed in India."
+                },
+                {
+                    question: "A proclamation of National Emergency (Art 352) must be approved by both Houses of Parliament within what period?",
+                    options: ["One month", "Two months", "Six months", "One year"],
+                    correctAnswer: "One month",
+                    explanation: "A proclamation of Emergency 'must be approved by both the Houses of Parliament within one month from the date of its issue.' (This was reduced from two months by the 44th Amendment)."
+                },
+                {
+                    question: "What happens to the State Government during a National Emergency (Art 352)?",
+                    options: [
+                        "It is immediately dissolved.",
+                        "It becomes subordinate to the Central Government.",
+                        "It functions normally with no change.",
+                        "It gains more power."
+                    ],
+                    correctAnswer: "It becomes subordinate to the Central Government.",
+                    explanation: "During a National Emergency, 'the State Government become subordinate to the Central Government. All the executive functions of the state come under the control of the Union Government.'"
+                },
+                {
+                    question: "During a National Emergency, which two Fundamental Rights *cannot* be suspended?",
+                    options: ["Article 14 and 15", "Article 19 and 21", "Article 20 and 21", "Article 32 and 226"],
+                    correctAnswer: "Article 20 and 21",
+                    explanation: "During a national emergency, 'Except Article 20 and 21, all the Fundamental Rights are suspended.' This is a crucial safeguard."
+                },
+                {
+                    question: "A proclamation of President's Rule (Art 356) must be approved by both Houses of Parliament within what period?",
+                    options: ["One month", "Two months", "Six months", "One year"],
+                    correctAnswer: "Two months",
+                    explanation: "A proclamation imposing President’s Rule 'must be approved by both the Houses of Parliament within two months from the date of its issue.'"
+                },
+                {
+                    question: "What is the maximum period President's Rule (Art 356) can be extended with parliamentary approval?",
+                    options: [
+                        "Six months",
+                        "One year",
+                        "Three years",
+                        "Indefinitely"
+                    ],
+                    correctAnswer: "Three years",
+                    explanation: "President's Rule 'can be extended for a maximum period of three years with the approval of the Parliament, every six months.'"
+                },
+                {
+                    question: "What happens to the State Assembly during President's Rule?",
+                    options: [
+                        "It is either dissolved or suspended.",
+                        "It continues to function normally.",
+                        "It gains the power of Parliament.",
+                        "It elects a new Governor."
+                    ],
+                    correctAnswer: "It is either dissolved or suspended.",
+                    explanation: "During such a proclamation, 'the state assembly is either dissolved or suspended.' Parliament then makes laws for the state."
+                },
+                {
+                    question: "During a Financial Emergency (Art 360), the President can give directions to...",
+                    options: [
+                        "Reduce the salaries of all government employees, including judges.",
+                        "Ask states to reserve all money bills for his consideration.",
+                        "Observe specified canons of financial propriety.",
+                        "All of the above."
+                    ],
+                    correctAnswer: "All of the above.",
+                    explanation: "The text lists all these consequences: reduction of salaries (including judges), reserving money bills, and observing financial propriety."
+                }
+            ],
+            "Chapter 15: Local Self-Government": [
+                {
+                    question: "The foundation for the present local self-government in India was laid by the:",
+                    options: [
+                        "Panchayati Raj System (1992)",
+                        "Government of India Act, 1935",
+                        "Balwant Rai Mehta Committee (1957)",
+                        "Rig-veda (1700 BC)"
+                    ],
+                    correctAnswer: "Panchayati Raj System (1992)",
+                    explanation: "The text states: 'The foundation of the present local self-government in India was laid by the Panchayati Raj System (1992).'"
+                },
+                {
+                    question: "In the time of the Rig-veda, what were the self-governing village bodies called?",
+                    options: [
+                        "Panchayats",
+                        "Sabhas",
+                        "Gram Sabhas",
+                        "Municipalities"
+                    ],
+                    correctAnswer: "Sabhas",
+                    explanation: "The text notes: 'In the time of the Rig-veda (1700 BC), evidence suggests that self-governing village bodies called 'Sabhas' existed.'"
+                },
+                {
+                    question: "Which of these was *not* one of the four important committees on local self-government mentioned?",
+                    options: [
+                        "Balwant Rai Mehta Committee (1957)",
+                        "Ashok Mehta Committee (1977-1978)",
+                        "G V K Rao Committee (1985)",
+                        "Morley-Minto Committee (1909)"
+                    ],
+                    correctAnswer: "Morley-Minto Committee (1909)",
+                    explanation: "The text lists four committees: Balwant Rai Mehta, Ashok Mehta, G V K Rao, and L M Singhvi. The Morley-Minto reforms were related to the Indian Council Act of 1909."
+                },
+                {
+                    question: "The 73rd and 74th Constitutional Amendment Acts, which gave constitutional status to local self-government, were passed in what year?",
+                    options: ["1957", "1976", "1989", "1992"],
+                    correctAnswer: "1992",
+                    explanation: "The idea became a reality in the form of the 73rd and 74th Constitutional Amendment Acts, 1992, during the Narasimha Rao government's term."
+                },
+                {
+                    question: "The 73rd Amendment Act added which part to the Constitution, dealing with 'Panchayats' (rural local bodies)?",
+                    options: ["Part IX", "Part IX-A", "Part X", "Part XI"],
+                    correctAnswer: "Part IX",
+                    explanation: "The Acts of 1992 added two new parts. The 73rd Amendment added Part IX ('the panchayats')."
+                },
+                {
+                    question: "The 74th Amendment Act added which part to the Constitution, dealing with 'Municipalities' (urban local bodies)?",
+                    options: ["Part IX", "Part IX-A", "Part X", "Part XI"],
+                    correctAnswer: "Part IX-A",
+                    explanation: "The 74th Amendment added Part IX-A ('the municipalities')."
+                },
+                {
+                    question: "What is the 'Gram Sabha', which forms the foundation of the Panchayati Raj system?",
+                    options: [
+                        "The council of village elders.",
+                        "A village assembly consisting of all registered voters in the Panchayat area.",
+                        "The village court.",
+                        "The chairperson of the Panchayat."
+                    ],
+                    correctAnswer: "A village assembly consisting of all registered voters in the Panchayat area.",
+                    explanation: "The 73rd Amendment 'provides for a Gram Sabha as the foundation of the Panchayati Raj system. It is essentially a village assembly consisting of all the registered voters in the area...'"
+                },
+                {
+                    question: "Which of these is a type of Municipality provided for by the 74th Amendment?",
+                    options: [
+                        "Nagar Panchayat (for a transitional area)",
+                        "Municipal Council (for a small urban area)",
+                        "Municipal Corporation (for a large urban area)",
+                        "All of the above"
+                    ],
+                    correctAnswer: "All of the above",
+                    explanation: "The 74th Amendment provides for three types of Municipalities: Nagar Panchayat, Municipal Council, and Municipal Corporation."
+                },
+                {
+                    question: "What is the minimum age to be eligible to be a member of a Panchayat or Municipality?",
+                    options: ["18 years", "21 years", "25 years", "30 years"],
+                    correctAnswer: "21 years",
+                    explanation: "A person is eligible if they are qualified to be a member of the state legislature, but they 'shall not be disqualified on the ground that he is less than 25 years of age if he has attained the age of 21 years.'"
+                },
+                {
+                    question: "What percentage of seats are reserved for women in local government bodies (Panchayats and Municipalities)?",
+                    options: ["10%", "25%", "Not less than one-third", "50%"],
+                    correctAnswer: "Not less than one-third",
+                    explanation: "The text states: 'There should try a blanket reservation of one-third seats for women in all the constituencies taken together...'"
+                }
+            ]
+        };
+
+        // --- 2. DOM ELEMENT REFERENCES ---
+        const menuScreen = document.getElementById('menu-screen');
+        const chapterListEl = document.getElementById('chapter-list');
+        
+        const quizContainer = document.getElementById('quiz-container');
+        const quizTitleEl = document.getElementById('quiz-title');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        const questionNumberEl = document.getElementById('question-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const scoreEl = document.getElementById('score');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        
+        const resultsContainer = document.getElementById('results-container');
+        const resultsTextEl = document.getElementById('results-text');
+        const resultsPercentageEl = document.getElementById('results-percentage');
+        const backToMenuBtnResults = document.getElementById('back-to-menu-btn-results');
+
+        const explanationContainerEl = document.getElementById('explanation-container');
+        const explanationTitleEl = document.getElementById('explanation-title');
+        const explanationTextEl = document.getElementById('explanation-text');
+
+        // --- 3. QUIZ STATE ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let currentQuestions = []; // Will hold the questions for the selected chapter
+
+        // --- 4. CORE FUNCTIONS ---
+
+        /**
+         * Initializes the main menu, creating buttons for each chapter.
+         */
+        function initMenu() {
+            // Show menu, hide other screens
+            menuScreen.classList.remove('hidden');
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            
+            // Clear old chapter list
+            chapterListEl.innerHTML = '';
+
+            // Create a button for each chapter
+            Object.keys(allQuestions).forEach(chapterTitle => {
+                const button = document.createElement('button');
+                // --- NEW: Add question count to button text ---
+                const questionCount = allQuestions[chapterTitle].length;
+                button.innerHTML = `${chapterTitle} <span class="float-right opacity-70">${questionCount} Qs</span>`;
+                // --- End of new feature ---
+                
+                button.setAttribute('data-chapter', chapterTitle);
+                button.classList.add(
+                    'w-full', 'p-4', 'rounded-lg', 'text-left', 'font-semibold',
+                    'border-2', 'border-gray-600', 'bg-gray-700',
+                    'hover:bg-gray-600', 'hover:border-cyan-500',
+                    'transition-all', 'duration-200'
+                );
+                
+                // Add click listener to start the quiz for that chapter
+                button.addEventListener('click', () => startQuiz(chapterTitle));
+                chapterListEl.appendChild(button);
+            });
+        }
+
+        /**
+         * Starts the quiz for a specific chapter.
+         * @param {string} chapterTitle - The key from the allQuestions object.
+         */
+        function startQuiz(chapterTitle) {
+            // Hide menu, show quiz
+            menuScreen.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            
+            // Set up quiz state
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            // --- NEW: Shuffle the questions for the selected chapter ---
+            currentQuestions = [...allQuestions[chapterTitle]]; // Create a copy
+            for (let i = currentQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
+            }
+            // --- End of shuffle ---
+            
+            // Update UI
+            scoreEl.innerText = score;
+            totalQuestionsEl.innerText = currentQuestions.length;
+            quizTitleEl.innerText = chapterTitle;
+            
+            showQuestion();
+        }
+
+        /**
+         * Displays the current question and its options.
+         */
+        function showQuestion() {
+            // Reset for the new question
+            optionsContainerEl.innerHTML = '';
+            nextBtn.classList.add('hidden');
+            explanationContainerEl.classList.add('hidden'); // Hide explanation
+
+            // Get current question object
+            const question = currentQuestions[currentQuestionIndex];
+            
+            // Update UI elements
+            questionNumberEl.innerText = currentQuestionIndex + 1;
+            questionTextEl.innerText = question.question;
+
+            // Create and append option buttons
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add(
+                    'w-full', 'p-4', 'rounded-lg', 'text-left', 'font-medium',
+                    'border-2', 'border-gray-600', 'bg-gray-700',
+                    'hover:bg-gray-600', 'hover:border-cyan-500',
+                    'transition-all', 'duration-200'
+                );
+                
+                // Add click event to check the answer
+                button.addEventListener('click', () => selectAnswer(button, option, question.correctAnswer));
+                optionsContainerEl.appendChild(button);
+            });
+        }
+
+        /**
+         * Handles the user's answer selection.
+         * @param {HTMLElement} selectedButton - The button element that was clicked.
+         * @param {string} selectedOption - The text of the selected option.
+         * @param {string} correctAnswer - The correct answer string.
+         */
+        function selectAnswer(selectedButton, selectedOption, correctAnswer) {
+            // Get the full question object
+            const question = currentQuestions[currentQuestionIndex];
+
+            // Disable all option buttons after an answer is selected
+            Array.from(optionsContainerEl.children).forEach(button => {
+                button.disabled = true;
+                button.classList.add('disabled-option');
+                // Also show the correct answer if the user was wrong
+                if (button.innerText === correctAnswer) {
+                    button.classList.add('correct');
+                }
+            });
+
+            // Check if the selected answer is correct
+            if (selectedOption === correctAnswer) {
+                score++;
+                scoreEl.innerText = score;
+                selectedButton.classList.add('correct');
+                
+                // Show correct explanation
+                explanationTitleEl.innerText = "Correct!";
+                explanationTitleEl.className = "text-lg font-bold mb-2 text-green-400"; // Green text
+            } else {
+                selectedButton.classList.add('incorrect');
+                
+                // Show incorrect explanation
+                explanationTitleEl.innerText = "Incorrect";
+                explanationTitleEl.className = "text-lg font-bold mb-2 text-red-400"; // Red text
+            }
+            
+            // Populate and show explanation container
+            explanationTextEl.innerText = question.explanation;
+            explanationContainerEl.classList.remove('hidden');
+
+            // Show the 'Next' button
+            nextBtn.classList.remove('hidden');
+        }
+
+        /**
+         * Moves to the next question or shows the results if the quiz is over.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        /**
+         * Displays the final results screen.
+         */
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            
+            const percentage = Math.round((score / currentQuestions.length) * 100);
+            resultsTextEl.innerText = `You scored ${score} out of ${currentQuestions.length}!`;
+            
+            let percentageColor = 'text-green-500';
+            if (percentage < 75) percentageColor = 'text-yellow-500';
+            if (percentage < 50) percentageColor = 'text-red-500';
+
+            resultsPercentageEl.innerText = `${percentage}%`;
+            resultsPercentageEl.className = `text-5xl sm:text-7xl font-extrabold mb-10 ${percentageColor}`;
+        }
+
+        // --- 5. EVENT LISTENERS ---
+        backToMenuBtn.addEventListener('click', initMenu);
+        backToMenuBtnResults.addEventListener('click', initMenu);
+        nextBtn.addEventListener('click', nextQuestion);
+
+        // --- 6. INITIALIZE THE APP ---
+        document.addEventListener('DOMContentLoaded', initMenu);
+
+    </script>
+</body>
+</html>
+
+
