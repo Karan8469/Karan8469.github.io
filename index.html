@@ -88,6 +88,16 @@
             background: #353535;
         }
 
+        .subject-header.machine-design {
+            /* Kept machine-design background for consistency, but you can change it */
+            background: #3b3b3b; 
+        }
+
+        .subject-header.indian-constitution {
+            /* Added new style for the constitution section */
+            background: #4a3b3b; /* A distinct color */
+        }
+
         .subject-content {
             display: none;
             padding: 0;
@@ -246,7 +256,8 @@
         <div class="content">
             <div class="stats">
                 <div class="stat-card">
-                    <div class="stat-number">3</div>
+                    <!-- Updated subject count from 3 to 4 -->
+                    <div class="stat-number">4</div>
                     <div class="stat-label">Subjects</div>
                 </div>
                 <div class="stat-card">
@@ -752,6 +763,35 @@
 
                 </div>
             </div>
+            
+            <!-- START: New Indian Constitution Section -->
+            <div class="subject-section">
+                <div class="subject-header indian-constitution" onclick="toggleSubject('indian-constitution')">
+                    <span>⚖️ Indian Constitution</span>
+                    <span class="toggle-icon" id="indian-constitution-icon">▼</span>
+                </div>
+                <div class="subject-content" id="indian-constitution-content">
+                    
+                    <div class="chapter-group">
+                        <div class="chapter-header" onclick="toggleChapter('ic-ch1')">
+                            <span>Chapter 1</span>
+                            <span class="toggle-icon" id="ic-ch1-icon">▼</span>
+                        </div>
+                        <div class="chapter-content" id="ic-ch1-content">
+                            <div class="file-group">
+                                <div class="file-group-title">📄 Chapter Files</div>
+                                <div class="file-links">
+                                    <a href="College Notes/Indian Constitution/Indian_Constitution.html" class="file-link">
+                                        <span class="file-icon">📜</span>Indian Constitution
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- END: New Indian Constitution Section -->
 
         </div>
     </div>
